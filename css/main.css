@@ -1218,7 +1218,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #a6ffb6;
+  background: #14f0fb;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2421,4 +2421,147 @@ embed {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+:root {
+  --background-color: #1e1e1e;
+  --text-color: #eee;
+  --link-color: #64b5f6;
+  --link-hover-color: #bbdefb;
+  --code-background: #282c34;
+  --code-text: #abb2bf;
+  --border-color: #424242;
+  --blockquote-background: #212121;
+  --blockquote-border: #64b5f6;
+  --selection-background: rgba(100,181,246,0.2);
+  --selection-color: var(--text-color);
+}
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+body::-webkit-scrollbar-thumb {
+  background-color: #424242;
+  border-radius: 4px;
+}
+body::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.main-inner {
+  background: transparent;
+}
+.content-wrap {
+  background: var(--background-color);
+}
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--link-hover-color);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-color);
+}
+hr {
+  border-color: var(--border-color);
+}
+code,
+pre {
+  background-color: var(--code-background);
+  color: var(--code-text);
+}
+blockquote {
+  background: var(--blockquote-background);
+  border-left: 5px solid var(--blockquote-border);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  border-radius: 5px;
+}
+::selection {
+  background: var(--selection-background);
+  color: var(--selection-color);
+}
+.sidebar-inner {
+  background-color: #212121;
+  color: var(--text-color);
+}
+.site-nav-wrap .site-nav .menu .menu-item a {
+  color: var(--text-color);
+}
+.site-nav-wrap .site-nav .menu .menu-item a:hover {
+  color: var(--link-hover-color);
+}
+.tag-cloud a {
+  color: var(--text-color);
+}
+.tag-cloud a:hover {
+  color: var(--link-hover-color);
+}
+.pagination .page-number,
+.pagination .extend.prev,
+.pagination .extend.next {
+  color: var(--text-color);
+}
+.pagination .page-number.current {
+  background: var(--link-color);
+  color: var(--background-color);
+}
+.v .vwrap {
+  background: var(--background-color);
+  color: var(--text-color);
+}
+.v .vwrap .vhead .vinfo .vnick {
+  color: var(--text-color);
+}
+.v .vwrap textarea {
+  background: #333;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+.v .vwrap .vbtn {
+  background: var(--link-color);
+  color: var(--background-color);
+}
+.post-meta {
+  color: #999;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+table th,
+table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  text-align: left;
+}
+.highlight .copy-btn {
+  color: var(--text-color);
+  background: rgba(0,0,0,0.3);
+}
+.links-of-blogroll-item {
+  color: var(--link-color);
+}
+.links-of-blogroll-item:hover {
+  color: var(--link-hover-color);
+}
+.post-body img {
+  background-color: #333;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+#ribbon {
+  background-color: #333; /* 修改背景颜色 */
+  opacity: 0.5; /* 修改透明度 */
 }
