@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Pinctrl和GPIO子系统引言  在Linux系统中Pinctrl子系统和GPIO子系统是非常重要的概念，他们共同负责和管理SoC（system on a Chip）上的引脚。这两个子系统相互协作，为驱动开发提供一个灵活且高效的接口，用于配置和控制硬件引脚。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pinctrl和GPIO子系统">
+<meta property="og:url" content="http://basswo.github.io/2025/01/16/Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%92%8CGPIO%E5%AD%90%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="Pinctrl和GPIO子系统引言  在Linux系统中Pinctrl子系统和GPIO子系统是非常重要的概念，他们共同负责和管理SoC（system on a Chip）上的引脚。这两个子系统相互协作，为驱动开发提供一个灵活且高效的接口，用于配置和控制硬件引脚。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-01-18T08:48:40.326Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="Pinctrl子系统">
+<meta property="article:tag" content="GPIO子系统">
+<meta property="article:tag" content="Linux学习">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://basswo.github.io/2025/01/16/Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%92%8CGPIO%E5%AD%90%E7%B3%BB%E7%BB%9F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Pinctrl和GPIO子系统 | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">有玉微凉、是为樱琅</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/01/16/Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%92%8CGPIO%E5%AD%90%E7%B3%BB%E7%BB%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Pinctrl和GPIO子系统
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-01-16 00:00:00" itemprop="dateCreated datePublished" datetime="2025-01-16T00:00:00+08:00">2025-01-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-18 16:48:40" itemprop="dateModified" datetime="2025-01-18T16:48:40+08:00">2025-01-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux%E9%A9%B1%E5%8A%A8/" itemprop="url" rel="index"><span itemprop="name">Linux驱动</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Pinctrl和GPIO子系统"><a href="#Pinctrl和GPIO子系统" class="headerlink" title="Pinctrl和GPIO子系统"></a>Pinctrl和GPIO子系统</h1><p><strong>引言</strong> </p>
+<p>在Linux系统中Pinctrl子系统和GPIO子系统是非常重要的概念，他们共同负责和管理SoC（system on a Chip）上的引脚。这两个子系统相互协作，为驱动开发提供一个灵活且高效的接口，用于配置和控制硬件引脚。</p>
+<span id="more"></span>
+
+<h2 id="Pinctrl子系统"><a href="#Pinctrl子系统" class="headerlink" title="Pinctrl子系统"></a>Pinctrl子系统</h2><p>Pinctrl，即Pin Conctroller，中文翻译为引脚控制器。它是一个虚拟的概念，主要用与设置IOMUX（input&#x2F;output Multiplexer），将某个引脚链接到指定的模块，从而实现特定的功能。</p>
+<p><strong>Pinctrl的作用</strong></p>
+<ul>
+<li>引脚复用：一个引脚可以被配置为多种功能（如GPIO、UART、IIC等），Pinctrl子系统负责管理这些服用配置。</li>
+<li>引脚配置：设置引脚的电气特性，如输入输出模式、驱动能力、上拉下拉等。、</li>
+<li>设备树集成：通过设备树描述硬件，pingctrl子系统更具设备树配置自动完成引脚的初始化。</li>
+</ul>
+<p><strong>Pinctrl的工作原理</strong></p>
+<p>1、<strong>设备树描述</strong>：在设备树中，我们为每个引脚配置定义一个pinctrl-name属性，为这个属性	指定该引脚可以具有的各种状态。</p>
+<p>2、<strong>Pinctrl驱动</strong>：pinctrl驱动程序会根据设备树中的配置，初始化pinctrl子系统。</p>
+<p>3、<strong>驱动程序的使用</strong>：当一个设备的驱动程序需要使用某个引脚时，它会通过pinctrl子系统申请并配置引脚。</p>
+<p>4、<strong>pinctrl子系统的配置</strong>：pinctrl子系统会根据驱动程序的请求，设置相应的寄存器，完成引脚的复用和配置。</p>
+<h5 id="1、pinctrl节点介绍"><a href="#1、pinctrl节点介绍" class="headerlink" title="1、pinctrl节点介绍"></a>1、pinctrl节点介绍</h5><p>首先我们可以在linux-5.4.31&#x2F;arch&#x2F;arm&#x2F;boot&#x2F;dts&#x2F;stm32mp151-pinctrl.dtsi文件中找到pinctrl节点。或者也可以使用<code> grep &quot;pinctrl:&quot; stm32mp15*</code> 在dts目录下搜索。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">soc &#123;</span><br><span class="line">     pinctrl: pin-controller@50002000 &#123;</span><br><span class="line">         #address-cells = &lt;1&gt;;</span><br><span class="line">         #size-cells = &lt;1&gt;;</span><br><span class="line">         compatible = &quot;st,stm32mp157-pinctrl&quot;;</span><br><span class="line">         ranges = &lt;0 0x50002000 0xa400&gt;;</span><br><span class="line">         interrupt-parent = &lt;&amp;exti&gt;;</span><br><span class="line">         st,syscfg = &lt;&amp;exti 0x60 0xff&gt;;</span><br><span class="line">         hwlocks = &lt;&amp;hsem 0&gt;;</span><br><span class="line">         pins-are-numbered;</span><br><span class="line">     &#125;</span><br><span class="line"> /* 剩下内容省略 */</span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>soc{…}：这表示pinctrl节点是soc根节点下的一个子节点，在设备树中，soc节点是描述整个片上系统。</li>
+<li>pinctrl：节点标签，方便其他地方引用节点。</li>
+<li>#address-cells、#address-cells：定义了地址单元、大小单元的数量。（也就是reg属性里面的数量）。</li>
+<li>compatible：兼容性字符串，用于驱动的匹配。（很重要）（书写规范：从最具体到最通用的顺序排列，首先是制造商 的名称，然后是设备的型号或者设备类型的描述）</li>
+<li>ranges：该属性定义了父地址空间和子地址空间的映射关系。0：父地址空间的起始地址偏移量为0；0x50002000：子地址空间的起始地址；0xa400：子地址空间的大小。<ul>
+<li>rangs与reg两个的区别：reg属性时用来描述父节点的地址空间的地址和大小，是物理地址直接链接在内存总线上的。而rangs属性是用与父节点和子节点之间建立隐射关系的。</li>
+</ul>
+</li>
+<li>interrupt-parent：中断的父节点。</li>
+<li>st,syscfg：stm特定的属性，用于配置系统配置寄存器的。</li>
+<li>hwlocks：该节点的硬件锁，&amp;hsem，0：表示使用hsem节点的第一个硬件信号量。</li>
+<li>pins-are-numbered：这个是一个标记属性，表示该引脚控制器使用数字编号来表示引脚。</li>
+</ul>
+<p>该文件是由芯片厂商官方将芯片的通用部分单独提出来的一些设备树的配置信息，在soc节点中汇总了所需的配置信息。</p>
+<p>在设备树的只要配置文件的stm32mp15-pinctrl.dtsi文件中，我们可以搜索到很多的配置信息。大概如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&amp;pinctrl &#123;</span><br><span class="line">        adc1_in6_pins_a: adc1-in6 &#123;</span><br><span class="line">                pins &#123;</span><br><span class="line">                        pinmux = &lt;STM32_PINMUX(&#x27;F&#x27;, 12, ANALOG)&gt;;</span><br><span class="line">                &#125;;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        adc12_ain_pins_a: adc12-ain-0 &#123;</span><br><span class="line">                pins &#123;</span><br><span class="line">                        pinmux = &lt;STM32_PINMUX(&#x27;C&#x27;, 3, ANALOG)&gt;, /* ADC1 in13 */</span><br><span class="line">                                 &lt;STM32_PINMUX(&#x27;F&#x27;, 12, ANALOG)&gt;, /* ADC1 in6 */</span><br><span class="line">                                 &lt;STM32_PINMUX(&#x27;F&#x27;, 13, ANALOG)&gt;, /* ADC2 in2 */</span><br><span class="line">                                 &lt;STM32_PINMUX(&#x27;F&#x27;, 14, ANALOG)&gt;; /* ADC2 in6 */</span><br><span class="line">                &#125;;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>&amp;pinctrl：这是一个引用。相当一在上面结果的pinctrl节点中添加的子节点。</li>
+<li>adc1_in6_pins_a: adc1-in6 { … }：标签和名称。</li>
+<li>pins{…}：pins节点包含具体的引脚配置。</li>
+<li>pinmux：用于配置引脚的复用功能。</li>
+<li>&lt;STM32_PINMUX(‘F’, 12, ANALOG)&gt;：这行代码的含义是将 PF12 引脚配置为 ADC1 的输入通道 6。</li>
+</ul>
+<h2 id="GPIO子系统"><a href="#GPIO子系统" class="headerlink" title="GPIO子系统"></a>GPIO子系统</h2><h4 id="1、GPIO子系统的作用"><a href="#1、GPIO子系统的作用" class="headerlink" title="1、GPIO子系统的作用"></a>1、GPIO子系统的作用</h4><p>GPIO（通用输入&#x2F;输出）是微控制器或者片上系统（soc）上最基本的外设之一。GPIO引脚乐意配置为输入或者输出，用于与外部设备进行数字信号的交互。</p>
+<h4 id="2、GPIO子系统的组成部分"><a href="#2、GPIO子系统的组成部分" class="headerlink" title="2、GPIO子系统的组成部分"></a>2、GPIO子系统的组成部分</h4><ul>
+<li>gpiolib核心：GPIO子系统的核心框架，提供了一组同的API函数，共驱动使用。</li>
+<li>GPIO控制器驱动：每一个soc都有自己的GPIO控制器，需要相应的驱动程序来管理这些控制器。</li>
+<li>设备树绑定：设备树用于描述硬件信息。</li>
+</ul>
+<h4 id="3、GPIO子系统的API"><a href="#3、GPIO子系统的API" class="headerlink" title="3、GPIO子系统的API"></a>3、GPIO子系统的API</h4><p>GPIO有两套API：</p>
+<ul>
+<li>基于描述符的API：新的API，函数以gpiod—为开头，它使用gpio-desc结构体表示一个gpio引脚。</li>
+<li>传统的API：函数以gpio-为开头，使用一个整数来表示一个gpio引脚。</li>
+</ul>
+<h1 id="实验代码"><a href="#实验代码" class="headerlink" title="实验代码"></a>实验代码</h1><p><strong>功能实现：</strong> </p>
+<ul>
+<li>使用pinctrl子系统和GPIO子系统。</li>
+<li>使用设备树。</li>
+<li>点亮led灯。</li>
+</ul>
+<p><strong>子系统的讲解：</strong> </p>
+<ul>
+<li><p>在内核代码的&#x2F;home&#x2F;h&#x2F;h&#x2F;linux-5.4.31&#x2F;arch&#x2F;arm&#x2F;boot&#x2F;dts&#x2F;stm32mp157a-fsmp1a.dts目录下，添加设备树的节点。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">led_test2&#123;</span><br><span class="line">      compatible = &quot;h,led2&quot;;</span><br><span class="line">      led_name = &quot;led02&quot;;</span><br><span class="line">      led_minor = &lt;10&gt;;</span><br><span class="line">      gpios = &lt;&amp;gpioz 5 GPIO_ACTIVE_HIGH&gt;,</span><br><span class="line">              &lt;&amp;gpioz 6 GPIO_ACTIVE_HIGH&gt;,</span><br><span class="line">              &lt;&amp;gpioz 7 GPIO_ACTIVE_HIGH&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>其中gpios是在dts&#x2F;stm32mp151.dtsi文件中的gpioz节点中追加。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">gpioz: gpio@54004000 &#123;</span><br><span class="line">    gpio-controller;</span><br><span class="line">    #gpio-cells = &lt;2&gt;;</span><br><span class="line">    interrupt-controller;</span><br><span class="line">    #interrupt-cells = &lt;2&gt;;</span><br><span class="line">    reg = &lt;0 0x400&gt;;</span><br><span class="line">    clocks = &lt;&amp;scmi0_clk CK_SCMI0_GPIOZ&gt;;</span><br><span class="line">    st,bank-name = &quot;GPIOZ&quot;;</span><br><span class="line">    st,bank-ioport = &lt;11&gt;;</span><br><span class="line">    status = &quot;disabled&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新编译设备树。运行下面命令。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ make -j4 ARCH=arm dtbs LOADADDR=0xC2000040</span><br><span class="line">  DTC     arch/arm/boot/dts/stm32mp157a-fsmp1a.dtb</span><br><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ cp -raf arch/arm/boot/dts/stm32mp157a-fsmp1a.dtb /tftpboot/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这样我们编写的设备树文件会重新编译并在重新启动板子的时候加载到芯片中。</p>
+</li>
+</ul>
+<p><strong>平台驱动程序讲解：</strong> </p>
+<ul>
+<li><p>编写驱动框架代码。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">static int __init led_pdrv_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void __exit led_pdrv_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(led_pdrv_init);</span><br><span class="line">module_exit(led_pdrv_exit);</span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>框架搭好的了之后，开始写注册平台驱动。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;linux/init.h&gt;</span><br><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br><span class="line">#include &lt;linux/platform_device.h&gt;</span><br><span class="line">#include &lt;linux/slab.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/io.h&gt;</span><br><span class="line">#include &lt;linux/uaccess.h&gt;</span><br><span class="line">#include &lt;linux/mod_devicetable.h&gt;</span><br><span class="line">#include &lt;linux/of.h&gt;</span><br><span class="line">#include &lt;linux/of_gpio.h&gt;</span><br><span class="line">#include &lt;linux/gpio.h&gt;</span><br><span class="line"></span><br><span class="line">int led_probe(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">int led_remove(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct of_device_id led_match_table[] = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        .compatible = &quot;h,led2&quot;,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct platform_driver led_pdrv = &#123;</span><br><span class="line">    .probe = led_probe,</span><br><span class="line">    .remove = led_remove,</span><br><span class="line">    .driver = &#123;</span><br><span class="line">        .name = &quot;led_pdrv&quot;,</span><br><span class="line">        .of_match_table = led_match_table,</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static int __init led_pdrv_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">    return platform_driver_register(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void __exit led_pdrv_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">    platform_driver_unregister(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(led_pdrv_init);</span><br><span class="line">module_exit(led_pdrv_exit);</span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>其中<code>struct platform_driver led_pdrv</code> 结构体是很重要的，probe函数是在驱动和设备树上的节点匹配之后，内核自动调用的。remove是在内核卸载是调用的。driver中的name是平台驱动的名字。of_match_table的作用是与设备树进行匹配用的，通过compatible进行匹配。</li>
+</ul>
+</li>
+<li><p>平台驱动,probe函数的实现</p>
+<ul>
+<li><p>为自己创建的结构体申请空间</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct stm32mp157_led &#123;</span><br><span class="line">    struct miscdevice misc; // 直接定义miscdevice结构体</span><br><span class="line">    struct device_node *np;</span><br><span class="line">    int gpio_5;</span><br><span class="line">    int gpio_6;</span><br><span class="line">    int gpio_7;</span><br><span class="line">&#125;;</span><br><span class="line">struct stm32mp157_led *led_t;</span><br><span class="line"></span><br><span class="line">    led_t = kzalloc(sizeof(*led_t), GFP_KERNEL);</span><br><span class="line">    if (!led_t) &#123;</span><br><span class="line">        printk(KERN_ERR &quot;led kzalloc failed\n&quot;);</span><br><span class="line">        return -ENOMEM;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取设备树节点属性，为创建杂项设备做准备</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">led_t-&gt;np = pdev-&gt;dev.of_node;</span><br><span class="line">of_property_read_u32(led_t-&gt;np, &quot;led_minor&quot;, &amp;minor);</span><br><span class="line">of_property_read_string(led_t-&gt;np, &quot;led_name&quot;, (const char 	**)&amp;name);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>初始化杂项设备和注册。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//初始化杂项设备</span><br><span class="line">led_t-&gt;misc.minor = minor;</span><br><span class="line">led_t-&gt;misc.name = name;</span><br><span class="line">led_t-&gt;misc.fops = &amp;led_fops;</span><br><span class="line">        </span><br><span class="line">// 注册杂项设备</span><br><span class="line">ret = misc_register(led_t-&gt;misc);</span><br><span class="line">if(ret)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;misc register faile\n&quot;);</span><br><span class="line">    goto err_misc_register;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>申请gpio资源</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 申请gpio资源</span><br><span class="line">led_t-&gt;gpio_5 = of_get_gpio(led_t-&gt;np, 0);</span><br><span class="line">led_t-&gt;gpio_6 = of_get_gpio(led_t-&gt;np, 1);</span><br><span class="line">led_t-&gt;gpio_7 = of_get_gpio(led_t-&gt;np, 2);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>错误跳转</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">err_misc_register:</span><br><span class="line">    kfree(led_t);</span><br><span class="line">    return ret;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>平台驱动的remove函数实现</p>
+<ul>
+<li><p>注销和卸载</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">misc_deregister(led_t-&gt;misc);</span><br><span class="line">kfree(led_t);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>文件操作函数write函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">ssize_t led_write (struct file *file, const char __user *buf, size_t size, loff_t *loff)</span><br><span class="line">&#123;</span><br><span class="line">    int ret = 0;</span><br><span class="line">    int value;</span><br><span class="line">    printk(&quot;-------%s----------\n&quot;,__FUNCTION__);</span><br><span class="line">    // 将应用数据转换为内核数据</span><br><span class="line">    ret = copy_from_user(&amp;value, buf, size);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;copy from user error\n&quot;);</span><br><span class="line">        return -EAGAIN;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    gpio_request(led_t-&gt;gpio_5, &quot;led_5&quot;);</span><br><span class="line">    gpio_request(led_t-&gt;gpio_6, &quot;led_6&quot;);</span><br><span class="line">    gpio_request(led_t-&gt;gpio_7, &quot;led_7&quot;);</span><br><span class="line"></span><br><span class="line">    if (value) &#123;   // 开灯</span><br><span class="line">        gpio_direction_output(led_t-&gt;gpio_5, 1);</span><br><span class="line">        gpio_direction_output(led_t-&gt;gpio_6, 1);</span><br><span class="line">        gpio_direction_output(led_t-&gt;gpio_7, 1);</span><br><span class="line">    &#125; else &#123;  // 关灯</span><br><span class="line">        gpio_direction_output(led_t-&gt;gpio_5, 0);</span><br><span class="line">        gpio_direction_output(led_t-&gt;gpio_6, 0);</span><br><span class="line">        gpio_direction_output(led_t-&gt;gpio_7, 0);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    gpio_free(led_t-&gt;gpio_5);</span><br><span class="line">    gpio_free(led_t-&gt;gpio_6);</span><br><span class="line">    gpio_free(led_t-&gt;gpio_7);</span><br><span class="line"></span><br><span class="line">    return size;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><strong>应用程序led_app.c</strong> </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/stat.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc,char **argv)</span><br><span class="line">&#123;</span><br><span class="line">    int fd;</span><br><span class="line">    int on;</span><br><span class="line"></span><br><span class="line">    fd = open(argv[1], O_RDWR);</span><br><span class="line">    if(fd &lt; 0)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(&quot;open faile\n&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    while(1)</span><br><span class="line">    &#123;</span><br><span class="line">        on = 1;</span><br><span class="line">        write(fd, &amp;on, sizeof(on));</span><br><span class="line">        sleep(1);</span><br><span class="line">        on = 0;</span><br><span class="line">        write(fd, &amp;on, sizeof(on));</span><br><span class="line">        sleep(1);</span><br><span class="line">    &#125;</span><br><span class="line">    close(fd);</span><br><span class="line">    </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Makefile文件</strong> </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">KERN_DIR = /home/h/h/linux-5.4.31</span><br><span class="line">DRV_DIR := $(shell pwd)  # 获取当前工作目录</span><br><span class="line">MODULE_NAME = led_pdrv</span><br><span class="line">APP_NAME = led_app</span><br><span class="line"></span><br><span class="line">all:</span><br><span class="line">	make -C $(KERN_DIR) M=$(DRV_DIR) modules</span><br><span class="line">	$(CC) -o $(APP_NAME) $(APP_NAME).c</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	make -C $(KERN_DIR) M=$(DRV_DIR) clean</span><br><span class="line">	rm -rf $(APP_NAME)</span><br><span class="line"></span><br><span class="line">install:</span><br><span class="line">	cp -raf *.ko /opt/myrootfs/drv_module</span><br><span class="line">	cp -raf $(APP_NAME) /opt/myrootfs/drv_module</span><br><span class="line"></span><br><span class="line">obj-m += $(MODULE_NAME).o</span><br></pre></td></tr></table></figure>
+
+<p><strong>下载验证</strong> </p>
+<ul>
+<li><p>在文件目录下，输入<code>make</code> 命令，进行编译，成功后，再输入<code>make install</code> 将编译的文件加载到内核中。</p>
+</li>
+<li><p>重新启动下载板子。</p>
+</li>
+<li><p>在串口助手的端口中找到存放代码的文件，可以发现有两个文件。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">led_app led_pdrv.ko</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>输入<code>insmod led_pdrv.ko</code> 命令加载驱动。</p>
+</li>
+<li><p>成功后，可以在&#x2F;dev目录下找平台设备文件。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># ls /dev/led02 -n</span><br><span class="line">crw-rw----    1 0        0          10,  10 Jan  5 14:04 /dev/led02</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>然后加载应用程序就可以了。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./led_app /dev/led02</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag"># Pinctrl子系统</a>
+              <a href="/tags/GPIO%E5%AD%90%E7%B3%BB%E7%BB%9F/" rel="tag"># GPIO子系统</a>
+              <a href="/tags/Linux%E5%AD%A6%E4%B9%A0/" rel="tag"># Linux学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/" rel="prev" title="杂项设备">
+      <i class="fa fa-chevron-left"></i> 杂项设备
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/01/20/ARM-Cortex-M3-M4/" rel="next" title="ARM Cortex-M3 M4">
+      ARM Cortex-M3 M4 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Pinctrl%E5%92%8CGPIO%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.</span> <span class="nav-text">Pinctrl和GPIO子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.1.</span> <span class="nav-text">Pinctrl子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E3%80%81pinctrl%E8%8A%82%E7%82%B9%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.0.0.1.</span> <span class="nav-text">1、pinctrl节点介绍</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPIO%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.2.</span> <span class="nav-text">GPIO子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%E3%80%81GPIO%E5%AD%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.2.0.1.</span> <span class="nav-text">1、GPIO子系统的作用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81GPIO%E5%AD%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86"><span class="nav-number">1.2.0.2.</span> <span class="nav-text">2、GPIO子系统的组成部分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%E3%80%81GPIO%E5%AD%90%E7%B3%BB%E7%BB%9F%E7%9A%84API"><span class="nav-number">1.2.0.3.</span> <span class="nav-text">3、GPIO子系统的API</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">实验代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>

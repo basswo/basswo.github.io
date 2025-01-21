@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="设备树linux3.0以后版本才引进了设备树，在此之前的linux内核代码中描述硬件平台信息的代码散乱的分布在arch&#x2F;arm&#x2F;plat-XXX 和 arch&#x2F;arm&#x2F;mach-XXX等目录中。所以为了改善这一情况，设备树孕育于出，它将这些硬件描述信息从内核代码中剥离出来，使用一种树形结构来描述硬件平台的组成和配置信息。 具体关于设备树的介绍可以参考：htt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="设备树">
+<meta property="og:url" content="http://basswo.github.io/2025/01/07/%E8%AE%BE%E5%A4%87%E6%A0%91/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="设备树linux3.0以后版本才引进了设备树，在此之前的linux内核代码中描述硬件平台信息的代码散乱的分布在arch&#x2F;arm&#x2F;plat-XXX 和 arch&#x2F;arm&#x2F;mach-XXX等目录中。所以为了改善这一情况，设备树孕育于出，它将这些硬件描述信息从内核代码中剥离出来，使用一种树形结构来描述硬件平台的组成和配置信息。 具体关于设备树的介绍可以参考：htt">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-01-16T11:39:36.861Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="Linux学习">
+<meta property="article:tag" content="设备树">
+<meta property="article:tag" content="DTS">
+<meta property="article:tag" content="平台总线">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://basswo.github.io/2025/01/07/%E8%AE%BE%E5%A4%87%E6%A0%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>设备树 | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">有玉微凉、是为樱琅</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/01/07/%E8%AE%BE%E5%A4%87%E6%A0%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          设备树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-01-07 00:00:00" itemprop="dateCreated datePublished" datetime="2025-01-07T00:00:00+08:00">2025-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-16 19:39:36" itemprop="dateModified" datetime="2025-01-16T19:39:36+08:00">2025-01-16</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux%E9%A9%B1%E5%8A%A8/" itemprop="url" rel="index"><span itemprop="name">Linux驱动</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="设备树"><a href="#设备树" class="headerlink" title="设备树"></a>设备树</h1><p>linux3.0以后版本才引进了设备树，在此之前的linux内核代码中描述硬件平台信息的代码散乱的分布在arch&#x2F;arm&#x2F;plat-XXX 和 arch&#x2F;arm&#x2F;mach-XXX等目录中。所以为了改善这一情况，设备树孕育于出，它将这些硬件描述信息从内核代码中剥离出来，使用一种树形结构来描述硬件平台的组成和配置信息。</p>
+<p>具体关于设备树的介绍可以参考：<a target="_blank" rel="noopener" href="https://www.devicetree.org/">https://www.devicetree.org/</a></p>
+<span id="more"></span>
+
+<h2 id="1、设备树简介"><a href="#1、设备树简介" class="headerlink" title="1、设备树简介"></a>1、设备树简介</h2><h5 id="1、什么是设备树？（Device-Tree）"><a href="#1、什么是设备树？（Device-Tree）" class="headerlink" title="1、什么是设备树？（Device Tree）"></a>1、什么是设备树？（Device Tree）</h5><p>​	在linux内核早期，平台硬件的信息（例如内存地址、外设配置等）是直接编码在内核代码中的。这意味着一旦硬件平台发生改变，就要重新编写代码。这种方式难以维护和移植。</p>
+<p>​	为了解决这一问题，linux内核在3.X版本之后开时引用了设备树机制。<strong>简单的来说，设备树就是一个描述硬件平台的信息的文本文件，内核通过解析这个文件来了解硬件平台的配置。</strong></p>
+<h5 id="2、设备树的作用"><a href="#2、设备树的作用" class="headerlink" title="2、设备树的作用"></a>2、设备树的作用</h5><p>​	设备的主要作用：</p>
+<ul>
+<li>描述硬件的拓扑结构：使用树形结构可以清晰的描述硬件平台上的各种设备以及相互的关系。例如哪个USART链接着哪些GOIO控制器，哪个中断控制器控制着那个外设的中断。</li>
+<li>传递硬件配置信息：将硬件设备的地址、中断号、时钟频率等配置信息传递给内核。</li>
+<li>实现硬件描述与驱动代码的分离：使得驱动程序更见通用，时许更具设备树中的信息进行适当的调整，而无需修改驱动代码。</li>
+</ul>
+<h5 id="3、设备树的基本概念"><a href="#3、设备树的基本概念" class="headerlink" title="3、设备树的基本概念"></a>3、设备树的基本概念</h5><p>​	设备树有节点（node）和属性（property）组成，形成一个树状结构。</p>
+<ul>
+<li><p>节点（node）：代表硬件设备，例如内存、外设（USART、SPI、IIC等）。每个节点都有唯一的名称。并且包含多个属性。节点之间存在着父子关系。根节点可以用‘&#x2F;’表示。</p>
+</li>
+<li><p>属性（property）：描述节点的特性，例如设备的地址（reg）、中断号（interrupts）、时钟频率（clock-frequency）等。属性有键值成对组成，键是属性的名称，值属性的数据。</p>
+</li>
+<li><p>举一个简单的例子：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">/ &#123;  // 根节点</span><br><span class="line">    compatible = &quot;my-company,my-platform&quot;; // 兼容性字符串，用于驱动匹配</span><br><span class="line">    model = &quot;My Platform v1.0&quot;; // 平台型号</span><br><span class="line"></span><br><span class="line">    memory &#123; // 内存节点</span><br><span class="line">        reg = &lt;0x40000000 0x10000000&gt;; // 内存起始地址和大小</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    uart0: uart@1000 &#123; // UART 节点，命名为 uart0，地址为 0x1000</span><br><span class="line">        compatible = &quot;ns16550a&quot;; // UART 控制器类型</span><br><span class="line">        reg = &lt;0x1000 0x100&gt;; // UART 寄存器地址和大小</span><br><span class="line">        interrupts = ; // UART 中断号</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="4、设备树的表示形式：DTS、DTB、DTC"><a href="#4、设备树的表示形式：DTS、DTB、DTC" class="headerlink" title="4、设备树的表示形式：DTS、DTB、DTC"></a>4、设备树的表示形式：DTS、DTB、DTC</h5><ul>
+<li><p>DTS（Device Tree Source）：设备树的源文件，以.dts为结尾的文件。在使用时可以像C语言中引用头文件一样使用<code>#include</code>指令。</p>
+</li>
+<li><p>DTC（Device Tree Compiler）：设备树的编译器。是一个工具程序，类似于gcc，可以将DTS文件编一个二进制的DTB文件。</p>
+</li>
+<li><p>DTB（Device Tree Blob）：编译后的二进制文件，内核在启动时会加载DTB文件，从其中获取硬件信息。</p>
+<p> 使用dtc命令可以将DTS文件编译成DTB文件。</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dtc -I dts -O dtb -o my_device.dtb my_device.dts</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>dtc：命令</li>
+<li>-I dts：指定输入文件格式为DTS</li>
+<li>-O dtb：指定输出文件格式为DTB</li>
+<li>-o my_device.dtb：指定输出DTB的名称</li>
+<li>my_device.dts：指定输入的DTS的名称</li>
+</ul>
+</li>
+</ul>
+<h2 id="2、设备树的框架"><a href="#2、设备树的框架" class="headerlink" title="2、设备树的框架"></a>2、设备树的框架</h2><h5 id="1、设备的组织结构：树形结构"><a href="#1、设备的组织结构：树形结构" class="headerlink" title="1、设备的组织结构：树形结构"></a>1、设备的组织结构：树形结构</h5><p>​	设备树采用树形结构来描述硬件平台的组成和连接关系。</p>
+<ul>
+<li><p>根节点（root node）：用<code>/</code>表示，是设备树的顶层节点，描述着整个硬件平台的基本信息。</p>
+</li>
+<li><p>子节点（child node）：根节点下的节点，描述平台生的各个设备，例如CPU、内存、总线、外设等。子节点也可以有自己的子节点。</p>
+</li>
+<li><p>父节点（parent node）和子节点（child node）：节点之间通过父子关系链接起来，表示设备之间的层次关系和链接关系。</p>
+<p> 示例：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">/ &#123; // 根节点</span><br><span class="line">    compatible = &quot;my-company,my-platform&quot;;</span><br><span class="line">    model = &quot;My Platform v1.0&quot;;</span><br><span class="line"></span><br><span class="line">    cpus &#123; // CPU 节点</span><br><span class="line">        cpu@0 &#123; // 第一个 CPU 节点</span><br><span class="line">            compatible = &quot;arm,cortex-a9&quot;;</span><br><span class="line">            reg = &lt;0x0&gt;;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    memory &#123; // 内存节点</span><br><span class="line">        reg = &lt;0x40000000 0x10000000&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    uart0: uart@1000 &#123; // UART 节点</span><br><span class="line">        compatible = &quot;ns16550a&quot;;</span><br><span class="line">        reg = &lt;0x1000 0x100&gt;;</span><br><span class="line">        interrupts = ;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    i2c0: i2c@2000 &#123; // I2C 控制器节点</span><br><span class="line">        compatible = &quot;i2c-designware&quot;;</span><br><span class="line">        reg = &lt;0x2000 0x100&gt;;</span><br><span class="line"></span><br><span class="line">        eeprom@50 &#123; // 连接在 i2c0 上的 EEPROM 芯片节点</span><br><span class="line">            compatible = &quot;atmel,24c32&quot;;</span><br><span class="line">            reg = &lt;0x50&gt;;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="2、设备树的语法规则"><a href="#2、设备树的语法规则" class="headerlink" title="2、设备树的语法规则"></a>2、设备树的语法规则</h5><p>​	设备树使用Device Tree Source（DTS）的文本格式进行描述，类似于C语言的结构体。</p>
+<ul>
+<li><p>节点定义：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[label:] node-name@unit-address &#123;</span><br><span class="line">    properties;</span><br><span class="line">    child-nodes;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>label：节点标签，用于在其他地方使用该节点时，可选。例如uart0、i2c0</li>
+<li>node-name：节点名称，描述设备的类型。例如CPU、memory、uart。</li>
+<li>unit-address：节点地址，用于区分同一类型的设备，可选。例如@0200.</li>
+<li>properties：节点属性，描述设备的具体属性。</li>
+<li>child-nodes：节点的子节点。</li>
+</ul>
+</li>
+<li><p>属性定义：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">property-name = value;</span><br></pre></td></tr></table></figure>
+
+<pre><code>  * property-name：属性名称，是一个字符串。例如compatible、reg、interrups。
+  * value：属性的值。
+</code></pre>
+</li>
+<li><p>包含头文件</p>
+<ul>
+<li>使用<code>#include</code>指令可以包含其他的DTS文件或者DTSI文件。</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;header.dtsi&quot;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="3、设备树的重要概念"><a href="#3、设备树的重要概念" class="headerlink" title="3、设备树的重要概念"></a>3、设备树的重要概念</h5><ul>
+<li><p>compatible 属性：它时设备树中最重要的属性之一，它表示一个字符串列表，用于驱动程序和设备进行匹配。驱动程序会查找设备树中compatible属性包含其支持的字符串节点，如果匹配成功，则驱动程序就负责管理该设备。</p>
+<p> 例如：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compatible = &quot;ns16550a&quot;, &quot;uart16550&quot;;</span><br></pre></td></tr></table></figure>
+
+<p> 表示该设备兼容ns16550a和uart16550两种类型的驱动程序。</p>
+</li>
+<li><p>model属性：用于指定设备的制造商和型号。</p>
+<p>  例如：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = &quot;EmbedFire LubanCat2 HDMI+MIPI&quot;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>status属性：用于指示设备的操作状态，通过status去禁止设备或者启用设备。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* External sound card */</span><br><span class="line">sound: sound &#123;</span><br><span class="line">    status = &quot;disabled&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>  | 状态值   | 描述                                  |</p>
+</li>
+</ul>
+<p>| ——– | ————————————- |<br>    | okay     | 使能设备                              |<br>    | disabled | 禁用设备                              |<br>    | fail     | 表示设备不可运行，                    |<br>    | fail-sss | 表示设备不可运行，sss与具体的设备相关 |</p>
+<ul>
+<li><p>reg属性：用于描述地址空间资源，通常包含设备的起始地址和大小。</p>
+<p>  例如：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg = &lt;0x1000 0x100&gt;;</span><br></pre></td></tr></table></figure>
+
+<p>  表示的意思是设备的其实地址是0x1000，大小为0x100字节。</p>
+</li>
+<li><p>interrupt属性：用于描述设备的中断资源，通产包含中断号和中断触发方式。</p>
+</li>
+<li><p>追加&#x2F;修改节点内容</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&amp;cpu0 &#123;</span><br><span class="line">    cpu-supply = &lt;&amp;vdd_cpu&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>  这些代码并不包含在根节点下，他们不是一个新的节点，而是像原有的节点追加内容。在上面的例子中，&amp;cpu0表示像节点标签cpu0的节点追加数据，这个节点可能定义在泵文件也可以定义在迸溅所包含的设备树文件中。</p>
+</li>
+<li><p>特殊节点</p>
+<ul>
+<li><p>aliases子节点</p>
+<p>  aliases子节点的作用就是为其他节点起一个别名，示例：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    aliases &#123;</span><br><span class="line">            csi2dphy0 = &amp;csi2_dphy0;</span><br><span class="line">            csi2dphy1 = &amp;csi2_dphy1;</span><br><span class="line">            csi2dphy2 = &amp;csi2_dphy2;</span><br><span class="line">    /*----------- 省略------------*/</span><br><span class="line">            mmc0 = &amp;sdhci;</span><br><span class="line">            mmc1 = &amp;sdmmc0;</span><br><span class="line">            mmc2 = &amp;sdmmc1;</span><br><span class="line">            mmc3 = &amp;sdmmc2;</span><br><span class="line">            serial0 = &amp;uart0;</span><br><span class="line">            serial1 = &amp;uart1;</span><br><span class="line">            serial2 = &amp;uart2;</span><br><span class="line">    /*----------- 以下省略------------*/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  以serual0 &#x3D; &amp;uart0为例，serial0是一个节点的名字，设置别名后我门可以使用serial0来指代uart0节点。</p>
+</li>
+<li><p>chsen子节点</p>
+<p>  chosen子节点位于根节点下，示例：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chosen &#123;</span><br><span class="line">          bootargs = &quot;earlycon=uart8250,mmio32,0xfe660000 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rw rootwait&quot;;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>  chosen子节点不代表实际硬件，它主要用于内核传递参数。此外这个节点还可以用作uboot像linux内核传递配置参数的通道，我梦在uboot设置好参数，就是通过这个节点向内核中传递的。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="3、如何获取设备树节点信息"><a href="#3、如何获取设备树节点信息" class="headerlink" title="3、如何获取设备树节点信息"></a>3、如何获取设备树节点信息</h5><p>​	在设备树中‘’节点‘’对应着实际硬件中的设备，我梦在设备树中田间一个led节点，正常情况下我们可以从这个节点获取编写led驱动所用的所有信息。</p>
+<p>​	在内核中提供了一组函数用于从设备节点中获取资源的函数，这些函数以of_开头，称为OF操作。</p>
+<p>1、查找节点函数</p>
+<ul>
+<li><p>根据节点路径寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_node_by_path(const char *path)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<pre><code>  * path：指定节点在设备树中的路径
+</code></pre>
+<p>  返回值：</p>
+<ul>
+<li><p>device_node：结构体指针，失败返回为NULL；成功返回一个指针，该指针中保存着设备节点的信息。</p>
+</li>
+<li><p>device_node结构体如下，它定义在 <code>&lt;linux/of.h&gt;</code> 头文件中：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">struct device_node &#123;</span><br><span class="line">    const char *name;           // 节点的名称，例如 &quot;uart@1000&quot;</span><br><span class="line">    phandle phandle;          // 节点的句柄，用于在设备树中唯一标识一个节点</span><br><span class="line">    const char *full_name;      // 节点的完整路径名，例如 &quot;/soc/uart@1000&quot;</span><br><span class="line">    struct fwnode_handle fwnode; // 用于统一访问不同类型的固件节点，如设备树、ACPI等</span><br><span class="line"></span><br><span class="line">    struct property *properties; // 指向节点属性链表的指针</span><br><span class="line">    struct property *deadprops;  // 指向已删除属性链表的指针（用于调试）</span><br><span class="line">    struct device_node *parent;  // 指向父节点的指针</span><br><span class="line">    struct device_node *child;   // 指向第一个子节点的指针</span><br><span class="line">    struct device_node *sibling; // 指向下一个兄弟节点的指针</span><br><span class="line"></span><br><span class="line">#if defined(CONFIG_OF_KOBJ)</span><br><span class="line">    struct kobject kobj;         // 用于将设备节点注册到 sysfs 文件系统中</span><br><span class="line">#endif</span><br><span class="line">    unsigned long _flags;        // 节点标志</span><br><span class="line">    void *data;                 // 用于存储驱动程序特定的数据</span><br><span class="line">#if defined(CONFIG_SPARC)</span><br><span class="line">    unsigned int unique_id;     // SPARC 平台特有的唯一 ID</span><br><span class="line">    struct of_irq_controller *irq_trans; // SPARC 平台特有的中断转换</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>name：节点中属性为name的值</p>
+</li>
+<li><p>phandle：节点中为device-type的值</p>
+</li>
+<li><p>full-name：节点的名字，在device_node结构体后面放一个字符串，full-name指向它</p>
+</li>
+<li><p>properties：链表，连接该节点的所有属性</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">    char *name;         // 属性的名称，例如 &quot;compatible&quot;、&quot;reg&quot;</span><br><span class="line">    int length;         // 属性值的长度（以字节为单位）</span><br><span class="line">    void *value;        // 指向属性值的指针</span><br><span class="line">    struct property *next; // 指向下一个属性的指针，构成链表</span><br><span class="line">    unsigned long _flags;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>parent：指向父节点</p>
+</li>
+<li><p>child：指向子节点</p>
+</li>
+<li><p>sibling：指向兄弟节点</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>根据系欸但名字寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_node_by_name(struct device_node *from,const char *name);</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>from：致电给从哪个节点开始查找，它本身不在查找行列中，之查找它之后的节点。</li>
+<li>name：要寻找的节点名。</li>
+</ul>
+<p>  返回值：</p>
+<pre><code>  * device—node：节点结构体指针，上面的一样。
+</code></pre>
+</li>
+<li><p>根据节点类型寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_node_by_type(struct device_node *from,const char *type)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>from：指定从哪个节点开始找。</li>
+<li>type：要寻找的节点的类型。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li><strong>device_node：</strong> device_node类型的结构体指针。</li>
+</ul>
+</li>
+<li><p>根据节点类型和compeatible属性寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_find_compatible_node(struct device_node *from,const char *type, const char *compatible)</span><br></pre></td></tr></table></figure>
+
+<p>  相对于of_find_node_by_name，多了一个compatible（属性）的参数。</p>
+<p>  compatible：要寻找的节点的兼容性属性。</p>
+</li>
+<li><p>根据匹配表寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static inline struct device_node *of_find_matching_node_and_match(struct device_node *from, const struct of_device_id *matches, const struct of_device_id **match)</span><br></pre></td></tr></table></figure>
+
+<p>  相对于前面的几种，多了matches、match参数。</p>
+<p>  matches：指向一个of_device_id数组的指针。这个数组包含了要匹配的设备ID列表。</p>
+<p>  match：指向of_device_id指针的指针。如果找到匹配的节点，则将匹配的结构体的地址存储在这个指针指向的位置。</p>
+<p>  struct of_device_id结构体：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * Struct used for matching a device</span><br><span class="line"> */</span><br><span class="line">struct of_device_id &#123;</span><br><span class="line">	char	name[32];</span><br><span class="line">	char	type[32];</span><br><span class="line">	char	compatible[128];</span><br><span class="line">	const void *data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>name：设备的名称。</li>
+<li>type：设备的类型。</li>
+<li>compatible：设备的兼容性字符串。用于驱动和设备的匹配。</li>
+<li>data：指向驱动私有数据的指针。</li>
+</ul>
+</li>
+<li><p>寻找父节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_get_parent(const struct device_node *node)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>node：指定要查找父节点的节点。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>node：是一个指向device_node类型的结构体指针。</li>
+</ul>
+</li>
+<li><p>寻找子节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct device_node *of_get_next_child(const struct device_node *node, struct device_node *prev)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>node：指定谁要查找它的子节点。</li>
+<li>prev：前一个子节点。这是一个迭代的过程。就像找孙子，你要先把哪个儿子的节点找到，才能找到该儿子下的孙子节点。如果为NULL，则直接找儿子节点。</li>
+</ul>
+</li>
+</ul>
+<p>这里介绍的七个寻找节点函数，共同点是返回值类型都相同。只要找到节点就可以返回节点对应的device-node结构体，通过这个结构体就可以获取到设备节点中的属性信息、父子节点等。</p>
+<p>第一个函数of_find_node_by_path与其他六个不同，它是通过节点路径来寻找节点的，节点路径是从设备树源文件（.dts）中找到的。中间四个函数根据节点属性在某一节点之后查找相符合的要求的设备节点。最后两个根据父子系节点进行查找。</p>
+<p>2、提取属性值的of函数</p>
+<p>上面我们看了七个查找节点的函数，他们都是找到一个设备节点然后返回相对应的结构体指针device-node。下面我们讲解从结构体中获取我们想要的设备节点属性信息。</p>
+<ul>
+<li><p>查找节点属性函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct property *of_find_property(const struct device_node *np,const char *name,int *lenp)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：指定要获取的设备节点的属性信息。</li>
+<li>name：属性名</li>
+<li>lenp：获取等到的属性值的大小。这个指针作为输出参数，这个参数带回的值是实际获取得到的属性大小</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li><p>property：获取的属性。而struct property *，我们称为系欸但属性结构体。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">	char	*name;</span><br><span class="line">	int	length;</span><br><span class="line">	void	*value;</span><br><span class="line">	struct property *next;</span><br><span class="line">#if defined(CONFIG_OF_DYNAMIC) || defined(CONFIG_SPARC)</span><br><span class="line">	unsigned long _flags;</span><br><span class="line">#endif</span><br><span class="line">#if defined(CONFIG_OF_PROMTREE)</span><br><span class="line">	unsigned int unique_id;</span><br><span class="line">#endif</span><br><span class="line">#if defined(CONFIG_OF_KOBJ)</span><br><span class="line">	struct bin_attribute attr;</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>name：属性名</li>
+<li>length：属性长度</li>
+<li>value：属性值</li>
+<li>next：下个属性</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>读取整形属性函数</p>
+<p>  读取属性函数是一组函数，分别为8、16、32、64位数据。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//8位整数读取函数</span><br><span class="line">int of_property_read_u8_array(const struct device_node *np, const char *propname, u8 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//16位整数读取函数</span><br><span class="line">int of_property_read_u16_array(const struct device_node *np, const char *propname, u16 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//32位整数读取函数</span><br><span class="line">int of_property_read_u32_array(const struct device_node *np, const char *propname, u32 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//64位整数读取函数</span><br><span class="line">int of_property_read_u64_array(const struct device_node *np, const char *propname, u64 *out_values, size_t sz)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：指定要读取那个设备节点结构体。</li>
+<li>propname：指定要获取设备几点的那个属性</li>
+<li>out-value：这是一个输出参数，是函数的返回值，保存读取等到的数据</li>
+<li>sz：这是一个输入参数，用于设置读取的长度。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>成功返回0，错误返回错误状态吗。-EINVAL（属性不存在）、-ENODATA（没有要读取的数据）、-EOVERFLOW（属性值列表太小）。</li>
+</ul>
+</li>
+<li><p>读取字符串属性函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int of_property_read_string(const struct device_node *np,const char *propname,const char **out_string)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：要读取那个设备节点的属性</li>
+<li>propname：属性名</li>
+<li>out-string：获取等待字符串的指针。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>成功返回0，失败返回错误状态吗</li>
+</ul>
+<p>  推荐使用下面的这个函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int of_property_read_string_index(const struct device_node *np,const char *propname, int index,const char **out_string)</span><br></pre></td></tr></table></figure>
+
+<p>  相对于前面增加了index，用于指定读取属性值中的第几个字符串，index从零开始计数。</p>
+</li>
+<li><p>读取布尔型属性函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static inline bool of_property_read_bool(const struct device_node *np, const char *propname);</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：要读取的那个设备节点的属性信息</li>
+<li>propname：属性名</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>这个函数不是读取某个布尔型属性的值，仅仅读取这个属性存在或者不存在，如果想要获取值，还是建议使用“全能”函数查找节点of_find_property。</li>
+</ul>
+</li>
+</ul>
+<p>3、内存映射相关的of函数</p>
+<p>在设备树的节点中大多包含一些捏村想过的属性，比如常用的reg属性。通常情况下，等到寄存器地址之后我们还要通过ioremap函数将物理地址转化为虚拟地址。现在内核提供了一些of函数，自动完成物理地址到虚拟地址的转换。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void __iomem *of_iomap(struct device_node *np, int index)</span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<ul>
+<li>np：要获取的那个设备节点的属性信息</li>
+<li>index：通常情况下reg属性包含多段，index用于指定映射哪一段，从零开始</li>
+</ul>
+<p>返回值：</p>
+<ul>
+<li>成功返回转换的地址。失败返回NULL。</li>
+</ul>
+<p>内核也提供看常规获取地址的of函数，这些函数得到的值就是我们在设备树中设置的地址值，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int of_address_to_resource(struct device_node *dev, int index, struct resource *r)</span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<ul>
+<li>dev：指定要获取的那个设备节点的属性信息</li>
+<li>index：通常情况下reg包含多端。</li>
+<li>r：这是要给resource结构体，是输出桉树用于返回得到的地址信息。</li>
+</ul>
+<p>返回值：</p>
+<ul>
+<li>成功返回0，失败返回错误状态吗</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct resource &#123;</span><br><span class="line">    resource_size_t start;</span><br><span class="line">    resource_size_t end;</span><br><span class="line">    const char *name;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">    unsigned long desc;</span><br><span class="line">    struct resource *parent, *sibling, *child;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>start：起始地址</li>
+<li>end：结束地址</li>
+<li>name：属性的名称</li>
+</ul>
+<h5 id="4、使用设备树驱动led示例"><a href="#4、使用设备树驱动led示例" class="headerlink" title="4、使用设备树驱动led示例"></a>4、使用设备树驱动led示例</h5><p>1、像设备树中添加节点：</p>
+<ul>
+<li><p>在linux内核源码中找到设备树文件。（&#x2F;home&#x2F;h&#x2F;h&#x2F;linux-5.4.31&#x2F;arch&#x2F;arm&#x2F;boot&#x2F;dts）</p>
+</li>
+<li><p>打开设备树文件，在其中添加led节点。（stm32mp157a-fsmpla.dts）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> led_test@0x54004000&#123;</span><br><span class="line">      compatible = &quot;h,led1&quot;;</span><br><span class="line">      reg = &lt;0x54004000 0x400&gt;;</span><br><span class="line">      led_name = &quot;led01&quot;;</span><br><span class="line">      led_minor = &lt;11&gt;;</span><br><span class="line">      moder_clear = &lt;0x3f&gt;;</span><br><span class="line">      moder_data = &lt;0x15&gt;;</span><br><span class="line">      odr = &lt;0x7&gt;;</span><br><span class="line">      shift = &lt;5&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<pre><code>* led_test：设备节点名称。
+* @0x54004000：设备的起始地址。当属性中有reg时，可以在这里添加0x54004000，当然有没有并没有什么影响。
+* compatible：用于匹配驱动程序。
+* reg：设备的寄存器空间地址。包括其实地址和空间大小。
+* （下面就是自定义属性）
+* led_name：设备名称。
+* moder_clear：清理GPIO引脚的输入输出端口。
+* moder_data：配置GPIO引脚。
+* odr：输出数据寄存器的值。决定了led的初始状态。
+* shift：寄存器的位移量。
+</code></pre>
+</li>
+<li><p>添加好设备节点后，保存退出。</p>
+</li>
+<li><p>进入linux内核目录下进行编译，重新传入板子中。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ source /opt/stm32_sdk/environment-setup-cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi </span><br><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ make -j4 ARCH=arm dtbs LOADADDR=0xC2000040</span><br><span class="line">cp arch/arm/boot/dts/stm32mp157a-fsmpla.dtb /tftpboot/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新启动单片机，linux内核就会重新加载我们新写好的设备树文件。</p>
+</li>
+</ul>
+<p>2、编写驱动代码（led_pdrv.c）</p>
+<ul>
+<li><p>编写驱动框架</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">static int __init led_pdev_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">    // 2、注册platform-driver对象</span><br><span class="line">    return platform_driver_register(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void __exit led_pdrv_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">    platform_driver_unregister(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(led_pdev_init);</span><br><span class="line">module_exit(led_pdrv_exit);</span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建platform-driver对象，并且通过led_match_table中的compatible与驱动进行匹配。</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">// 与pdev中的name匹配</span><br><span class="line">const struct platform_device_id led_id_table[] = &#123;</span><br><span class="line">    &#123; &quot;mp157_led&quot;, 0xa &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// 与设备树中的compatible匹配</span><br><span class="line">const struct of_device_id led_match_table[] = &#123;</span><br><span class="line">    &#123; .compatible = &quot;h,led1&quot; &#125;,</span><br><span class="line">    &#123; /* sentinel */ &#125;</span><br><span class="line">&#125;;</span><br><span class="line">struct platform_driver led_pdrv = &#123;</span><br><span class="line">    .probe  = led_pdrv_probe,</span><br><span class="line">    .remove = led_pdrv_remove,</span><br><span class="line">    .driver = &#123;</span><br><span class="line">        .name = &quot;fsmp1_led&quot;,</span><br><span class="line">        .of_match_table = led_match_table,</span><br><span class="line">    &#125;,</span><br><span class="line">    .id_table = led_id_table,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编写led_pdrv_probe、led_pdrv_remove函数，如果驱动匹配成功后，会调用led_pdrv_probe函数执行，在卸载时调用led_pdrv_remove函数。</p>
+<ul>
+<li><p>int led_pdrv_probe(struct platform_device *<em>pdev</em>)</p>
+<ul>
+<li><p>分配全局设备对象空间</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// 设计led的结构体</span><br><span class="line">struct mp157_led_t &#123;</span><br><span class="line">    struct miscdevice misc;</span><br><span class="line">    unsigned int *moder;</span><br><span class="line">    unsigned int *odr;</span><br><span class="line"></span><br><span class="line">    int m_clear;</span><br><span class="line">    int m_data;</span><br><span class="line">    int o_data;</span><br><span class="line">    int shift;</span><br><span class="line">&#125;;</span><br><span class="line">    // 1、分配全局设备对象空间</span><br><span class="line">    led_dev = kzalloc(sizeof(*led_dev), GFP_KERNEL);</span><br><span class="line">    if (!led_dev) &#123;</span><br><span class="line">        printk(&quot;kzalloc failed\n&quot;);</span><br><span class="line">        return -ENOMEM;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取设备节点和数据</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 获取设备树节点对象</span><br><span class="line">np = pdev-&gt;dev.of_node;	//这里的np是直接获取pdev的设备树节点，并不是寻找到设备树节点</span><br><span class="line">of_property_read_string(np, &quot;led_name&quot;, (const char **)&amp;name);</span><br><span class="line">of_property_read_u32(np, &quot;led_minor&quot;, &amp;minor);</span><br><span class="line">of_property_read_u32(np, &quot;led_clear&quot;, &amp;led_dev-&gt;m_clear);</span><br><span class="line">of_property_read_u32(np, &quot;moder_data&quot;, &amp;led_dev-&gt;o_data);</span><br><span class="line">of_property_read_u32(np, &quot;odr&quot;, &amp;led_dev-&gt;o_data);  // 修正：读取odr属性，赋值给o_data</span><br><span class="line">of_property_read_u32(np, &quot;shift&quot;, &amp;led_dev-&gt;shift);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>初始化杂项设备</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">led_dev-&gt;misc.name = name;</span><br><span class="line">led_dev-&gt;misc.minor = minor;</span><br><span class="line">led_dev-&gt;misc.fops = &amp;led_fops;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注册杂项设备</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">if (ret) &#123;</span><br><span class="line">    printk(&quot;misc register failed\n&quot;);</span><br><span class="line">    goto err_kfree;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>硬件初始化</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">led_dev-&gt;moder = ioremap(res1-&gt;start, res1-&gt;end - res1-&gt;start + 1);</span><br><span class="line">if (!led_dev-&gt;moder) &#123;</span><br><span class="line">    printk(&quot;ioremap failed\n&quot;);</span><br><span class="line">    ret = -EINVAL;</span><br><span class="line">    goto err_misc_deregister;</span><br><span class="line">&#125;</span><br><span class="line">led_dev-&gt;odr = led_dev-&gt;moder + 5;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>int led_pdrv_remove(struct platform_device *<em>pdev</em>)</p>
+<ul>
+<li><p>平台资源的释放和注销（先注册后释放）</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">iounmap(led_dev-&gt;moder);</span><br><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br><span class="line">kfree(led_dev);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>编写文件操作函数open、write、release。</p>
+<ul>
+<li><p>首先定义结构体</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>int led_pdrv_open(struct inode *<em>inode</em>, struct file *<em>filp</em>)</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 将GPIOZ——5、6、7设置成输出模式</span><br><span class="line">*led_dev-&gt;moder &amp;= ~(led_dev-&gt;m_clear &lt;&lt; (led_dev-&gt;shift * 2));</span><br><span class="line">*led_dev-&gt;moder |= led_dev-&gt;m_data  &lt;&lt; (led_dev-&gt;shift * 2);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ssize_t led_pdrv_write(struct file *<em>filp</em>, const char __user *<em>buf</em>, size_t <em>size</em>, <em>loff_t</em> *<em>flags</em>)</p>
+<ul>
+<li><p>将应用数据转换为内核数据</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ret = copy_from_user(&amp;value, buf, size);</span><br><span class="line">if (ret) &#123;</span><br><span class="line">    printk(&quot;copy from user error\n&quot;);</span><br><span class="line">    return -EAGAIN;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>根据传输的值进行开关灯</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (value) &#123;   // 开灯</span><br><span class="line">    *led_dev-&gt;odr |= led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift;</span><br><span class="line">&#125; else &#123;  // 关灯</span><br><span class="line">    *led_dev-&gt;odr &amp;= ~(led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>int led_pdrv_close(struct inode *<em>inode</em>, struct file *<em>filp</em>)</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*led_dev-&gt;odr &amp;= ~(led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux%E5%AD%A6%E4%B9%A0/" rel="tag"># Linux学习</a>
+              <a href="/tags/%E8%AE%BE%E5%A4%87%E6%A0%91/" rel="tag"># 设备树</a>
+              <a href="/tags/DTS/" rel="tag"># DTS</a>
+              <a href="/tags/%E5%B9%B3%E5%8F%B0%E6%80%BB%E7%BA%BF/" rel="tag"># 平台总线</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/" rel="next" title="驱动和设备匹配过程">
+      驱动和设备匹配过程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E6%A0%91"><span class="nav-number">1.</span> <span class="nav-text">设备树</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">1、设备树简介</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E8%AE%BE%E5%A4%87%E6%A0%91%EF%BC%9F%EF%BC%88Device-Tree%EF%BC%89"><span class="nav-number">1.1.0.0.1.</span> <span class="nav-text">1、什么是设备树？（Device Tree）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.1.0.0.2.</span> <span class="nav-text">2、设备树的作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.0.0.3.</span> <span class="nav-text">3、设备树的基本概念</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%9A%84%E8%A1%A8%E7%A4%BA%E5%BD%A2%E5%BC%8F%EF%BC%9ADTS%E3%80%81DTB%E3%80%81DTC"><span class="nav-number">1.1.0.0.4.</span> <span class="nav-text">4、设备树的表示形式：DTS、DTB、DTC</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%9A%84%E6%A1%86%E6%9E%B6"><span class="nav-number">1.2.</span> <span class="nav-text">2、设备树的框架</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E3%80%81%E8%AE%BE%E5%A4%87%E7%9A%84%E7%BB%84%E7%BB%87%E7%BB%93%E6%9E%84%EF%BC%9A%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.0.0.1.</span> <span class="nav-text">1、设备的组织结构：树形结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%9A%84%E8%AF%AD%E6%B3%95%E8%A7%84%E5%88%99"><span class="nav-number">1.2.0.0.2.</span> <span class="nav-text">2、设备树的语法规则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E3%80%81%E8%AE%BE%E5%A4%87%E6%A0%91%E7%9A%84%E9%87%8D%E8%A6%81%E6%A6%82%E5%BF%B5"><span class="nav-number">1.2.0.0.3.</span> <span class="nav-text">3、设备树的重要概念</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E3%80%81%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AE%BE%E5%A4%87%E6%A0%91%E8%8A%82%E7%82%B9%E4%BF%A1%E6%81%AF"><span class="nav-number">1.2.0.0.4.</span> <span class="nav-text">3、如何获取设备树节点信息</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4%E3%80%81%E4%BD%BF%E7%94%A8%E8%AE%BE%E5%A4%87%E6%A0%91%E9%A9%B1%E5%8A%A8led%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.2.0.0.5.</span> <span class="nav-text">4、使用设备树驱动led示例</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>
