@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hello World</title>
-    <url>/2025/01/21/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+    <title>FreeRTOS</title>
+    <url>/2025/02/19/FreeRTOS/</url>
+    <content><![CDATA[<h1 id="FreeRTOS"><a href="#FreeRTOS" class="headerlink" title="FreeRTOS"></a>FreeRTOS</h1><p>以下内容是根据野火的<a href="https://weread.qq.com/web/reader/38f32720717e5b0b38f24a4ka87322c014a87ff679a21ea">FreeRTOS内核实现与应用开发实战指南</a> 以及AI搜索进行集合的记录。</p>
+<h3 id="为什么学习RTOS"><a href="#为什么学习RTOS" class="headerlink" title="为什么学习RTOS"></a>为什么学习RTOS</h3><p>我们进入嵌入式这个领域开始，首先在大学时开始接触电路、汇编以及51单片机，后来是stm32，在到操作系统RTOS、linux等。stm32和51都是裸机编程。常见的RTOS有国外的FreeRTOS、μC&#x2F;OS、RTX和国内的FreeRTOS、Huawei LiteOS和AliOS-Things等，其中，开源且免费的FreeRTOS的市场占有率最高。</p>
+<p>在裸机系统中，所有的程序都是自己来完成的，并且所有的操作或者实现的工程都是在一个无线的循环中的，但是现在的生活中的电子产品不在满足裸机开发，更加多的功能，更加复杂的需求，这些都需要由操作系统来实现。</p>
 <span id="more"></span>
 
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<h3 id="第一章初识FreeRTOS"><a href="#第一章初识FreeRTOS" class="headerlink" title="第一章	初识FreeRTOS"></a>第一章	初识FreeRTOS</h3><p>FreeRTOS于2018年被亚马逊收购，改名为AWS FreeRTOS，版本号升级为V10，且开源协议也由原来的GPLv2+修改为MIT，与GPLv2+相比，MIT更加开放，你完全可以理解为完全免费。V9以前的版本还是维持原样，V10版本相比于V9就是加入了一些物联网相关的组件，内核基本不变。亚马逊收购FreeRTOS也是为了进军物联网和人工智能领域。本书还是以V9版本来讲解。</p>
+<h3 id="第二章新建FreeRTOS工程"><a href="#第二章新建FreeRTOS工程" class="headerlink" title="第二章	新建FreeRTOS工程"></a>第二章	新建FreeRTOS工程</h3><h4 id="1、新建本地工程文件"><a href="#1、新建本地工程文件" class="headerlink" title="1、新建本地工程文件"></a>1、新建本地工程文件</h4><p>在开始创建工程之前，我们现在本地中新建一个文件夹用于存放工程，在该文件夹中新建各个文件夹和文件，下面是文件夹的包含关系和具体的作用。</p>
+<p><img src="/2025/02/19/FreeRTOS/hexo-blog\source_posts\FreeRTOS\151023.png" alt="工程文件夹根目录下的文件夹及其作用"> </p>
+<h4 id="2、使用keil创建工程"><a href="#2、使用keil创建工程" class="headerlink" title="2、使用keil创建工程"></a>2、使用keil创建工程</h4><h4 id="3、在keil工程中新建文件组"><a href="#3、在keil工程中新建文件组" class="headerlink" title="3、在keil工程中新建文件组"></a>3、在keil工程中新建文件组</h4><p>在工程中添加user、FreeRTOS&#x2F;Posrt、FreeRTOS&#x2F;source、doc这个几个文件组。</p>
 ]]></content>
+      <categories>
+        <category>stm32</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>操作系统</tag>
+      </tags>
   </entry>
   <entry>
     <title>ARM Cortex-M3 M4</title>
@@ -177,6 +178,26 @@
         <tag>stm32学习</tag>
         <tag>OTA</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2025/01/21/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
   </entry>
   <entry>
     <title>Pinctrl和GPIO子系统</title>
@@ -364,7 +385,7 @@
 <ul>
 <li>&amp;：按位与</li>
 <li>|：按位或</li>
-<li>^：按位或</li>
+<li>^：按位非</li>
 <li>~：按位取反</li>
 <li>&lt;&lt;：左移</li>
 <li><code>&gt;&gt;</code>：右移</li>
@@ -687,18 +708,27 @@
 </ul>
 <p>注意事项</p>
 <ul>
-<li><p>初始化：静态变量只初始化一次，如未显示初始化，则默认初始化为0.</p>
-</li>
-<li><p>生命周期：静态变量的生命周期于程序的生命周期相同，即他们在程序开始时分配内存，在程序结束时释放内存。</p>
-</li>
-<li><p>作用域和链接型：</p>
-<ul>
-<li><p>静态局部变量的作用域任然时局部的，但是生命周期是全局的。</p>
-</li>
-<li><p>静态全局变量的作用域是该在文件作用域，但是他们是内部链接。</p>
-</li>
+<li>初始化：静态变量只初始化一次，如未显示初始化，则默认初始化为0.</li>
+<li>生命周期：静态变量的生命周期于程序的生命周期相同，即他们在程序开始时分配内存，在程序结束时释放内存。</li>
+<li>作用域和链接型：<ul>
+<li>静态局部变量的作用域任然时局部的，但是生命周期是全局的。</li>
+<li>静态全局变量的作用域是该在文件作用域，但是他们是内部链接。</li>
 </ul>
 </li>
+</ul>
+<h5 id="a-和-a的区别"><a href="#a-和-a的区别" class="headerlink" title="a++和++a的区别"></a>a++和++a的区别</h5><p>功能：</p>
+<ul>
+<li>两个都是将变量a自增加一。</li>
+<li>区别在于两个的返回值和执行顺序。</li>
+</ul>
+<p>区别：</p>
+<ul>
+<li>a++：先返回当前值，在将a的值加一。例如a的初始值为5，a++先返回5，然后a再加一变为6.</li>
+<li>++a：先将a的值加1，再返回新的a值。例如，++aa先让a加一变为6，再返回。</li>
+</ul>
+<p>注意点：</p>
+<ul>
+<li>计算过程中着重考虑的是需要的是返回值还是自身。a++，返回值不变，自身加一；++a，返回值加一，自身也加一。</li>
 </ul>
 ]]></content>
       <categories>
@@ -764,6 +794,16 @@
         <tag>Linux学习</tag>
         <tag>杂项设备</tag>
         <tag>平台总线</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>测试文章</title>
+    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <content><![CDATA[<p>这是以个测试</p>
+<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
+]]></content>
+      <tags>
+        <tag>测试</tag>
       </tags>
   </entry>
   <entry>
@@ -1202,16 +1242,6 @@
         <tag>平台总线</tag>
         <tag>设备树</tag>
         <tag>DTS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>测试文章</title>
-    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
-    <content><![CDATA[<p>这是以个测试</p>
-<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
-]]></content>
-      <tags>
-        <tag>测试</tag>
       </tags>
   </entry>
   <entry>
