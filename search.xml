@@ -90,6 +90,103 @@
       </tags>
   </entry>
   <entry>
+    <title>OTA远程更新</title>
+    <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
+    <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
+<span id="more"></span>
+
+<h4 id="1、基本原理"><a href="#1、基本原理" class="headerlink" title="1、基本原理"></a>1、基本原理</h4><p>stm32的OTA升级，简单的来说就是通过某种痛惜方式（例如串口，WIFI，4G等）将新的固件程序下载到STM32的Flash存储器中，然后通过引导程序（Bootloader）将新的固件程序启动起来，从而实现程序的更新。</p>
+<p>要是实现OTA，至少需要两个程序：</p>
+<ul>
+<li>Bootloader程序：负责接收新的固件程序，将其写入到Flash，并在必要时启动新的固件程序。Bootloader程序通常是固定的，不会被OTA更新。</li>
+<li>应用程序（APP）：这是用户实际运行的程序，会被OTA更新。</li>
+</ul>
+<h4 id="2、工程准备"><a href="#2、工程准备" class="headerlink" title="2、工程准备"></a>2、工程准备</h4><ul>
+<li><p>使用stm32F103C8T6开发板。</p>
+</li>
+<li><p>使用软件STM32CubelIDE软件。</p>
+</li>
+<li><p>创建工程</p>
+<ul>
+<li>在STM32CubeIDE中，选择“File” -&gt; “New” -&gt; “STM32 Project”。</li>
+<li>在“Target Selection”窗口中，搜索并选择“STM32F103C8Tx”，然后点击“Next”</li>
+<li>在“Project Name”中输入“Bootloader”，然后点击“Next”。</li>
+<li>在“Initialise all peripherals with their default Mode?”界面<strong>务必选择“No”</strong>。这将允许我们手动配置所需的外设，避免不必要的代码和潜在的冲突。然后点击“Finish”。</li>
+</ul>
+</li>
+<li><p>配置时钟</p>
+<ul>
+<li>双击项目根目录下的 <code>.ioc</code> 文件（例如 <code>Bootloader.ioc</code>），打开STM32CubeMX配置界面。</li>
+<li>在左侧的“System Core”中选择“RCC”。</li>
+<li>在“HSE”下拉菜单中选择“Crystal&#x2F;Ceramic Resonator”（假设你使用外部晶振）。<ul>
+<li>菜单中选择项的解释：</li>
+<li><strong>Disable</strong> ：禁用</li>
+<li><strong>Bypass Clock Source（旁路时钟源）</strong> ：选择此项表示使用外部时钟源直接输入到 MCU，绕过内部的振荡器电路。这意味着外部提供一个稳定的时钟信号到 OSC_IN 引脚，而 OSC_OUT 引脚则悬空。使用此选项时，外部时钟源必须已经产生稳定的时钟信号。</li>
+<li><strong>Crystal&#x2F;Ceramic Resonator（晶体&#x2F;陶瓷谐振器）</strong>：选择此项表示使用外部晶体或陶瓷谐振器作为时钟源。这是最常见的配置方式。在这种模式下，晶振连接到 OSC_IN 和 OSC_OUT 引脚，并且通常需要配合合适的负载电容使用，以确保晶振正常起振</li>
+</ul>
+</li>
+<li>在“PLLCLK”选项卡中配置PLL倍频器，将系统时钟配置为72MHz。通常的配置是：<ul>
+<li>PLL Source Mux: HSE</li>
+<li>PLL Multiplier: x9</li>
+</ul>
+</li>
+<li>确认“SYSCLK”显示为72MHz。</li>
+<li>保存 <code>.ioc</code> 文件（Ctrl+S 或 File -&gt; Save），STM32CubeIDE会自动生成或更新代码。</li>
+</ul>
+</li>
+<li><p>配置串口</p>
+<ul>
+<li>在左侧的“Connectivity”中选择“USART1”。</li>
+<li>在中间的配置界面中：<ul>
+<li>“Mode”选择“Asynchronous”。（异步，还有其他几个选择，）<ul>
+<li>Mode选择项：</li>
+<li><strong>Asynchronous（异步模式）</strong>：这是 USART 最常用的模式。在这种模式下，数据传输不需要单独的时钟线进行同步，而是通过起始位、数据位、校验位和停止位来定义数据帧的结构。发送方和接收方需要预先约定好波特率（即每秒传输的比特数），以确保数据能够正确传输。</li>
+<li><strong>Synchronous（同步模式）</strong>：在这种模式下，数据传输需要一根额外的时钟线（通常称为 SCLK 或 CK）进行同步。发送方提供时钟信号，接收方根据时钟信号进行数据的采样和接收。</li>
+<li><strong>Single Wire (Half-Duplex)（单线（半双工）模式）</strong>：在这种模式下，USART 使用同一根线进行发送和接收，但不能同时进行。</li>
+<li><strong>Multiprocessor Communication（多处理器通信模式）</strong>：这种模式允许多个处理器通过同一条 USART 总线进行通信。在这种模式下，每个处理器都有一个唯一的地址。</li>
+<li><strong>IrDA（红外数据协会）</strong>：这种模式支持红外线通信协议。</li>
+<li><strong>LIN（本地互联网络）</strong>：LIN 是一种低成本的串行通信协议，常用于汽车电子等领域。</li>
+<li><strong>SmartCard（智能卡模式）</strong>：这种模式支持智能卡（例如 SIM 卡、银行卡）的通信协议。</li>
+</ul>
+</li>
+<li>“Baud Rate”设置为115200（或其他你需要的波特率）。</li>
+<li>“Word Length”选择“8 Bits”。</li>
+<li>“Parity”选择“None”。（奇偶校验）</li>
+<li>“Stop Bits”选择“1 Stop Bit”。</li>
+<li>使能“NVIC Settings”中的USART1全局中断。这将在之后允许我们使用中断方式接收串口数据（虽然在之前的简化版本中未使用中断，但这是一个良好的习惯，后续会用到）。</li>
+</ul>
+</li>
+<li>保存 <code>.ioc</code> 文件。</li>
+</ul>
+</li>
+<li><p>配置Flash分区</p>
+<ul>
+<li><p>在项目资源管理器中，展开“Bootloader”项目，打开 <code>STM32F103C8Tx_FLASH.ld</code> 文件。</p>
+</li>
+<li><p>找到以下代码段：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 64K</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将其修改为：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K</span><br></pre></td></tr></table></figure>
+
+<p>  这会将Flash的前16KB分配给Bootloader。应用程序将从<code>0x08004000</code>开始。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3、代码编辑"><a href="#3、代码编辑" class="headerlink" title="3、代码编辑"></a>3、代码编辑</h4><ul>
+<li>串口接收数据</li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>OTA</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Pinctrl和GPIO子系统</title>
     <url>/2025/01/16/Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%92%8CGPIO%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
     <content><![CDATA[<h1 id="Pinctrl和GPIO子系统"><a href="#Pinctrl和GPIO子系统" class="headerlink" title="Pinctrl和GPIO子系统"></a>Pinctrl和GPIO子系统</h1><p><strong>引言</strong> </p>
@@ -260,100 +357,124 @@
 ]]></content>
   </entry>
   <entry>
-    <title>OTA远程更新</title>
-    <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
-    <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
+    <title>ubuntu根文件系统移植</title>
+    <url>/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
+    <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><h3 id="移植前的准备"><a href="#移植前的准备" class="headerlink" title="移植前的准备"></a>移植前的准备</h3><p>在移植之前，我们首先要在电脑上安装Ubuntu。在ubuntu中的终端操作下面步骤。</p>
+<p>在移植之前我们需要一个辅助工具，用来对根文件系统进行一个基本的搭建，就能模拟出根文件系统运行的状态。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install qemu-user-static</span><br></pre></td></tr></table></figure>
+
+<p>其中qemu-user-static安装包的作用时一个QEMU的一个子模块。QEMU是一个开源的虚拟化和模拟器的工具。而子模块专注于用户模式模拟，允许你在当前主机架构上运行另一个架构的二进制文件，而无需启动完整的虚拟机。</p>
 <span id="more"></span>
 
-<h4 id="1、基本原理"><a href="#1、基本原理" class="headerlink" title="1、基本原理"></a>1、基本原理</h4><p>stm32的OTA升级，简单的来说就是通过某种痛惜方式（例如串口，WIFI，4G等）将新的固件程序下载到STM32的Flash存储器中，然后通过引导程序（Bootloader）将新的固件程序启动起来，从而实现程序的更新。</p>
-<p>要是实现OTA，至少需要两个程序：</p>
-<ul>
-<li>Bootloader程序：负责接收新的固件程序，将其写入到Flash，并在必要时启动新的固件程序。Bootloader程序通常是固定的，不会被OTA更新。</li>
-<li>应用程序（APP）：这是用户实际运行的程序，会被OTA更新。</li>
-</ul>
-<h4 id="2、工程准备"><a href="#2、工程准备" class="headerlink" title="2、工程准备"></a>2、工程准备</h4><ul>
-<li><p>使用stm32F103C8T6开发板。</p>
-</li>
-<li><p>使用软件STM32CubelIDE软件。</p>
-</li>
-<li><p>创建工程</p>
-<ul>
-<li>在STM32CubeIDE中，选择“File” -&gt; “New” -&gt; “STM32 Project”。</li>
-<li>在“Target Selection”窗口中，搜索并选择“STM32F103C8Tx”，然后点击“Next”</li>
-<li>在“Project Name”中输入“Bootloader”，然后点击“Next”。</li>
-<li>在“Initialise all peripherals with their default Mode?”界面<strong>务必选择“No”</strong>。这将允许我们手动配置所需的外设，避免不必要的代码和潜在的冲突。然后点击“Finish”。</li>
-</ul>
-</li>
-<li><p>配置时钟</p>
-<ul>
-<li>双击项目根目录下的 <code>.ioc</code> 文件（例如 <code>Bootloader.ioc</code>），打开STM32CubeMX配置界面。</li>
-<li>在左侧的“System Core”中选择“RCC”。</li>
-<li>在“HSE”下拉菜单中选择“Crystal&#x2F;Ceramic Resonator”（假设你使用外部晶振）。<ul>
-<li>菜单中选择项的解释：</li>
-<li><strong>Disable</strong> ：禁用</li>
-<li><strong>Bypass Clock Source（旁路时钟源）</strong> ：选择此项表示使用外部时钟源直接输入到 MCU，绕过内部的振荡器电路。这意味着外部提供一个稳定的时钟信号到 OSC_IN 引脚，而 OSC_OUT 引脚则悬空。使用此选项时，外部时钟源必须已经产生稳定的时钟信号。</li>
-<li><strong>Crystal&#x2F;Ceramic Resonator（晶体&#x2F;陶瓷谐振器）</strong>：选择此项表示使用外部晶体或陶瓷谐振器作为时钟源。这是最常见的配置方式。在这种模式下，晶振连接到 OSC_IN 和 OSC_OUT 引脚，并且通常需要配合合适的负载电容使用，以确保晶振正常起振</li>
-</ul>
-</li>
-<li>在“PLLCLK”选项卡中配置PLL倍频器，将系统时钟配置为72MHz。通常的配置是：<ul>
-<li>PLL Source Mux: HSE</li>
-<li>PLL Multiplier: x9</li>
-</ul>
-</li>
-<li>确认“SYSCLK”显示为72MHz。</li>
-<li>保存 <code>.ioc</code> 文件（Ctrl+S 或 File -&gt; Save），STM32CubeIDE会自动生成或更新代码。</li>
-</ul>
-</li>
-<li><p>配置串口</p>
-<ul>
-<li>在左侧的“Connectivity”中选择“USART1”。</li>
-<li>在中间的配置界面中：<ul>
-<li>“Mode”选择“Asynchronous”。（异步，还有其他几个选择，）<ul>
-<li>Mode选择项：</li>
-<li><strong>Asynchronous（异步模式）</strong>：这是 USART 最常用的模式。在这种模式下，数据传输不需要单独的时钟线进行同步，而是通过起始位、数据位、校验位和停止位来定义数据帧的结构。发送方和接收方需要预先约定好波特率（即每秒传输的比特数），以确保数据能够正确传输。</li>
-<li><strong>Synchronous（同步模式）</strong>：在这种模式下，数据传输需要一根额外的时钟线（通常称为 SCLK 或 CK）进行同步。发送方提供时钟信号，接收方根据时钟信号进行数据的采样和接收。</li>
-<li><strong>Single Wire (Half-Duplex)（单线（半双工）模式）</strong>：在这种模式下，USART 使用同一根线进行发送和接收，但不能同时进行。</li>
-<li><strong>Multiprocessor Communication（多处理器通信模式）</strong>：这种模式允许多个处理器通过同一条 USART 总线进行通信。在这种模式下，每个处理器都有一个唯一的地址。</li>
-<li><strong>IrDA（红外数据协会）</strong>：这种模式支持红外线通信协议。</li>
-<li><strong>LIN（本地互联网络）</strong>：LIN 是一种低成本的串行通信协议，常用于汽车电子等领域。</li>
-<li><strong>SmartCard（智能卡模式）</strong>：这种模式支持智能卡（例如 SIM 卡、银行卡）的通信协议。</li>
-</ul>
-</li>
-<li>“Baud Rate”设置为115200（或其他你需要的波特率）。</li>
-<li>“Word Length”选择“8 Bits”。</li>
-<li>“Parity”选择“None”。（奇偶校验）</li>
-<li>“Stop Bits”选择“1 Stop Bit”。</li>
-<li>使能“NVIC Settings”中的USART1全局中断。这将在之后允许我们使用中断方式接收串口数据（虽然在之前的简化版本中未使用中断，但这是一个良好的习惯，后续会用到）。</li>
-</ul>
-</li>
-<li>保存 <code>.ioc</code> 文件。</li>
-</ul>
-</li>
-<li><p>配置Flash分区</p>
-<ul>
-<li><p>在项目资源管理器中，展开“Bootloader”项目，打开 <code>STM32F103C8Tx_FLASH.ld</code> 文件。</p>
-</li>
-<li><p>找到以下代码段：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 64K</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>将其修改为：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K</span><br></pre></td></tr></table></figure>
+<h3 id="下载根文件系统"><a href="#下载根文件系统" class="headerlink" title="下载根文件系统"></a>下载根文件系统</h3><p>ubuntu以提供了基本的可移植到嵌入式的根文件系统，因此我们去官网下载即可。</p>
+<p>点击网址后进入网站，点击红色标注的选项。</p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/140807.png">S</p>
+<p>点击后，进入下面界面，继续点击。</p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141134.png"></p>
+<p>然后选择其中一个版本，点击下载。</p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141337.png"></p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141435.png"></p>
+<p>下载好安装包，等会要用。</p>
+<h3 id="开始移植"><a href="#开始移植" class="headerlink" title="开始移植"></a>开始移植</h3><h4 id="1、在根目录中创建一个文件。"><a href="#1、在根目录中创建一个文件。" class="headerlink" title="1、在根目录中创建一个文件。"></a>1、在根目录中创建一个文件。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir rootfs</span><br></pre></td></tr></table></figure>
 
-<p>  这会将Flash的前16KB分配给Bootloader。应用程序将从<code>0x08004000</code>开始。</p>
+<h4 id="2、解压刚才下载的安装包，到rootfs文件中。"><a href="#2、解压刚才下载的安装包，到rootfs文件中。" class="headerlink" title="2、解压刚才下载的安装包，到rootfs文件中。"></a>2、解压刚才下载的安装包，到rootfs文件中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo tar -vzxf ubuntu-base-16.04.6-base-armhf.tar.gz </span><br></pre></td></tr></table></figure>
+
+<h4 id="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"><a href="#3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。" class="headerlink" title="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"></a>3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /usr/bin/qemu-arm-static ./usr/bin/</span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /etc/resolv.conf ./etc/resolv.conf</span><br><span class="line">将主机的DNS配置文件（/etc/resolv.conf）复制到根文件系统的/etc/resolv.conf。</span><br><span class="line">根文件系统可以解析域名（例如访问apt源），从而正常联网。</span><br></pre></td></tr></table></figure>
+
+<p>复制完毕后，进入到resolv.conf文件中，修改其中的内容。保存退出。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo vim /etc/resolv.conf</span><br></pre></td></tr></table></figure>
+
+<p>修改后的resolv.conf文件中界面如下：<br><strong>nameserver 202.96.128.86。</strong> </p>
+<p>202.96.128.86是电脑网络的DNS服务器端口。配置成功后可以通过下面测试网络</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ping www.baidu.com</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果能解析并ping，说明DNS配置成功。</li>
+</ul>
+<h4 id="4、挂载VFS"><a href="#4、挂载VFS" class="headerlink" title="4、挂载VFS"></a>4、挂载VFS</h4><ul>
+<li>VFS是虚拟的文件系统，用于统一管理各种文件系统。</li>
+<li>挂载VFS是为了根文件系统太难记必要的虚拟文件系统支持。</li>
+</ul>
+<h5 id="1、创建一个mk-sh的脚本。"><a href="#1、创建一个mk-sh的脚本。" class="headerlink" title="1、创建一个mk.sh的脚本。"></a>1、创建一个mk.sh的脚本。</h5><p>在rootfs的父目录中创建一个名字为mk.sh的脚本文件，并修改其的权限。在文件中添加下面代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ touch mk.sh</span><br><span class="line">h@h-virtual-machine:~/h$ chomd 777 mk.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">mnt () </span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;MOUNTING&quot;</span><br><span class="line">    sudo mount -t proc /proc $&#123;2&#125;proc</span><br><span class="line">    sudo mount -t sysfs /sys $&#123;2&#125;sys</span><br><span class="line">    sudo mount -o bind /dev $&#123;2&#125;dev</span><br><span class="line">    sudo mount -o bind /dev/pts $&#123;2&#125;dev/pts      </span><br><span class="line">    sudo chroot $&#123;2&#125;    </span><br><span class="line">&#125;</span><br><span class="line">umnt ()</span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;UNMOUNTING&quot;</span><br><span class="line">    sudo umount $&#123;2&#125;proc</span><br><span class="line">    sudo umount $&#123;2&#125;sys</span><br><span class="line">    sudo umount $&#123;2&#125;dev/pts</span><br><span class="line">    sudo umount $&#123;2&#125;dev </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if [ &quot;$1&quot; = &quot;-m&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    mnt $1 $2</span><br><span class="line">    echo &quot;mnt -m pwd&quot;</span><br><span class="line">elif [ &quot;$1&quot; = &quot;-u&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    umnt $1 $2</span><br><span class="line">    echo &quot;mnt -u pwd&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;Either 1&#x27;st, 2&#x27;nd or bothparameters were missing&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;1&#x27;st parameter can be one ofthese: -m(mount) OR -u(umount)&quot;</span><br><span class="line">    echo &quot;2&#x27;nd parameter is the rootfs path&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;For example: ./mk.sh -m ./rootfs/&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo 1st parameter : $&#123;1&#125;</span><br><span class="line">    echo 2nd parameter : $&#123;2&#125;</span><br><span class="line">fi</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>保存退出后，执行下面代码，就可以进入到我们制作的rootfs根文件系统中。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ ./mk.sh -m ./rootfs/</span><br></pre></td></tr></table></figure>
+
+<p>如果成功挂载，会出现下面这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MOUNTING</span><br><span class="line">[sudo] h 的密码：</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/# ls</span><br><span class="line">bin   dev  home  media  opt   root  sbin  sys  usr</span><br><span class="line">boot  etc  lib   mnt    proc  run   srv   tmp  var</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果想退出，可以输入exit，在退出后，接着输入**.&#x2F;mk.sh -u .&#x2F;rootfs&#x2F;** 。退出 chroot 后，挂载的VFS（proc、sysfs、dev 等）仍然存在，需要清理以避免影响下次操作。</p>
+<h4 id="5、安装常用的命令和软件"><a href="#5、安装常用的命令和软件" class="headerlink" title="5、安装常用的命令和软件"></a>5、安装常用的命令和软件</h4><p>在根文件挂载的界面操作下，执行下面命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt install sudo</span><br><span class="line">apt install vim</span><br><span class="line">apt install kmod net-tools ethtool ifupdown language-pack-en-base rsyslog htop iputils-ping</span><br></pre></td></tr></table></figure>
+
+<h4 id="6、设置root用户密码"><a href="#6、设置root用户密码" class="headerlink" title="6、设置root用户密码"></a>6、设置root用户密码</h4><p>设置一下 root 用户的密码，命令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd root </span><br></pre></td></tr></table></figure>
+
+<p>输入“passwd root”以后会让你输入 root 用户密码，输入两次</p>
+<h4 id="7、创建用户"><a href="#7、创建用户" class="headerlink" title="7、创建用户"></a>7、创建用户</h4><p>添加一个用户sdr：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">useradd -s &#x27;/bin/bash&#x27; -m -G adm,sudo sdr</span><br></pre></td></tr></table></figure>
+
+<p>给用户设置密码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd sdr</span><br></pre></td></tr></table></figure>
+
+<h4 id="8、设置主机名和IP"><a href="#8、设置主机名和IP" class="headerlink" title="8、设置主机名和IP"></a>8、设置主机名和IP</h4><p>输入如下命令设置本机名称和IP地址</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo &quot;sdr&quot; &gt; /etc/hostname</span><br><span class="line">echo &quot;127.0.0.1 localhost&quot; &gt;&gt; /etc/hosts</span><br><span class="line">echo &quot;127.0.0.1 sdr&quot; &gt;&gt; /etc/hosts</span><br></pre></td></tr></table></figure>
+
+<p>127.0.0.1代表的本机的意思，不用改。</p>
+<h4 id="9、终端设置"><a href="#9、终端设置" class="headerlink" title="9、终端设置"></a>9、终端设置</h4><p>因为我们的开发板是使用串口作为终端的，所以需要设置一下，比如我们开发板使用的UART1对应的串口设备文件为ttySTM0、我们输入如下命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@ttySTM0.service</span><br><span class="line"></span><br><span class="line">注意：ttySAC2为串口节点，具体根据自己的板子设置</span><br></pre></td></tr></table></figure>
+
+<h4 id="10、退出配置"><a href="#10、退出配置" class="headerlink" title="10、退出配置"></a>10、退出配置</h4><p>这样基本配置我们就设置好了，我们退出这个根文件系统，然后取消挂载。设置好以后就可以退出根文件系统了，输入如下命令退出：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exit</span><br><span class="line">./mk.sh -u ./rootfs/</span><br></pre></td></tr></table></figure>
+
+<h4 id="11、将根文件系统下载进开发板中"><a href="#11、将根文件系统下载进开发板中" class="headerlink" title="11、将根文件系统下载进开发板中"></a>11、将根文件系统下载进开发板中</h4><p>之前我们在开发板上运行linux，使用的是老师给的。现在我们只改变了根文件系统，uboot和linux内核不变，所以我们修改原来的rootfs。为了做区别，我使用newrootfs为新的根文件系统的名称。</p>
+<ul>
+<li><p>1、我们要把newrootfs转移到opt目录下。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mv newrootfs /opt/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>2、修改&#x2F;etc&#x2F;exports</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在主机终端执行</span><br><span class="line">sudo vi /etc/exports</span><br></pre></td></tr></table></figure>
+
+<p>  在文件中，加入下面这段话。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/opt/newrootfs *(rw,sync,no_root_squash,no_subtree_check)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>3、重新运行一下。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo exportfs -ra</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>4、重新启动开发板，在开始输出东西时，一直按下enter键。直到到进入U-boot模式。</p>
+<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203017.png"></p>
+<p>  第一个红框时U-boot的版本信息。</p>
+<p>  第二个是进入U-boot的结果。</p>
+</li>
+<li><p>5、输入下面命令，可以产看参数。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在U-Boot控制台执行</span><br><span class="line">printenv bootargs</span><br></pre></td></tr></table></figure>
+
+<p>  输出如下：</p>
+<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203258.png"></p>
+</li>
+<li><p>6、执行 <code>setenv</code> 命令修改 <code>bootargs</code> 环境变量：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setenv bootargs &#x27;root=/dev/nfs nfsroot=192.168.60.30:/opt/newrootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>  上面的截图是我修改过后的，原先是下面这样</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bootargs=root=/dev/nfs nfsroot=192.168.60.30:/opt/rootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>7、执行 <code>saveenv</code> 命令保存环境变量</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">saveenv</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>8、重启开发板，最后会看到下图：<br>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/204228.png"></p>
 </li>
 </ul>
-</li>
-</ul>
-<h4 id="3、代码编辑"><a href="#3、代码编辑" class="headerlink" title="3、代码编辑"></a>3、代码编辑</h4><ul>
-<li>串口接收数据</li>
-</ul>
+<p>到此在stm32mp157的开发板上就跑起来了linux。</p>
 ]]></content>
       <categories>
-        <category>stm32</category>
+        <category>linux</category>
       </categories>
       <tags>
-        <tag>stm32学习</tag>
-        <tag>OTA</tag>
+        <tag>linux移植</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -804,135 +925,6 @@
       </tags>
   </entry>
   <entry>
-    <title>测试文章</title>
-    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
-    <content><![CDATA[<p>这是以个测试</p>
-<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
-]]></content>
-      <tags>
-        <tag>测试</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ubuntu根文件系统移植</title>
-    <url>/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><h3 id="移植前的准备"><a href="#移植前的准备" class="headerlink" title="移植前的准备"></a>移植前的准备</h3><p>在移植之前，我们首先要在电脑上安装Ubuntu。在ubuntu中的终端操作下面步骤。</p>
-<p>在移植之前我们需要一个辅助工具，用来对根文件系统进行一个基本的搭建，就能模拟出根文件系统运行的状态。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install qemu-user-static</span><br></pre></td></tr></table></figure>
-
-<p>其中qemu-user-static安装包的作用时一个QEMU的一个子模块。QEMU是一个开源的虚拟化和模拟器的工具。而子模块专注于用户模式模拟，允许你在当前主机架构上运行另一个架构的二进制文件，而无需启动完整的虚拟机。</p>
-<h3 id="下载根文件系统"><a href="#下载根文件系统" class="headerlink" title="下载根文件系统"></a>下载根文件系统</h3><p>ubuntu以提供了基本的可移植到嵌入式的根文件系统，因此我们去官网下载即可。</p>
-<p>点击网址后进入网站，点击红色标注的选项。</p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/140807.png">S</p>
-<p>点击后，进入下面界面，继续点击。</p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141134.png"></p>
-<p>然后选择其中一个版本，点击下载。</p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141337.png"></p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141435.png"></p>
-<p>下载好安装包，等会要用。</p>
-<h3 id="开始移植"><a href="#开始移植" class="headerlink" title="开始移植"></a>开始移植</h3><h4 id="1、在根目录中创建一个文件。"><a href="#1、在根目录中创建一个文件。" class="headerlink" title="1、在根目录中创建一个文件。"></a>1、在根目录中创建一个文件。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir rootfs</span><br></pre></td></tr></table></figure>
-
-<h4 id="2、解压刚才下载的安装包，到rootfs文件中。"><a href="#2、解压刚才下载的安装包，到rootfs文件中。" class="headerlink" title="2、解压刚才下载的安装包，到rootfs文件中。"></a>2、解压刚才下载的安装包，到rootfs文件中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo tar -vzxf ubuntu-base-16.04.6-base-armhf.tar.gz </span><br></pre></td></tr></table></figure>
-
-<h4 id="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"><a href="#3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。" class="headerlink" title="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"></a>3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /usr/bin/qemu-arm-static ./usr/bin/</span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /etc/resolv.conf ./etc/resolv.conf</span><br><span class="line">将主机的DNS配置文件（/etc/resolv.conf）复制到根文件系统的/etc/resolv.conf。</span><br><span class="line">根文件系统可以解析域名（例如访问apt源），从而正常联网。</span><br></pre></td></tr></table></figure>
-
-<p>复制完毕后，进入到resolv.conf文件中，修改其中的内容。保存退出。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo vim /etc/resolv.conf</span><br></pre></td></tr></table></figure>
-
-<p>修改后的resolv.conf文件中界面如下：<br><strong>nameserver 202.96.128.86。</strong> </p>
-<p>202.96.128.86是电脑网络的DNS服务器端口。配置成功后可以通过下面测试网络</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ping www.baidu.com</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>如果能解析并ping，说明DNS配置成功。</li>
-</ul>
-<h4 id="4、挂载VFS"><a href="#4、挂载VFS" class="headerlink" title="4、挂载VFS"></a>4、挂载VFS</h4><ul>
-<li>VFS是虚拟的文件系统，用于统一管理各种文件系统。</li>
-<li>挂载VFS是为了根文件系统太难记必要的虚拟文件系统支持。</li>
-</ul>
-<h5 id="1、创建一个mk-sh的脚本。"><a href="#1、创建一个mk-sh的脚本。" class="headerlink" title="1、创建一个mk.sh的脚本。"></a>1、创建一个mk.sh的脚本。</h5><p>在rootfs的父目录中创建一个名字为mk.sh的脚本文件，并修改其的权限。在文件中添加下面代码。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ touch mk.sh</span><br><span class="line">h@h-virtual-machine:~/h$ chomd 777 mk.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">mnt () </span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;MOUNTING&quot;</span><br><span class="line">    sudo mount -t proc /proc $&#123;2&#125;proc</span><br><span class="line">    sudo mount -t sysfs /sys $&#123;2&#125;sys</span><br><span class="line">    sudo mount -o bind /dev $&#123;2&#125;dev</span><br><span class="line">    sudo mount -o bind /dev/pts $&#123;2&#125;dev/pts      </span><br><span class="line">    sudo chroot $&#123;2&#125;    </span><br><span class="line">&#125;</span><br><span class="line">umnt ()</span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;UNMOUNTING&quot;</span><br><span class="line">    sudo umount $&#123;2&#125;proc</span><br><span class="line">    sudo umount $&#123;2&#125;sys</span><br><span class="line">    sudo umount $&#123;2&#125;dev/pts</span><br><span class="line">    sudo umount $&#123;2&#125;dev </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if [ &quot;$1&quot; = &quot;-m&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    mnt $1 $2</span><br><span class="line">    echo &quot;mnt -m pwd&quot;</span><br><span class="line">elif [ &quot;$1&quot; = &quot;-u&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    umnt $1 $2</span><br><span class="line">    echo &quot;mnt -u pwd&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;Either 1&#x27;st, 2&#x27;nd or bothparameters were missing&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;1&#x27;st parameter can be one ofthese: -m(mount) OR -u(umount)&quot;</span><br><span class="line">    echo &quot;2&#x27;nd parameter is the rootfs path&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;For example: ./mk.sh -m ./rootfs/&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo 1st parameter : $&#123;1&#125;</span><br><span class="line">    echo 2nd parameter : $&#123;2&#125;</span><br><span class="line">fi</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>保存退出后，执行下面代码，就可以进入到我们制作的rootfs根文件系统中。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ ./mk.sh -m ./rootfs/</span><br></pre></td></tr></table></figure>
-
-<p>如果成功挂载，会出现下面这样的：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MOUNTING</span><br><span class="line">[sudo] h 的密码：</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/# ls</span><br><span class="line">bin   dev  home  media  opt   root  sbin  sys  usr</span><br><span class="line">boot  etc  lib   mnt    proc  run   srv   tmp  var</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>如果想退出，可以输入exit，在退出后，接着输入**.&#x2F;mk.sh -u .&#x2F;rootfs&#x2F;** 。退出 chroot 后，挂载的VFS（proc、sysfs、dev 等）仍然存在，需要清理以避免影响下次操作。</p>
-<h4 id="5、安装常用的命令和软件"><a href="#5、安装常用的命令和软件" class="headerlink" title="5、安装常用的命令和软件"></a>5、安装常用的命令和软件</h4><p>在根文件挂载的界面操作下，执行下面命令。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt install sudo</span><br><span class="line">apt install vim</span><br><span class="line">apt install kmod net-tools ethtool ifupdown language-pack-en-base rsyslog htop iputils-ping</span><br></pre></td></tr></table></figure>
-
-<h4 id="6、设置root用户密码"><a href="#6、设置root用户密码" class="headerlink" title="6、设置root用户密码"></a>6、设置root用户密码</h4><p>设置一下 root 用户的密码，命令如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd root </span><br></pre></td></tr></table></figure>
-
-<p>输入“passwd root”以后会让你输入 root 用户密码，输入两次</p>
-<h4 id="7、创建用户"><a href="#7、创建用户" class="headerlink" title="7、创建用户"></a>7、创建用户</h4><p>添加一个用户sdr：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">useradd -s &#x27;/bin/bash&#x27; -m -G adm,sudo sdr</span><br></pre></td></tr></table></figure>
-
-<p>给用户设置密码：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd sdr</span><br></pre></td></tr></table></figure>
-
-<h4 id="8、设置主机名和IP"><a href="#8、设置主机名和IP" class="headerlink" title="8、设置主机名和IP"></a>8、设置主机名和IP</h4><p>输入如下命令设置本机名称和IP地址</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo &quot;sdr&quot; &gt; /etc/hostname</span><br><span class="line">echo &quot;127.0.0.1 localhost&quot; &gt;&gt; /etc/hosts</span><br><span class="line">echo &quot;127.0.0.1 sdr&quot; &gt;&gt; /etc/hosts</span><br></pre></td></tr></table></figure>
-
-<p>127.0.0.1代表的本机的意思，不用改。</p>
-<h4 id="9、终端设置"><a href="#9、终端设置" class="headerlink" title="9、终端设置"></a>9、终端设置</h4><p>因为我们的开发板是使用串口作为终端的，所以需要设置一下，比如我们开发板使用的UART1对应的串口设备文件为ttySTM0、我们输入如下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@ttySTM0.service</span><br><span class="line"></span><br><span class="line">注意：ttySAC2为串口节点，具体根据自己的板子设置</span><br></pre></td></tr></table></figure>
-
-<h4 id="10、退出配置"><a href="#10、退出配置" class="headerlink" title="10、退出配置"></a>10、退出配置</h4><p>这样基本配置我们就设置好了，我们退出这个根文件系统，然后取消挂载。设置好以后就可以退出根文件系统了，输入如下命令退出：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exit</span><br><span class="line">./mk.sh -u ./rootfs/</span><br></pre></td></tr></table></figure>
-
-<h4 id="11、将根文件系统下载进开发板中"><a href="#11、将根文件系统下载进开发板中" class="headerlink" title="11、将根文件系统下载进开发板中"></a>11、将根文件系统下载进开发板中</h4><p>之前我们在开发板上运行linux，使用的是老师给的。现在我们只改变了根文件系统，uboot和linux内核不变，所以我们修改原来的rootfs。为了做区别，我使用newrootfs为新的根文件系统的名称。</p>
-<ul>
-<li><p>1、我们要把newrootfs转移到opt目录下。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mv newrootfs /opt/</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>2、修改&#x2F;etc&#x2F;exports</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在主机终端执行</span><br><span class="line">sudo vi /etc/exports</span><br></pre></td></tr></table></figure>
-
-<p>  在文件中，加入下面这段话。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/opt/newrootfs *(rw,sync,no_root_squash,no_subtree_check)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>3、重新运行一下。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo exportfs -ra</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>4、重新启动开发板，在开始输出东西时，一直按下enter键。直到到进入U-boot模式。</p>
-<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203017.png"></p>
-<p>  第一个红框时U-boot的版本信息。</p>
-<p>  第二个是进入U-boot的结果。</p>
-</li>
-<li><p>5、输入下面命令，可以产看参数。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在U-Boot控制台执行</span><br><span class="line">printenv bootargs</span><br></pre></td></tr></table></figure>
-
-<p>  输出如下：</p>
-<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203258.png"></p>
-</li>
-<li><p>6、执行 <code>setenv</code> 命令修改 <code>bootargs</code> 环境变量：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setenv bootargs &#x27;root=/dev/nfs nfsroot=192.168.60.30:/opt/newrootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200&#x27;</span><br></pre></td></tr></table></figure>
-
-<p>  上面的截图是我修改过后的，原先是下面这样</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bootargs=root=/dev/nfs nfsroot=192.168.60.30:/opt/rootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>7、执行 <code>saveenv</code> 命令保存环境变量</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">saveenv</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>8、重启开发板，最后会看到下图：<br>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/204228.png"></p>
-</li>
-</ul>
-<p>到此在stm32mp157的开发板上就跑起来了linux。</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux移植</tag>
-        <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>驱动和设备匹配过程</title>
     <url>/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/</url>
     <content><![CDATA[<h1 id="匹配过程及其问题"><a href="#匹配过程及其问题" class="headerlink" title="匹配过程及其问题"></a>匹配过程及其问题</h1><h4 id="1、匹配过程"><a href="#1、匹配过程" class="headerlink" title="1、匹配过程"></a>1、匹配过程</h4><p>​	在linux驱动中，目前学到了三种编写代码的方式。</p>
@@ -1033,6 +1025,16 @@
         <tag>平台驱动</tag>
         <tag>平台设备</tag>
         <tag>平台匹配</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>测试文章</title>
+    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <content><![CDATA[<p>这是以个测试</p>
+<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
+]]></content>
+      <tags>
+        <tag>测试</tag>
       </tags>
   </entry>
   <entry>
