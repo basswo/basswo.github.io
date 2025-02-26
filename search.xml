@@ -62,6 +62,34 @@
       </tags>
   </entry>
   <entry>
+    <title>FreeRTOS</title>
+    <url>/2025/02/19/FreeRTOS/</url>
+    <content><![CDATA[<h1 id="FreeRTOS"><a href="#FreeRTOS" class="headerlink" title="FreeRTOS"></a>FreeRTOS</h1><p>以下内容是根据野火的<a href="https://weread.qq.com/web/reader/38f32720717e5b0b38f24a4ka87322c014a87ff679a21ea">FreeRTOS内核实现与应用开发实战指南</a> 以及AI搜索进行集合的记录。</p>
+<h3 id="为什么学习RTOS"><a href="#为什么学习RTOS" class="headerlink" title="为什么学习RTOS"></a>为什么学习RTOS</h3><p>我们进入嵌入式这个领域开始，首先在大学时开始接触电路、汇编以及51单片机，后来是stm32，在到操作系统RTOS、linux等。stm32和51都是裸机编程。常见的RTOS有国外的FreeRTOS、μC&#x2F;OS、RTX和国内的FreeRTOS、Huawei LiteOS和AliOS-Things等，其中，开源且免费的FreeRTOS的市场占有率最高。</p>
+<p>在裸机系统中，所有的程序都是自己来完成的，并且所有的操作或者实现的工程都是在一个无线的循环中的，但是现在的生活中的电子产品不在满足裸机开发，更加多的功能，更加复杂的需求，这些都需要由操作系统来实现。</p>
+<span id="more"></span>
+
+<h3 id="第一章初识FreeRTOS"><a href="#第一章初识FreeRTOS" class="headerlink" title="第一章	初识FreeRTOS"></a>第一章	初识FreeRTOS</h3><p>FreeRTOS于2018年被亚马逊收购，改名为AWS FreeRTOS，版本号升级为V10，且开源协议也由原来的GPLv2+修改为MIT，与GPLv2+相比，MIT更加开放，你完全可以理解为完全免费。V9以前的版本还是维持原样，V10版本相比于V9就是加入了一些物联网相关的组件，内核基本不变。亚马逊收购FreeRTOS也是为了进军物联网和人工智能领域。本书还是以V9版本来讲解。</p>
+<h3 id="第二章新建FreeRTOS工程"><a href="#第二章新建FreeRTOS工程" class="headerlink" title="第二章	新建FreeRTOS工程"></a>第二章	新建FreeRTOS工程</h3><h4 id="1、新建本地工程文件"><a href="#1、新建本地工程文件" class="headerlink" title="1、新建本地工程文件"></a>1、新建本地工程文件</h4><p>在开始创建工程之前，我们现在本地中新建一个文件夹用于存放工程，在该文件夹中新建各个文件夹和文件，下面是文件夹的包含关系和具体的作用。</p>
+<p><img src="/2025/02/19/FreeRTOS/151023.png" alt="工程文件夹根目录下的文件夹及其作用"> </p>
+<h4 id="2、使用keil创建工程"><a href="#2、使用keil创建工程" class="headerlink" title="2、使用keil创建工程"></a>2、使用keil创建工程</h4><h4 id="3、在keil工程中新建文件组"><a href="#3、在keil工程中新建文件组" class="headerlink" title="3、在keil工程中新建文件组"></a>3、在keil工程中新建文件组</h4><p>在工程中添加user、FreeRTOS&#x2F;Posrt、FreeRTOS&#x2F;source、doc这个几个文件组。</p>
+<h4 id="4、在keil工程中添加文件"><a href="#4、在keil工程中添加文件" class="headerlink" title="4、在keil工程中添加文件"></a>4、在keil工程中添加文件</h4><p>在工程中添加组后，需要将本地工程中新建的文件添加到工程中。</p>
+<h3 id="第三章裸机系统与多任务系统"><a href="#第三章裸机系统与多任务系统" class="headerlink" title="第三章	裸机系统与多任务系统"></a>第三章	裸机系统与多任务系统</h3><h4 id="1、裸机系统"><a href="#1、裸机系统" class="headerlink" title="1、裸机系统"></a>1、裸机系统</h4><p>裸机系统通常分为轮询系统和前后台系统。</p>
+<h5 id="轮询系统"><a href="#轮询系统" class="headerlink" title="轮询系统"></a>轮询系统</h5><p>轮询系统就是在裸机编程中，先编写硬件的相关初始化，然后在mian主程序中的while死循环中不断的循环，依次的实现功能。例如LED灯反转、串口输出等，只是按照顺序执行的功能；但是要是实现按键等操作，就需要检测外部信号，这时在用轮询系统，就会实时性大大降低。</p>
+<h5 id="前后台系统"><a href="#前后台系统" class="headerlink" title="前后台系统"></a>前后台系统</h5><p>相对于轮询系统，前后台系统就是在其基础上加入中断，前台依然按照顺序执行，但是当后台由中断产生时，前台就要停止手上的任务，执行后台的任务，只有当中断任务执行完成后，再返回执行刚才放下的前台任务。</p>
+<h4 id="2、多任务系统"><a href="#2、多任务系统" class="headerlink" title="2、多任务系统"></a>2、多任务系统</h4><p>相对于轮询系统、前后台系统，多任务系统优化的是前台。再前台按顺序执行的基础上，我们增加一个优先级功能。在多任务系统中，任务和中断都具有优先级，但是普遍中断的优先级都比任务的优先级高。所以当中断信号产生时，还是优先执行中断。而前台执行的任务那，就也有紧急的和不紧急的区别，高优先级的比低优先的任务优先执行。</p>
+<p>除了优先级还有优化了循环的问题。在前后台系统中，依然是在一个大循环中执行，而多任务系统中，我们可以根据程序的功能，把程序主体分为一个k一个独立的、互不干扰的的小任务。每个任务都具备优先级，由操作系统调度管理。</p>
+<p><img src="/2025/02/19/FreeRTOS/153950.png" alt="轮询、前后台、多任务系统的区别"></p>
+<h3 id="第四章数据结构–列表和列表项"><a href="#第四章数据结构–列表和列表项" class="headerlink" title="第四章	数据结构–列表和列表项"></a>第四章	数据结构–列表和列表项</h3>]]></content>
+      <categories>
+        <category>stm32</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>操作系统</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Pinctrl和GPIO子系统</title>
     <url>/2025/01/16/Pinctrl%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%92%8CGPIO%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
     <content><![CDATA[<h1 id="Pinctrl和GPIO子系统"><a href="#Pinctrl和GPIO子系统" class="headerlink" title="Pinctrl和GPIO子系统"></a>Pinctrl和GPIO子系统</h1><p><strong>引言</strong> </p>
@@ -130,7 +158,7 @@
 <li><p>在内核代码的&#x2F;home&#x2F;h&#x2F;h&#x2F;linux-5.4.31&#x2F;arch&#x2F;arm&#x2F;boot&#x2F;dts&#x2F;stm32mp157a-fsmp1a.dts目录下，添加设备树的节点。</p>
   <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">led_test2&#123;</span><br><span class="line">      compatible = &quot;h,led2&quot;;</span><br><span class="line">      led_name = &quot;led02&quot;;</span><br><span class="line">      led_minor = &lt;10&gt;;</span><br><span class="line">      gpios = &lt;&amp;gpioz 5 GPIO_ACTIVE_HIGH&gt;,</span><br><span class="line">              &lt;&amp;gpioz 6 GPIO_ACTIVE_HIGH&gt;,</span><br><span class="line">              &lt;&amp;gpioz 7 GPIO_ACTIVE_HIGH&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>其中gpios是在dts&#x2F;stm32mp151.dtsi文件中的gpioz节点中追加。</p>
+<li><p>s其中gpios是在dts&#x2F;stm32mp151.dtsi文件中的gpioz节点中追加。</p>
   <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">gpioz: gpio@54004000 &#123;</span><br><span class="line">    gpio-controller;</span><br><span class="line">    #gpio-cells = &lt;2&gt;;</span><br><span class="line">    interrupt-controller;</span><br><span class="line">    #interrupt-cells = &lt;2&gt;;</span><br><span class="line">    reg = &lt;0 0x400&gt;;</span><br><span class="line">    clocks = &lt;&amp;scmi0_clk CK_SCMI0_GPIOZ&gt;;</span><br><span class="line">    st,bank-name = &quot;GPIOZ&quot;;</span><br><span class="line">    st,bank-ioport = &lt;11&gt;;</span><br><span class="line">    status = &quot;disabled&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>重新编译设备树。运行下面命令。</p>
@@ -232,9 +260,108 @@
 ]]></content>
   </entry>
   <entry>
+    <title>OTA远程更新</title>
+    <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
+    <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
+<span id="more"></span>
+
+<h4 id="1、基本原理"><a href="#1、基本原理" class="headerlink" title="1、基本原理"></a>1、基本原理</h4><p>stm32的OTA升级，简单的来说就是通过某种痛惜方式（例如串口，WIFI，4G等）将新的固件程序下载到STM32的Flash存储器中，然后通过引导程序（Bootloader）将新的固件程序启动起来，从而实现程序的更新。</p>
+<p>要是实现OTA，至少需要两个程序：</p>
+<ul>
+<li>Bootloader程序：负责接收新的固件程序，将其写入到Flash，并在必要时启动新的固件程序。Bootloader程序通常是固定的，不会被OTA更新。</li>
+<li>应用程序（APP）：这是用户实际运行的程序，会被OTA更新。</li>
+</ul>
+<h4 id="2、工程准备"><a href="#2、工程准备" class="headerlink" title="2、工程准备"></a>2、工程准备</h4><ul>
+<li><p>使用stm32F103C8T6开发板。</p>
+</li>
+<li><p>使用软件STM32CubelIDE软件。</p>
+</li>
+<li><p>创建工程</p>
+<ul>
+<li>在STM32CubeIDE中，选择“File” -&gt; “New” -&gt; “STM32 Project”。</li>
+<li>在“Target Selection”窗口中，搜索并选择“STM32F103C8Tx”，然后点击“Next”</li>
+<li>在“Project Name”中输入“Bootloader”，然后点击“Next”。</li>
+<li>在“Initialise all peripherals with their default Mode?”界面<strong>务必选择“No”</strong>。这将允许我们手动配置所需的外设，避免不必要的代码和潜在的冲突。然后点击“Finish”。</li>
+</ul>
+</li>
+<li><p>配置时钟</p>
+<ul>
+<li>双击项目根目录下的 <code>.ioc</code> 文件（例如 <code>Bootloader.ioc</code>），打开STM32CubeMX配置界面。</li>
+<li>在左侧的“System Core”中选择“RCC”。</li>
+<li>在“HSE”下拉菜单中选择“Crystal&#x2F;Ceramic Resonator”（假设你使用外部晶振）。<ul>
+<li>菜单中选择项的解释：</li>
+<li><strong>Disable</strong> ：禁用</li>
+<li><strong>Bypass Clock Source（旁路时钟源）</strong> ：选择此项表示使用外部时钟源直接输入到 MCU，绕过内部的振荡器电路。这意味着外部提供一个稳定的时钟信号到 OSC_IN 引脚，而 OSC_OUT 引脚则悬空。使用此选项时，外部时钟源必须已经产生稳定的时钟信号。</li>
+<li><strong>Crystal&#x2F;Ceramic Resonator（晶体&#x2F;陶瓷谐振器）</strong>：选择此项表示使用外部晶体或陶瓷谐振器作为时钟源。这是最常见的配置方式。在这种模式下，晶振连接到 OSC_IN 和 OSC_OUT 引脚，并且通常需要配合合适的负载电容使用，以确保晶振正常起振</li>
+</ul>
+</li>
+<li>在“PLLCLK”选项卡中配置PLL倍频器，将系统时钟配置为72MHz。通常的配置是：<ul>
+<li>PLL Source Mux: HSE</li>
+<li>PLL Multiplier: x9</li>
+</ul>
+</li>
+<li>确认“SYSCLK”显示为72MHz。</li>
+<li>保存 <code>.ioc</code> 文件（Ctrl+S 或 File -&gt; Save），STM32CubeIDE会自动生成或更新代码。</li>
+</ul>
+</li>
+<li><p>配置串口</p>
+<ul>
+<li>在左侧的“Connectivity”中选择“USART1”。</li>
+<li>在中间的配置界面中：<ul>
+<li>“Mode”选择“Asynchronous”。（异步，还有其他几个选择，）<ul>
+<li>Mode选择项：</li>
+<li><strong>Asynchronous（异步模式）</strong>：这是 USART 最常用的模式。在这种模式下，数据传输不需要单独的时钟线进行同步，而是通过起始位、数据位、校验位和停止位来定义数据帧的结构。发送方和接收方需要预先约定好波特率（即每秒传输的比特数），以确保数据能够正确传输。</li>
+<li><strong>Synchronous（同步模式）</strong>：在这种模式下，数据传输需要一根额外的时钟线（通常称为 SCLK 或 CK）进行同步。发送方提供时钟信号，接收方根据时钟信号进行数据的采样和接收。</li>
+<li><strong>Single Wire (Half-Duplex)（单线（半双工）模式）</strong>：在这种模式下，USART 使用同一根线进行发送和接收，但不能同时进行。</li>
+<li><strong>Multiprocessor Communication（多处理器通信模式）</strong>：这种模式允许多个处理器通过同一条 USART 总线进行通信。在这种模式下，每个处理器都有一个唯一的地址。</li>
+<li><strong>IrDA（红外数据协会）</strong>：这种模式支持红外线通信协议。</li>
+<li><strong>LIN（本地互联网络）</strong>：LIN 是一种低成本的串行通信协议，常用于汽车电子等领域。</li>
+<li><strong>SmartCard（智能卡模式）</strong>：这种模式支持智能卡（例如 SIM 卡、银行卡）的通信协议。</li>
+</ul>
+</li>
+<li>“Baud Rate”设置为115200（或其他你需要的波特率）。</li>
+<li>“Word Length”选择“8 Bits”。</li>
+<li>“Parity”选择“None”。（奇偶校验）</li>
+<li>“Stop Bits”选择“1 Stop Bit”。</li>
+<li>使能“NVIC Settings”中的USART1全局中断。这将在之后允许我们使用中断方式接收串口数据（虽然在之前的简化版本中未使用中断，但这是一个良好的习惯，后续会用到）。</li>
+</ul>
+</li>
+<li>保存 <code>.ioc</code> 文件。</li>
+</ul>
+</li>
+<li><p>配置Flash分区</p>
+<ul>
+<li><p>在项目资源管理器中，展开“Bootloader”项目，打开 <code>STM32F103C8Tx_FLASH.ld</code> 文件。</p>
+</li>
+<li><p>找到以下代码段：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 64K</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将其修改为：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K</span><br></pre></td></tr></table></figure>
+
+<p>  这会将Flash的前16KB分配给Bootloader。应用程序将从<code>0x08004000</code>开始。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3、代码编辑"><a href="#3、代码编辑" class="headerlink" title="3、代码编辑"></a>3、代码编辑</h4><ul>
+<li>串口接收数据</li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>OTA</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu根文件系统移植</title>
     <url>/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><h3 id="移植前的准备"><a href="#移植前的准备" class="headerlink" title="移植前的准备"></a>移植前的准备</h3><p>在移植之前，我们首先要在电脑上安装Ubuntu。在ubuntu中的终端操作下面步骤。</p>
+    <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><p>现在有更好的教程了。还是两个结合的看把。</p>
+<p><a href="https://blog.csdn.net/weixin_51963312/article/details/142416613?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%B0%86ubuntu%E7%A7%BB%E6%A4%8D%E5%88%B0stm32mp157%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E3%80%82&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-142416613.142%5Ev101%5Epc_search_result_base8&spm=1018.2226.3001.4187">https://blog.csdn.net/weixin_51963312/article/details/142416613?ops_request_misc=&amp;request_id=&amp;biz_id=102&amp;utm_term=%E5%B0%86ubuntu%E7%A7%BB%E6%A4%8D%E5%88%B0stm32mp157%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E3%80%82&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-142416613.142^v101^pc_search_result_base8&amp;spm=1018.2226.3001.4187</a></p>
+<h3 id="移植前的准备"><a href="#移植前的准备" class="headerlink" title="移植前的准备"></a>移植前的准备</h3><p>在移植之前，我们首先要在电脑上安装Ubuntu。在ubuntu中的终端操作下面步骤。</p>
 <p>在移植之前我们需要一个辅助工具，用来对根文件系统进行一个基本的搭建，就能模拟出根文件系统运行的状态。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install qemu-user-static</span><br></pre></td></tr></table></figure>
 
@@ -354,298 +481,9 @@
       </tags>
   </entry>
   <entry>
-    <title>杂项设备</title>
-    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
-    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
-<li><p>概念：</p>
-<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
-</li>
-<li><p>特点：</p>
-<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
-<p>  结构简单</p>
-<p>  提供基本的读写操作接口</p>
-</li>
-</ul>
-<span id="more"></span>
-
-<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
-
-<p>​	2、定义文件操作结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	3、定义杂项设备结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	参数：</p>
-<pre><code>	* minor：次设备号。
-	* name：设备节点名称。
-	* fops：文件操作结构体指针。
-	* 其他的用到的不多，用到可以在搜。
-</code></pre>
-<p>​	4、注册杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	5、注销杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
-
-
-
-<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
-<li><p>创建设备节点：</p>
-<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
-</li>
-<li><p>应用程序访问：</p>
-<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>杂项设备</tag>
-        <tag>平台总线</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>FreeRTOS</title>
-    <url>/2025/02/19/FreeRTOS/</url>
-    <content><![CDATA[<h1 id="FreeRTOS"><a href="#FreeRTOS" class="headerlink" title="FreeRTOS"></a>FreeRTOS</h1><p>以下内容是根据野火的<a href="https://weread.qq.com/web/reader/38f32720717e5b0b38f24a4ka87322c014a87ff679a21ea">FreeRTOS内核实现与应用开发实战指南</a> 以及AI搜索进行集合的记录。</p>
-<h3 id="为什么学习RTOS"><a href="#为什么学习RTOS" class="headerlink" title="为什么学习RTOS"></a>为什么学习RTOS</h3><p>我们进入嵌入式这个领域开始，首先在大学时开始接触电路、汇编以及51单片机，后来是stm32，在到操作系统RTOS、linux等。stm32和51都是裸机编程。常见的RTOS有国外的FreeRTOS、μC&#x2F;OS、RTX和国内的FreeRTOS、Huawei LiteOS和AliOS-Things等，其中，开源且免费的FreeRTOS的市场占有率最高。</p>
-<p>在裸机系统中，所有的程序都是自己来完成的，并且所有的操作或者实现的工程都是在一个无线的循环中的，但是现在的生活中的电子产品不在满足裸机开发，更加多的功能，更加复杂的需求，这些都需要由操作系统来实现。</p>
-<span id="more"></span>
-
-<h3 id="第一章初识FreeRTOS"><a href="#第一章初识FreeRTOS" class="headerlink" title="第一章	初识FreeRTOS"></a>第一章	初识FreeRTOS</h3><p>FreeRTOS于2018年被亚马逊收购，改名为AWS FreeRTOS，版本号升级为V10，且开源协议也由原来的GPLv2+修改为MIT，与GPLv2+相比，MIT更加开放，你完全可以理解为完全免费。V9以前的版本还是维持原样，V10版本相比于V9就是加入了一些物联网相关的组件，内核基本不变。亚马逊收购FreeRTOS也是为了进军物联网和人工智能领域。本书还是以V9版本来讲解。</p>
-<h3 id="第二章新建FreeRTOS工程"><a href="#第二章新建FreeRTOS工程" class="headerlink" title="第二章	新建FreeRTOS工程"></a>第二章	新建FreeRTOS工程</h3><h4 id="1、新建本地工程文件"><a href="#1、新建本地工程文件" class="headerlink" title="1、新建本地工程文件"></a>1、新建本地工程文件</h4><p>在开始创建工程之前，我们现在本地中新建一个文件夹用于存放工程，在该文件夹中新建各个文件夹和文件，下面是文件夹的包含关系和具体的作用。</p>
-<p><img src="/2025/02/19/FreeRTOS/151023.png" alt="工程文件夹根目录下的文件夹及其作用"> </p>
-<h4 id="2、使用keil创建工程"><a href="#2、使用keil创建工程" class="headerlink" title="2、使用keil创建工程"></a>2、使用keil创建工程</h4><h4 id="3、在keil工程中新建文件组"><a href="#3、在keil工程中新建文件组" class="headerlink" title="3、在keil工程中新建文件组"></a>3、在keil工程中新建文件组</h4><p>在工程中添加user、FreeRTOS&#x2F;Posrt、FreeRTOS&#x2F;source、doc这个几个文件组。</p>
-<h4 id="4、在keil工程中添加文件"><a href="#4、在keil工程中添加文件" class="headerlink" title="4、在keil工程中添加文件"></a>4、在keil工程中添加文件</h4><p>在工程中添加组后，需要将本地工程中新建的文件添加到工程中。</p>
-<h3 id="第三章裸机系统与多任务系统"><a href="#第三章裸机系统与多任务系统" class="headerlink" title="第三章	裸机系统与多任务系统"></a>第三章	裸机系统与多任务系统</h3><h4 id="1、裸机系统"><a href="#1、裸机系统" class="headerlink" title="1、裸机系统"></a>1、裸机系统</h4><p>裸机系统通常分为轮询系统和前后台系统。</p>
-<h5 id="轮询系统"><a href="#轮询系统" class="headerlink" title="轮询系统"></a>轮询系统</h5><p>轮询系统就是在裸机编程中，先编写硬件的相关初始化，然后在mian主程序中的while死循环中不断的循环，依次的实现功能。例如LED灯反转、串口输出等，只是按照顺序执行的功能；但是要是实现按键等操作，就需要检测外部信号，这时在用轮询系统，就会实时性大大降低。</p>
-<h5 id="前后台系统"><a href="#前后台系统" class="headerlink" title="前后台系统"></a>前后台系统</h5><p>相对于轮询系统，前后台系统就是在其基础上加入中断，前台依然按照顺序执行，但是当后台由中断产生时，前台就要停止手上的任务，执行后台的任务，只有当中断任务执行完成后，再返回执行刚才放下的前台任务。</p>
-<h4 id="2、多任务系统"><a href="#2、多任务系统" class="headerlink" title="2、多任务系统"></a>2、多任务系统</h4><p>相对于轮询系统、前后台系统，多任务系统优化的是前台。再前台按顺序执行的基础上，我们增加一个优先级功能。在多任务系统中，任务和中断都具有优先级，但是普遍中断的优先级都比任务的优先级高。所以当中断信号产生时，还是优先执行中断。而前台执行的任务那，就也有紧急的和不紧急的区别，高优先级的比低优先的任务优先执行。</p>
-<p>除了优先级还有优化了循环的问题。在前后台系统中，依然是在一个大循环中执行，而多任务系统中，我们可以根据程序的功能，把程序主体分为一个k一个独立的、互不干扰的的小任务。每个任务都具备优先级，由操作系统调度管理。</p>
-<p><img src="/2025/02/19/FreeRTOS/153950.png" alt="轮询、前后台、多任务系统的区别"></p>
-<h3 id="第四章数据结构–列表和列表项"><a href="#第四章数据结构–列表和列表项" class="headerlink" title="第四章	数据结构–列表和列表项"></a>第四章	数据结构–列表和列表项</h3>]]></content>
-      <categories>
-        <category>stm32</category>
-      </categories>
-      <tags>
-        <tag>stm32学习</tag>
-        <tag>操作系统</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>测试文章</title>
-    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
-    <content><![CDATA[<p>这是以个测试</p>
-<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
-]]></content>
-      <tags>
-        <tag>测试</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>OTA远程更新</title>
-    <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
-    <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
-<span id="more"></span>
-
-<h4 id="1、基本原理"><a href="#1、基本原理" class="headerlink" title="1、基本原理"></a>1、基本原理</h4><p>stm32的OTA升级，简单的来说就是通过某种痛惜方式（例如串口，WIFI，4G等）将新的固件程序下载到STM32的Flash存储器中，然后通过引导程序（Bootloader）将新的固件程序启动起来，从而实现程序的更新。</p>
-<p>要是实现OTA，至少需要两个程序：</p>
-<ul>
-<li>Bootloader程序：负责接收新的固件程序，将其写入到Flash，并在必要时启动新的固件程序。Bootloader程序通常是固定的，不会被OTA更新。</li>
-<li>应用程序（APP）：这是用户实际运行的程序，会被OTA更新。</li>
-</ul>
-<h4 id="2、工程准备"><a href="#2、工程准备" class="headerlink" title="2、工程准备"></a>2、工程准备</h4><ul>
-<li><p>使用stm32F103C8T6开发板。</p>
-</li>
-<li><p>使用软件STM32CubelIDE软件。</p>
-</li>
-<li><p>创建工程</p>
-<ul>
-<li>在STM32CubeIDE中，选择“File” -&gt; “New” -&gt; “STM32 Project”。</li>
-<li>在“Target Selection”窗口中，搜索并选择“STM32F103C8Tx”，然后点击“Next”</li>
-<li>在“Project Name”中输入“Bootloader”，然后点击“Next”。</li>
-<li>在“Initialise all peripherals with their default Mode?”界面<strong>务必选择“No”</strong>。这将允许我们手动配置所需的外设，避免不必要的代码和潜在的冲突。然后点击“Finish”。</li>
-</ul>
-</li>
-<li><p>配置时钟</p>
-<ul>
-<li>双击项目根目录下的 <code>.ioc</code> 文件（例如 <code>Bootloader.ioc</code>），打开STM32CubeMX配置界面。</li>
-<li>在左侧的“System Core”中选择“RCC”。</li>
-<li>在“HSE”下拉菜单中选择“Crystal&#x2F;Ceramic Resonator”（假设你使用外部晶振）。<ul>
-<li>菜单中选择项的解释：</li>
-<li><strong>Disable</strong> ：禁用</li>
-<li><strong>Bypass Clock Source（旁路时钟源）</strong> ：选择此项表示使用外部时钟源直接输入到 MCU，绕过内部的振荡器电路。这意味着外部提供一个稳定的时钟信号到 OSC_IN 引脚，而 OSC_OUT 引脚则悬空。使用此选项时，外部时钟源必须已经产生稳定的时钟信号。</li>
-<li><strong>Crystal&#x2F;Ceramic Resonator（晶体&#x2F;陶瓷谐振器）</strong>：选择此项表示使用外部晶体或陶瓷谐振器作为时钟源。这是最常见的配置方式。在这种模式下，晶振连接到 OSC_IN 和 OSC_OUT 引脚，并且通常需要配合合适的负载电容使用，以确保晶振正常起振</li>
-</ul>
-</li>
-<li>在“PLLCLK”选项卡中配置PLL倍频器，将系统时钟配置为72MHz。通常的配置是：<ul>
-<li>PLL Source Mux: HSE</li>
-<li>PLL Multiplier: x9</li>
-</ul>
-</li>
-<li>确认“SYSCLK”显示为72MHz。</li>
-<li>保存 <code>.ioc</code> 文件（Ctrl+S 或 File -&gt; Save），STM32CubeIDE会自动生成或更新代码。</li>
-</ul>
-</li>
-<li><p>配置串口</p>
-<ul>
-<li>在左侧的“Connectivity”中选择“USART1”。</li>
-<li>在中间的配置界面中：<ul>
-<li>“Mode”选择“Asynchronous”。（异步，还有其他几个选择，）<ul>
-<li>Mode选择项：</li>
-<li><strong>Asynchronous（异步模式）</strong>：这是 USART 最常用的模式。在这种模式下，数据传输不需要单独的时钟线进行同步，而是通过起始位、数据位、校验位和停止位来定义数据帧的结构。发送方和接收方需要预先约定好波特率（即每秒传输的比特数），以确保数据能够正确传输。</li>
-<li><strong>Synchronous（同步模式）</strong>：在这种模式下，数据传输需要一根额外的时钟线（通常称为 SCLK 或 CK）进行同步。发送方提供时钟信号，接收方根据时钟信号进行数据的采样和接收。</li>
-<li><strong>Single Wire (Half-Duplex)（单线（半双工）模式）</strong>：在这种模式下，USART 使用同一根线进行发送和接收，但不能同时进行。</li>
-<li><strong>Multiprocessor Communication（多处理器通信模式）</strong>：这种模式允许多个处理器通过同一条 USART 总线进行通信。在这种模式下，每个处理器都有一个唯一的地址。</li>
-<li><strong>IrDA（红外数据协会）</strong>：这种模式支持红外线通信协议。</li>
-<li><strong>LIN（本地互联网络）</strong>：LIN 是一种低成本的串行通信协议，常用于汽车电子等领域。</li>
-<li><strong>SmartCard（智能卡模式）</strong>：这种模式支持智能卡（例如 SIM 卡、银行卡）的通信协议。</li>
-</ul>
-</li>
-<li>“Baud Rate”设置为115200（或其他你需要的波特率）。</li>
-<li>“Word Length”选择“8 Bits”。</li>
-<li>“Parity”选择“None”。（奇偶校验）</li>
-<li>“Stop Bits”选择“1 Stop Bit”。</li>
-<li>使能“NVIC Settings”中的USART1全局中断。这将在之后允许我们使用中断方式接收串口数据（虽然在之前的简化版本中未使用中断，但这是一个良好的习惯，后续会用到）。</li>
-</ul>
-</li>
-<li>保存 <code>.ioc</code> 文件。</li>
-</ul>
-</li>
-<li><p>配置Flash分区</p>
-<ul>
-<li><p>在项目资源管理器中，展开“Bootloader”项目，打开 <code>STM32F103C8Tx_FLASH.ld</code> 文件。</p>
-</li>
-<li><p>找到以下代码段：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 64K</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>将其修改为：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K</span><br></pre></td></tr></table></figure>
-
-<p>  这会将Flash的前16KB分配给Bootloader。应用程序将从<code>0x08004000</code>开始。</p>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="3、代码编辑"><a href="#3、代码编辑" class="headerlink" title="3、代码编辑"></a>3、代码编辑</h4><ul>
-<li>串口接收数据</li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32</category>
-      </categories>
-      <tags>
-        <tag>stm32学习</tag>
-        <tag>OTA</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>驱动和设备匹配过程</title>
-    <url>/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/</url>
-    <content><![CDATA[<h1 id="匹配过程及其问题"><a href="#匹配过程及其问题" class="headerlink" title="匹配过程及其问题"></a>匹配过程及其问题</h1><h4 id="1、匹配过程"><a href="#1、匹配过程" class="headerlink" title="1、匹配过程"></a>1、匹配过程</h4><p>​	在linux驱动中，目前学到了三种编写代码的方式。</p>
-<ul>
-<li><p>第一种：传统编写。驱动和硬件写在一起，让linux内核和硬件交织在一起，这是早期linux开发的编写方式，不推荐使用，可以在初学时看看，也可以不看，不影响。</p>
-</li>
-<li><p>第二种：使驱动和设备硬件分开编写。pdrv主要编写linux的内核代码，pdev主要关于硬件的资源。分开有利管理，但是当设备多了之后，又出现了问题，代码太多，太繁。</p>
-</li>
-<li><p>第三种：使用设备树。驱动的代码基本不变，修改设备硬件的代码，把使用的设备硬件汇总为一个设备树的结构，每个节点都是一个设备硬件，代码简单、方便、便于移植。</p>
-<span id="more"></span></li>
-</ul>
-<p>第一种不说了。主要讲第二、三种的匹配过程，阅读一下内核源码，看一下整个流程。（目前刚刚开始学习不久，仅仅学到设备树，所以就目前掌握的开始写和搜的，如果以后学习到更深，在回来补充）</p>
-<ul>
-<li><p>平台总线的平台驱动和平台设备匹配过程</p>
-<ul>
-<li><p>1、首先先讲解两个函数。平台设备注册int platform_device_register(struct <em>platform_device</em> *)；平台驱动注册platform_driver_register(<em>drv</em>)。这是两个注册函数，将我们自定义的平台设备和平台驱动注册到平台总线中去。他们会在平台总线中相遇，至于怎么找到双方，那就要有一个信物，两者个持一个，匹配上了就会成功。这个信物就是name（名称），下面会讲解。</p>
-<ul>
-<li><p><em><em>平台设备注册：int platform_device_register(struct platform_device pdev</em>)</em>* </p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_register(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	device_initialize(&amp;pdev-&gt;dev);</span><br><span class="line">	setup_pdev_dma_masks(pdev);</span><br><span class="line">	return platform_device_add(pdev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>在平台设备注册函数中主要完成下面任务：</p>
-<p>  1、初始化struct platform_device结构体中的struct device结构体。[它将平台设备纳入到 Linux 设备模型中，使其能够被设备模型管理和访问。](#####1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？)</p>
-<p>  2、关于DMA的，这个函数用于设置设备的 DMA (Direct Memory Access) 掩码。DMA 允许设备直接访问内存，而无需 CPU 的干预，从而提高数据传输效率。DMA 掩码用于限制设备可以访问的内存地址范围。</p>
-<p>  3、这个函数是平台设备的注册的真正执行着，将平台设备添加到平台总线的设备列表中。触发驱动程序等到匹配。</p>
-</li>
-<li><p><strong>在platform_device_add(pdev);函数中，找到源码解读。</strong><br>  1、参数检查和初始化</p>
-<ul>
-<li>首先检查pdev指针是否为空。</li>
-<li>如果pdev的父设备为空，则将其设置成平台总线。（可见平台总线相当于根节点，下面挂着一串平台设备列表）</li>
-<li>设备pdev的总线类型为平台总线类型（platform_bus_type）（<a href="#####2%E3%80%81%E5%B9%B3%E5%8F%B0%E6%80%BB%E7%BA%BF%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%B9%B3%E5%8F%B0%E5%8C%B9%E9%85%8D%E7%9A%84%E5%85%B3%E7%B3%BB">这个平台总线类型是平台匹配的重要部分</a>）。</li>
-</ul>
-<p>  2、设置设备名称</p>
-<ul>
-<li>根据 <code>pdev-&gt;id</code>的值，使用<code>dev_set_name</code>函数设备<code>pdev</code>的设备名称。</li>
-<li>如果<code>pdev-&gt;id</code>为默认值，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id</code>。</li>
-<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_NONE</code>，则将名称设置为<code>pdev-&gt;name</code>。</li>
-<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_AUTO</code>，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id.auto</code>。</li>
-</ul>
-<p>  3、注册设备资源</p>
-<ul>
-<li>遍历<code>pdev-&gt;resource</code> 数组，该数组中存放着设备使用的资源信息（例如内存地址、中断号等）</li>
-<li>为每个资源设置名称</li>
-<li>为每个资源设置父资源</li>
-</ul>
-<p>  4、添加设备</p>
-<ul>
-<li>打印注册信息</li>
-<li>调用 <code>device_add</code> 函数将设备添加到linux设备模型中。</li>
-</ul>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_add(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	u32 i;</span><br><span class="line">	int ret;</span><br><span class="line"></span><br><span class="line">	if (!pdev)</span><br><span class="line">		return -EINVAL;</span><br><span class="line"></span><br><span class="line">	if (!pdev-&gt;dev.parent)</span><br><span class="line">		pdev-&gt;dev.parent = &amp;platform_bus;</span><br><span class="line"></span><br><span class="line">	pdev-&gt;dev.bus = &amp;platform_bus_type;</span><br><span class="line"></span><br><span class="line">	switch (pdev-&gt;id) &#123;</span><br><span class="line">	default:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d&quot;, pdev-&gt;name,  pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_NONE:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s&quot;, pdev-&gt;name);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_AUTO:</span><br><span class="line">		/*</span><br><span class="line">		 * Automatically allocated device ID. We mark it as such so</span><br><span class="line">		 * that we remember it must be freed, and we append a suffix</span><br><span class="line">		 * to avoid namespace collision with explicit IDs.</span><br><span class="line">		 */</span><br><span class="line">		ret = ida_simple_get(&amp;platform_devid_ida, 0, 0, GFP_KERNEL);</span><br><span class="line">		if (ret &lt; 0)</span><br><span class="line">			goto err_out;</span><br><span class="line">		pdev-&gt;id = ret;</span><br><span class="line">		pdev-&gt;id_auto = true;</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d.auto&quot;, pdev-&gt;name, pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	for (i = 0; i &lt; pdev-&gt;num_resources; i++) &#123;</span><br><span class="line">		struct resource *p, *r = &amp;pdev-&gt;resource[i];</span><br><span class="line"></span><br><span class="line">		if (r-&gt;name == NULL)</span><br><span class="line">			r-&gt;name = dev_name(&amp;pdev-&gt;dev);</span><br><span class="line"></span><br><span class="line">		p = r-&gt;parent;</span><br><span class="line">		if (!p) &#123;</span><br><span class="line">			if (resource_type(r) == IORESOURCE_MEM)</span><br><span class="line">				p = &amp;iomem_resource;</span><br><span class="line">			else if (resource_type(r) == IORESOURCE_IO)</span><br><span class="line">				p = &amp;ioport_resource;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if (p) &#123;</span><br><span class="line">			ret = insert_resource(p, r);</span><br><span class="line">			if (ret) &#123;</span><br><span class="line">				dev_err(&amp;pdev-&gt;dev, &quot;failed to claim resource %d: %pR\n&quot;, i, r);</span><br><span class="line">				goto failed;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Registering platform device &#x27;%s&#x27;. Parent at %s\n&quot;,</span><br><span class="line">		 dev_name(&amp;pdev-&gt;dev), dev_name(pdev-&gt;dev.parent));</span><br><span class="line"></span><br><span class="line">	ret = device_add(&amp;pdev-&gt;dev);</span><br><span class="line">	if (ret == 0)</span><br><span class="line">		return ret;</span><br><span class="line"></span><br><span class="line"> failed:</span><br><span class="line">	if (pdev-&gt;id_auto) &#123;</span><br><span class="line">		ida_simple_remove(&amp;platform_devid_ida, pdev-&gt;id);</span><br><span class="line">		pdev-&gt;id = PLATFORM_DEVID_AUTO;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	while (i--) &#123;</span><br><span class="line">		struct resource *r = &amp;pdev-&gt;resource[i];</span><br><span class="line">		if (r-&gt;parent)</span><br><span class="line">			release_resource(r);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"> err_out:</span><br><span class="line">	return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>注册平台设备需要一个struct platform_device *<em>pdev</em>结构体，具体内容如下：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct platform_device &#123;</span><br><span class="line">	const char	*name;</span><br><span class="line">	int		id;</span><br><span class="line">	bool		id_auto;</span><br><span class="line">	struct device	dev;</span><br><span class="line">	u64		platform_dma_mask;</span><br><span class="line">	u32		num_resources;</span><br><span class="line">	struct resource	*resource;</span><br><span class="line"></span><br><span class="line">	const struct platform_device_id	*id_entry;</span><br><span class="line">	char *driver_override; /* Driver name to force a match */</span><br><span class="line"></span><br><span class="line">	/* MFD cell pointer */</span><br><span class="line">	struct mfd_cell *mfd_cell;</span><br><span class="line"></span><br><span class="line">	/* arch specific additions */</span><br><span class="line">	struct pdev_archdata	archdata;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p><strong>平台驱动注册函数platform_driver_register(<em>drv</em>)</strong> </p>
-<ul>
-<li><p>在linux内核代码中定义了一个宏定义关于平台驱动注册函数。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define platform_driver_register(drv) \</span><br><span class="line">	__platform_driver_register(drv, THIS_MODULE)</span><br><span class="line">extern int __platform_driver_register(struct platform_driver *,</span><br><span class="line">					struct module *);</span><br></pre></td></tr></table></figure>
-
-<p>  在其中我们可以看到platform_driver_register是通过宏定义代表__platform_driver_register这个函数的。在函数中有两个参数分别是platform_driver *、struct module *。其中我们重要关心的是platform_driver 结构体，这里的和上面已经讲过的platform_device一样，是在linux内核定义好的设备框架基础上田间自定义的构建成的。</p>
-</li>
-<li><p>在__platform_driver_register结构体中的源码如下：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int __platform_driver_register(struct platform_driver *drv,</span><br><span class="line">				struct module *owner)</span><br><span class="line">&#123;</span><br><span class="line">	drv-&gt;driver.owner = owner;</span><br><span class="line">	drv-&gt;driver.bus = &amp;platform_bus_type;</span><br><span class="line">	drv-&gt;driver.probe = platform_drv_probe;</span><br><span class="line">	drv-&gt;driver.remove = platform_drv_remove;</span><br><span class="line">	drv-&gt;driver.shutdown = platform_drv_shutdown;</span><br><span class="line"></span><br><span class="line">	return driver_register(&amp;drv-&gt;driver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>  首先对driver进行一些初始化。在其中我们关心的是<code>drv-&gt;driver.bus = &amp;platform_bus_type;</code> 、<code>drv-&gt;driver.probe = platform_drv_probe;</code>、 <code>drv-&gt;driver.remove = platform_drv_remove;</code> 这三个行代码，其中driver.bus指定了总线类型，也是与设备匹配的关键。下面两个probe、remove两个是一个中间层函数，他们会获取platform_device的信息，然后调用我们在platform_device中自定义的probe函数。</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="2、匹配中的各种问题"><a href="#2、匹配中的各种问题" class="headerlink" title="2、匹配中的各种问题"></a>2、匹配中的各种问题</h4><h5 id="1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？"><a href="#1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？" class="headerlink" title="1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？"></a>1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？</h5><p>​	1、struct device是linux设备模型的基础，所有的设备都必须通过struct device纳入到设备模型中才能够被内核有效的管理。</p>
-<p>​	2、linux设备模型是内核中用于管理所有设备的框架，它提供了一套统一的接口和机制。在linux中所有的设备，例如平台设备、PCI设备、USB设备，这些统一是在框架的基础上写入一些自定义的构成的。</p>
-<h5 id="2、平台总线类型和平台匹配的关系。"><a href="#2、平台总线类型和平台匹配的关系。" class="headerlink" title="2、平台总线类型和平台匹配的关系。"></a>2、平台总线类型和平台匹配的关系。</h5><p>​	1、平台总线类型的源码如下，其中 <code>struct bus_type platform_bus_type</code> 定义了平台总线的类型。在liunx设备模型中，总线类型是链接设备和驱动程序的桥梁。平台总线是一中虚拟的总线，用于管理那些无法通过标准总线（如PCI、USB）枚举的设备。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct bus_type platform_bus_type = &#123;</span><br><span class="line">	.name		= &quot;platform&quot;,</span><br><span class="line">	.dev_groups	= platform_dev_groups,</span><br><span class="line">	.match		= platform_match,</span><br><span class="line">	.uevent		= platform_uevent,</span><br><span class="line">	.dma_configure	= platform_dma_configure,</span><br><span class="line">	.pm		= &amp;platform_dev_pm_ops,</span><br><span class="line">&#125;;</span><br><span class="line">struct bus_type &#123;</span><br><span class="line">	const char		*name;</span><br><span class="line">	const char		*dev_name;</span><br><span class="line">	struct device		*dev_root;</span><br><span class="line">	const struct attribute_group **bus_groups;</span><br><span class="line">	const struct attribute_group **dev_groups;</span><br><span class="line">	const struct attribute_group **drv_groups;</span><br><span class="line"></span><br><span class="line">	int (*match)(struct device *dev, struct device_driver *drv);</span><br><span class="line">	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);</span><br><span class="line">	int (*probe)(struct device *dev);</span><br><span class="line">	int (*remove)(struct device *dev);</span><br><span class="line">	void (*shutdown)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*online)(struct device *dev);</span><br><span class="line">	int (*offline)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*suspend)(struct device *dev, pm_message_t state);</span><br><span class="line">	int (*resume)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*num_vf)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*dma_configure)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	const struct dev_pm_ops *pm;</span><br><span class="line"></span><br><span class="line">	const struct iommu_ops *iommu_ops;</span><br><span class="line"></span><br><span class="line">	struct subsys_private *p;</span><br><span class="line">	struct lock_class_key lock_key;</span><br><span class="line"></span><br><span class="line">	bool need_parent_lock;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>2、在上面说的两个结构体中，有两个函数关乎与匹配相关。<code>.match		= platform_match,</code> 、<code>int (*match)(struct device *dev, struct device_driver *drv);</code> 。下面是 <code>platform_match</code> 的代码。</p>
-<ul>
-<li>在开始时传入设备和驱动的结构体。</li>
-<li>检查 <code>driver_override</code> 参数是 否被设置。<code>driver_override</code> 允许用户强制指定设备要使用的驱动程序。</li>
-<li>首先尝试使用设备树，在<code>of_driver_match_device</code> 函数中会根据设备树中的 <code>compatible</code> 属性里匹配设备和驱动程序。成功则直接返回。</li>
-<li>然后在尝试ACPI（Advanced Configuration and Power Interface）进行匹配。在 <code>acpi_driver_match_device</code> 函数中会根据ACPI描述符进行匹配。成功则直接返回。</li>
-<li>如果定义了<code>id_table</code> 尝试使用ID表进行匹配。</li>
-<li>如果上面的匹配都失败了，则尝试使用设备的名称和驱动的名称进行匹配。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static int platform_match(struct device *dev, struct device_driver *drv)</span><br><span class="line">&#123;</span><br><span class="line">	struct platform_device *pdev = to_platform_device(dev);</span><br><span class="line">	struct platform_driver *pdrv = to_platform_driver(drv);</span><br><span class="line"></span><br><span class="line">	/* When driver_override is set, only bind to the matching driver */</span><br><span class="line">	if (pdev-&gt;driver_override)</span><br><span class="line">		return !strcmp(pdev-&gt;driver_override, drv-&gt;name);</span><br><span class="line"></span><br><span class="line">	/* Attempt an OF style match first */</span><br><span class="line">	if (of_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try ACPI style match */</span><br><span class="line">	if (acpi_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try to match against the id table */</span><br><span class="line">	if (pdrv-&gt;id_table)</span><br><span class="line">		return platform_match_id(pdrv-&gt;id_table, pdev) != NULL;</span><br><span class="line"></span><br><span class="line">	/* fall-back to driver name match */</span><br><span class="line">	return (strcmp(pdev-&gt;name, drv-&gt;name) == 0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>平台驱动</tag>
-        <tag>平台设备</tag>
-        <tag>平台匹配</tag>
-      </tags>
+    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
+    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
+    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>设备树</title>
@@ -1080,9 +918,65 @@
       </categories>
       <tags>
         <tag>Linux学习</tag>
-        <tag>平台总线</tag>
         <tag>设备树</tag>
         <tag>DTS</tag>
+        <tag>平台总线</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>杂项设备</title>
+    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
+    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
+<li><p>概念：</p>
+<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
+</li>
+<li><p>特点：</p>
+<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
+<p>  结构简单</p>
+<p>  提供基本的读写操作接口</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​	2、定义文件操作结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	3、定义杂项设备结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	参数：</p>
+<pre><code>	* minor：次设备号。
+	* name：设备节点名称。
+	* fops：文件操作结构体指针。
+	* 其他的用到的不多，用到可以在搜。
+</code></pre>
+<p>​	4、注册杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	5、注销杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
+<li><p>创建设备节点：</p>
+<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
+</li>
+<li><p>应用程序访问：</p>
+<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>平台总线</tag>
+        <tag>杂项设备</tag>
       </tags>
   </entry>
   <entry>
@@ -1474,6 +1368,119 @@
         <tag>stm32学习</tag>
         <tag>面试</tag>
         <tag>C语言</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>驱动和设备匹配过程</title>
+    <url>/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="匹配过程及其问题"><a href="#匹配过程及其问题" class="headerlink" title="匹配过程及其问题"></a>匹配过程及其问题</h1><h4 id="1、匹配过程"><a href="#1、匹配过程" class="headerlink" title="1、匹配过程"></a>1、匹配过程</h4><p>​	在linux驱动中，目前学到了三种编写代码的方式。</p>
+<ul>
+<li><p>第一种：传统编写。驱动和硬件写在一起，让linux内核和硬件交织在一起，这是早期linux开发的编写方式，不推荐使用，可以在初学时看看，也可以不看，不影响。</p>
+</li>
+<li><p>第二种：使驱动和设备硬件分开编写。pdrv主要编写linux的内核代码，pdev主要关于硬件的资源。分开有利管理，但是当设备多了之后，又出现了问题，代码太多，太繁。</p>
+</li>
+<li><p>第三种：使用设备树。驱动的代码基本不变，修改设备硬件的代码，把使用的设备硬件汇总为一个设备树的结构，每个节点都是一个设备硬件，代码简单、方便、便于移植。</p>
+<span id="more"></span></li>
+</ul>
+<p>第一种不说了。主要讲第二、三种的匹配过程，阅读一下内核源码，看一下整个流程。（目前刚刚开始学习不久，仅仅学到设备树，所以就目前掌握的开始写和搜的，如果以后学习到更深，在回来补充）</p>
+<ul>
+<li><p>平台总线的平台驱动和平台设备匹配过程</p>
+<ul>
+<li><p>1、首先先讲解两个函数。平台设备注册int platform_device_register(struct <em>platform_device</em> *)；平台驱动注册platform_driver_register(<em>drv</em>)。这是两个注册函数，将我们自定义的平台设备和平台驱动注册到平台总线中去。他们会在平台总线中相遇，至于怎么找到双方，那就要有一个信物，两者个持一个，匹配上了就会成功。这个信物就是name（名称），下面会讲解。</p>
+<ul>
+<li><p><em><em>平台设备注册：int platform_device_register(struct platform_device pdev</em>)</em>* </p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_register(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	device_initialize(&amp;pdev-&gt;dev);</span><br><span class="line">	setup_pdev_dma_masks(pdev);</span><br><span class="line">	return platform_device_add(pdev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>在平台设备注册函数中主要完成下面任务：</p>
+<p>  1、初始化struct platform_device结构体中的struct device结构体。[它将平台设备纳入到 Linux 设备模型中，使其能够被设备模型管理和访问。](#####1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？)</p>
+<p>  2、关于DMA的，这个函数用于设置设备的 DMA (Direct Memory Access) 掩码。DMA 允许设备直接访问内存，而无需 CPU 的干预，从而提高数据传输效率。DMA 掩码用于限制设备可以访问的内存地址范围。</p>
+<p>  3、这个函数是平台设备的注册的真正执行着，将平台设备添加到平台总线的设备列表中。触发驱动程序等到匹配。</p>
+</li>
+<li><p><strong>在platform_device_add(pdev);函数中，找到源码解读。</strong><br>  1、参数检查和初始化</p>
+<ul>
+<li>首先检查pdev指针是否为空。</li>
+<li>如果pdev的父设备为空，则将其设置成平台总线。（可见平台总线相当于根节点，下面挂着一串平台设备列表）</li>
+<li>设备pdev的总线类型为平台总线类型（platform_bus_type）（<a href="#####2%E3%80%81%E5%B9%B3%E5%8F%B0%E6%80%BB%E7%BA%BF%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%B9%B3%E5%8F%B0%E5%8C%B9%E9%85%8D%E7%9A%84%E5%85%B3%E7%B3%BB">这个平台总线类型是平台匹配的重要部分</a>）。</li>
+</ul>
+<p>  2、设置设备名称</p>
+<ul>
+<li>根据 <code>pdev-&gt;id</code>的值，使用<code>dev_set_name</code>函数设备<code>pdev</code>的设备名称。</li>
+<li>如果<code>pdev-&gt;id</code>为默认值，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id</code>。</li>
+<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_NONE</code>，则将名称设置为<code>pdev-&gt;name</code>。</li>
+<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_AUTO</code>，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id.auto</code>。</li>
+</ul>
+<p>  3、注册设备资源</p>
+<ul>
+<li>遍历<code>pdev-&gt;resource</code> 数组，该数组中存放着设备使用的资源信息（例如内存地址、中断号等）</li>
+<li>为每个资源设置名称</li>
+<li>为每个资源设置父资源</li>
+</ul>
+<p>  4、添加设备</p>
+<ul>
+<li>打印注册信息</li>
+<li>调用 <code>device_add</code> 函数将设备添加到linux设备模型中。</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_add(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	u32 i;</span><br><span class="line">	int ret;</span><br><span class="line"></span><br><span class="line">	if (!pdev)</span><br><span class="line">		return -EINVAL;</span><br><span class="line"></span><br><span class="line">	if (!pdev-&gt;dev.parent)</span><br><span class="line">		pdev-&gt;dev.parent = &amp;platform_bus;</span><br><span class="line"></span><br><span class="line">	pdev-&gt;dev.bus = &amp;platform_bus_type;</span><br><span class="line"></span><br><span class="line">	switch (pdev-&gt;id) &#123;</span><br><span class="line">	default:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d&quot;, pdev-&gt;name,  pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_NONE:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s&quot;, pdev-&gt;name);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_AUTO:</span><br><span class="line">		/*</span><br><span class="line">		 * Automatically allocated device ID. We mark it as such so</span><br><span class="line">		 * that we remember it must be freed, and we append a suffix</span><br><span class="line">		 * to avoid namespace collision with explicit IDs.</span><br><span class="line">		 */</span><br><span class="line">		ret = ida_simple_get(&amp;platform_devid_ida, 0, 0, GFP_KERNEL);</span><br><span class="line">		if (ret &lt; 0)</span><br><span class="line">			goto err_out;</span><br><span class="line">		pdev-&gt;id = ret;</span><br><span class="line">		pdev-&gt;id_auto = true;</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d.auto&quot;, pdev-&gt;name, pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	for (i = 0; i &lt; pdev-&gt;num_resources; i++) &#123;</span><br><span class="line">		struct resource *p, *r = &amp;pdev-&gt;resource[i];</span><br><span class="line"></span><br><span class="line">		if (r-&gt;name == NULL)</span><br><span class="line">			r-&gt;name = dev_name(&amp;pdev-&gt;dev);</span><br><span class="line"></span><br><span class="line">		p = r-&gt;parent;</span><br><span class="line">		if (!p) &#123;</span><br><span class="line">			if (resource_type(r) == IORESOURCE_MEM)</span><br><span class="line">				p = &amp;iomem_resource;</span><br><span class="line">			else if (resource_type(r) == IORESOURCE_IO)</span><br><span class="line">				p = &amp;ioport_resource;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if (p) &#123;</span><br><span class="line">			ret = insert_resource(p, r);</span><br><span class="line">			if (ret) &#123;</span><br><span class="line">				dev_err(&amp;pdev-&gt;dev, &quot;failed to claim resource %d: %pR\n&quot;, i, r);</span><br><span class="line">				goto failed;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Registering platform device &#x27;%s&#x27;. Parent at %s\n&quot;,</span><br><span class="line">		 dev_name(&amp;pdev-&gt;dev), dev_name(pdev-&gt;dev.parent));</span><br><span class="line"></span><br><span class="line">	ret = device_add(&amp;pdev-&gt;dev);</span><br><span class="line">	if (ret == 0)</span><br><span class="line">		return ret;</span><br><span class="line"></span><br><span class="line"> failed:</span><br><span class="line">	if (pdev-&gt;id_auto) &#123;</span><br><span class="line">		ida_simple_remove(&amp;platform_devid_ida, pdev-&gt;id);</span><br><span class="line">		pdev-&gt;id = PLATFORM_DEVID_AUTO;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	while (i--) &#123;</span><br><span class="line">		struct resource *r = &amp;pdev-&gt;resource[i];</span><br><span class="line">		if (r-&gt;parent)</span><br><span class="line">			release_resource(r);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"> err_out:</span><br><span class="line">	return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注册平台设备需要一个struct platform_device *<em>pdev</em>结构体，具体内容如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct platform_device &#123;</span><br><span class="line">	const char	*name;</span><br><span class="line">	int		id;</span><br><span class="line">	bool		id_auto;</span><br><span class="line">	struct device	dev;</span><br><span class="line">	u64		platform_dma_mask;</span><br><span class="line">	u32		num_resources;</span><br><span class="line">	struct resource	*resource;</span><br><span class="line"></span><br><span class="line">	const struct platform_device_id	*id_entry;</span><br><span class="line">	char *driver_override; /* Driver name to force a match */</span><br><span class="line"></span><br><span class="line">	/* MFD cell pointer */</span><br><span class="line">	struct mfd_cell *mfd_cell;</span><br><span class="line"></span><br><span class="line">	/* arch specific additions */</span><br><span class="line">	struct pdev_archdata	archdata;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p><strong>平台驱动注册函数platform_driver_register(<em>drv</em>)</strong> </p>
+<ul>
+<li><p>在linux内核代码中定义了一个宏定义关于平台驱动注册函数。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define platform_driver_register(drv) \</span><br><span class="line">	__platform_driver_register(drv, THIS_MODULE)</span><br><span class="line">extern int __platform_driver_register(struct platform_driver *,</span><br><span class="line">					struct module *);</span><br></pre></td></tr></table></figure>
+
+<p>  在其中我们可以看到platform_driver_register是通过宏定义代表__platform_driver_register这个函数的。在函数中有两个参数分别是platform_driver *、struct module *。其中我们重要关心的是platform_driver 结构体，这里的和上面已经讲过的platform_device一样，是在linux内核定义好的设备框架基础上田间自定义的构建成的。</p>
+</li>
+<li><p>在__platform_driver_register结构体中的源码如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int __platform_driver_register(struct platform_driver *drv,</span><br><span class="line">				struct module *owner)</span><br><span class="line">&#123;</span><br><span class="line">	drv-&gt;driver.owner = owner;</span><br><span class="line">	drv-&gt;driver.bus = &amp;platform_bus_type;</span><br><span class="line">	drv-&gt;driver.probe = platform_drv_probe;</span><br><span class="line">	drv-&gt;driver.remove = platform_drv_remove;</span><br><span class="line">	drv-&gt;driver.shutdown = platform_drv_shutdown;</span><br><span class="line"></span><br><span class="line">	return driver_register(&amp;drv-&gt;driver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  首先对driver进行一些初始化。在其中我们关心的是<code>drv-&gt;driver.bus = &amp;platform_bus_type;</code> 、<code>drv-&gt;driver.probe = platform_drv_probe;</code>、 <code>drv-&gt;driver.remove = platform_drv_remove;</code> 这三个行代码，其中driver.bus指定了总线类型，也是与设备匹配的关键。下面两个probe、remove两个是一个中间层函数，他们会获取platform_device的信息，然后调用我们在platform_device中自定义的probe函数。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="2、匹配中的各种问题"><a href="#2、匹配中的各种问题" class="headerlink" title="2、匹配中的各种问题"></a>2、匹配中的各种问题</h4><h5 id="1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？"><a href="#1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？" class="headerlink" title="1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？"></a>1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？</h5><p>​	1、struct device是linux设备模型的基础，所有的设备都必须通过struct device纳入到设备模型中才能够被内核有效的管理。</p>
+<p>​	2、linux设备模型是内核中用于管理所有设备的框架，它提供了一套统一的接口和机制。在linux中所有的设备，例如平台设备、PCI设备、USB设备，这些统一是在框架的基础上写入一些自定义的构成的。</p>
+<h5 id="2、平台总线类型和平台匹配的关系。"><a href="#2、平台总线类型和平台匹配的关系。" class="headerlink" title="2、平台总线类型和平台匹配的关系。"></a>2、平台总线类型和平台匹配的关系。</h5><p>​	1、平台总线类型的源码如下，其中 <code>struct bus_type platform_bus_type</code> 定义了平台总线的类型。在liunx设备模型中，总线类型是链接设备和驱动程序的桥梁。平台总线是一中虚拟的总线，用于管理那些无法通过标准总线（如PCI、USB）枚举的设备。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct bus_type platform_bus_type = &#123;</span><br><span class="line">	.name		= &quot;platform&quot;,</span><br><span class="line">	.dev_groups	= platform_dev_groups,</span><br><span class="line">	.match		= platform_match,</span><br><span class="line">	.uevent		= platform_uevent,</span><br><span class="line">	.dma_configure	= platform_dma_configure,</span><br><span class="line">	.pm		= &amp;platform_dev_pm_ops,</span><br><span class="line">&#125;;</span><br><span class="line">struct bus_type &#123;</span><br><span class="line">	const char		*name;</span><br><span class="line">	const char		*dev_name;</span><br><span class="line">	struct device		*dev_root;</span><br><span class="line">	const struct attribute_group **bus_groups;</span><br><span class="line">	const struct attribute_group **dev_groups;</span><br><span class="line">	const struct attribute_group **drv_groups;</span><br><span class="line"></span><br><span class="line">	int (*match)(struct device *dev, struct device_driver *drv);</span><br><span class="line">	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);</span><br><span class="line">	int (*probe)(struct device *dev);</span><br><span class="line">	int (*remove)(struct device *dev);</span><br><span class="line">	void (*shutdown)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*online)(struct device *dev);</span><br><span class="line">	int (*offline)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*suspend)(struct device *dev, pm_message_t state);</span><br><span class="line">	int (*resume)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*num_vf)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*dma_configure)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	const struct dev_pm_ops *pm;</span><br><span class="line"></span><br><span class="line">	const struct iommu_ops *iommu_ops;</span><br><span class="line"></span><br><span class="line">	struct subsys_private *p;</span><br><span class="line">	struct lock_class_key lock_key;</span><br><span class="line"></span><br><span class="line">	bool need_parent_lock;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>2、在上面说的两个结构体中，有两个函数关乎与匹配相关。<code>.match		= platform_match,</code> 、<code>int (*match)(struct device *dev, struct device_driver *drv);</code> 。下面是 <code>platform_match</code> 的代码。</p>
+<ul>
+<li>在开始时传入设备和驱动的结构体。</li>
+<li>检查 <code>driver_override</code> 参数是 否被设置。<code>driver_override</code> 允许用户强制指定设备要使用的驱动程序。</li>
+<li>首先尝试使用设备树，在<code>of_driver_match_device</code> 函数中会根据设备树中的 <code>compatible</code> 属性里匹配设备和驱动程序。成功则直接返回。</li>
+<li>然后在尝试ACPI（Advanced Configuration and Power Interface）进行匹配。在 <code>acpi_driver_match_device</code> 函数中会根据ACPI描述符进行匹配。成功则直接返回。</li>
+<li>如果定义了<code>id_table</code> 尝试使用ID表进行匹配。</li>
+<li>如果上面的匹配都失败了，则尝试使用设备的名称和驱动的名称进行匹配。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static int platform_match(struct device *dev, struct device_driver *drv)</span><br><span class="line">&#123;</span><br><span class="line">	struct platform_device *pdev = to_platform_device(dev);</span><br><span class="line">	struct platform_driver *pdrv = to_platform_driver(drv);</span><br><span class="line"></span><br><span class="line">	/* When driver_override is set, only bind to the matching driver */</span><br><span class="line">	if (pdev-&gt;driver_override)</span><br><span class="line">		return !strcmp(pdev-&gt;driver_override, drv-&gt;name);</span><br><span class="line"></span><br><span class="line">	/* Attempt an OF style match first */</span><br><span class="line">	if (of_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try ACPI style match */</span><br><span class="line">	if (acpi_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try to match against the id table */</span><br><span class="line">	if (pdrv-&gt;id_table)</span><br><span class="line">		return platform_match_id(pdrv-&gt;id_table, pdev) != NULL;</span><br><span class="line"></span><br><span class="line">	/* fall-back to driver name match */</span><br><span class="line">	return (strcmp(pdev-&gt;name, drv-&gt;name) == 0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>平台驱动</tag>
+        <tag>平台设备</tag>
+        <tag>平台匹配</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>测试文章</title>
+    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <content><![CDATA[<p>这是以个测试</p>
+<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
+]]></content>
+      <tags>
+        <tag>测试</tag>
       </tags>
   </entry>
 </search>
