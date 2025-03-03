@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="FSMC—扩展外部SRAM1、SRAM控制原理当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。 拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。 SRAM（静态随机存储器）和SDRAM（同步动态随机存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FSMC—扩展外部SRAM">
+<meta property="og:url" content="http://basswo.github.io/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="FSMC—扩展外部SRAM1、SRAM控制原理当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。 拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。 SRAM（静态随机存储器）和SDRAM（同步动态随机存">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-03-03T01:08:50.000Z">
+<meta property="article:modified_time" content="2025-03-03T03:35:32.719Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="stm32">
+<meta property="article:tag" content="多媒体项目">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://basswo.github.io/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>FSMC—扩展外部SRAM | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">哈哈哈哈哈</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          FSMC—扩展外部SRAM
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2025-03-03 09:08:50 / 修改时间：11:35:32" itemprop="dateCreated datePublished" datetime="2025-03-03T09:08:50+08:00">2025-03-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32/" itemprop="url" rel="index"><span itemprop="name">stm32</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
+<p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
+<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
+<ul>
+<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
+<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
+<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
+<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
+</ul>
+<span id="more"></span>
+
+<p>在我们使用的是IS62WV51216的SRAM芯片内部结构框图。以他为模型学习。</p>
+<p>![](屏幕截图 2025-03-03 092613.png)</p>
+<p>![](屏幕截图 2025-03-03 092731.png)</p>
+<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
+<p>![](屏幕截图 2025-03-03 092950.png)</p>
+<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
+<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits）。</p>
+<p>![](屏幕截图 2025-03-03 093304.png)</p>
+<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
+<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
+<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
+<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
+<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
+<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
+<p>OE、WE可以控制读写使能，防止误操作。</p>
+<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
+<p>![](屏幕截图 2025-03-03 094859.png)</p>
+<p>读写时序的流程：</p>
+<ul>
+<li>主机使能地址信号线，发送要访问的存储器地址。</li>
+<li>控制片选信号CS1、CS2，使能存储芯片</li>
+<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
+<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
+<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
+</ul>
+<h4 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h4><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
+<h4 id="3、FSMC框图解析"><a href="#3、FSMC框图解析" class="headerlink" title="3、FSMC框图解析"></a>3、FSMC框图解析</h4><p>![](屏幕截图 2025-03-03 095536.png)</p>
+<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
+<p>![](屏幕截图 2025-03-03 095737.png)</p>
+<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
+<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
+<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
+<ul>
+<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
+</li>
+<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
+</li>
+<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
+</li>
+</ul>
+<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
+<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
+<p>![](屏幕截图 2025-03-03 100215.png)</p>
+<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
+<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
+<p>![](屏幕截图 2025-03-03 105408.png)</p>
+<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
+<p>![](屏幕截图 2025-03-03 111455.png)</p>
+<p>![](屏幕截图 2025-03-03 111509.png)</p>
+<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
+<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。在地址建立周期中，地址线发出要访问的地址， 数据掩码信号线指示出要读取地址的高、低字节部分，片选信号使能存储器芯片；地址建立周期结束后读使能信号线发出读使能信号， 接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</p>
+<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/stm32/" rel="tag"># stm32</a>
+              <a href="/tags/%E5%A4%9A%E5%AA%92%E4%BD%93%E9%A1%B9%E7%9B%AE/" rel="tag"># 多媒体项目</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/02/28/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-USART%E4%B8%B2%E5%8F%A3/" rel="prev" title="stm32F407HAL库学习-USART串口">
+      <i class="fa fa-chevron-left"></i> stm32F407HAL库学习-USART串口
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM"><span class="nav-number">1.</span> <span class="nav-text">FSMC—扩展外部SRAM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81SRAM%E6%8E%A7%E5%88%B6%E5%8E%9F%E7%90%86"><span class="nav-number">1.0.1.</span> <span class="nav-text">1、SRAM控制原理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E3%80%81SRAM%E4%BF%A1%E5%8F%B7%E7%BA%BF"><span class="nav-number">1.0.1.0.1.</span> <span class="nav-text">1、SRAM信号线</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E3%80%81%E5%AD%98%E5%82%A8%E7%9F%A9%E9%98%B5"><span class="nav-number">1.0.1.0.2.</span> <span class="nav-text">2、存储矩阵</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E3%80%81%E5%9C%B0%E5%9D%80%E7%BC%96%E8%AF%91%E5%99%A8%E3%80%81%E5%88%97I-o%E5%8F%8AI-O%E6%95%B0%E6%8D%AE%E7%94%B5%E8%B7%AF"><span class="nav-number">1.0.1.0.3.</span> <span class="nav-text">3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4%E3%80%81%E6%8E%A7%E5%88%B6%E7%94%B5%E8%B7%AF"><span class="nav-number">1.0.1.0.4.</span> <span class="nav-text">4、控制电路</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5%E3%80%81SRAM%E7%9A%84%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B"><span class="nav-number">1.0.1.0.5.</span> <span class="nav-text">5、SRAM的读写流程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81FSMC%E7%AE%80%E4%BB%8B"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">2、FSMC简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%E3%80%81FSMC%E6%A1%86%E5%9B%BE%E8%A7%A3%E6%9E%90"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">3、FSMC框图解析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E3%80%81%E9%80%9A%E8%AE%AF%E5%BC%95%E8%84%9A"><span class="nav-number">1.0.1.2.1.</span> <span class="nav-text">1、通讯引脚</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E3%80%81%E5%AD%98%E5%82%A8%E5%99%A8%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">1.0.1.2.2.</span> <span class="nav-text">2、存储器控制器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3%E3%80%81%E6%97%B6%E9%92%9F%E6%8E%A7%E5%88%B6%E9%80%BB%E8%BE%91"><span class="nav-number">1.0.1.2.3.</span> <span class="nav-text">3、时钟控制逻辑</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4%E3%80%81FSMC%E5%9C%B0%E5%9D%80%E6%98%A0%E5%B0%84"><span class="nav-number">1.0.1.2.4.</span> <span class="nav-text">4、FSMC地址映射</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5%E3%80%81FSMC%E6%8E%A7%E5%88%B6SRAM%E7%9A%84%E6%97%B6%E5%BA%8F"><span class="nav-number">1.0.1.2.5.</span> <span class="nav-text">5、FSMC控制SRAM的时序</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>
