@@ -21,18 +21,20 @@
     var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="内存管理">
+  <meta name="description" content="内存管理前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。 下面是对内存的动态管理。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="内存管理">
 <meta property="og:url" content="http://basswo.github.io/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
 <meta property="og:site_name" content="有玉微凉、是为樱琅">
-<meta property="og:description" content="内存管理">
+<meta property="og:description" content="内存管理前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。 下面是对内存的动态管理。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://basswo.github.io/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png">
 <meta property="article:published_time" content="2025-03-06T01:33:30.000Z">
-<meta property="article:modified_time" content="2025-03-06T01:35:04.672Z">
+<meta property="article:modified_time" content="2025-03-06T09:34:06.209Z">
 <meta property="article:author" content="Dylan">
 <meta property="article:tag" content="stm32">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://basswo.github.io/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png">
 
 <link rel="canonical" href="http://basswo.github.io/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
 
@@ -221,7 +223,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2025-03-06 09:33:30 / 修改时间：09:35:04" itemprop="dateCreated datePublished" datetime="2025-03-06T09:33:30+08:00">2025-03-06</time>
+              <time title="创建时间：2025-03-06 09:33:30 / 修改时间：17:34:06" itemprop="dateCreated datePublished" datetime="2025-03-06T09:33:30+08:00">2025-03-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -244,7 +246,21 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><span id="more"></span>
+        <h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
+<p>下面是对内存的动态管理。</p>
+<span id="more"></span>
+
+<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
+<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
+<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
+<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
+<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
+<p><strong>分配原理</strong> </p>
+<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
+<p><strong>释放原理</strong> </p>
+<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+
     </div>
 
     
@@ -265,7 +281,10 @@
     <a href="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/" rel="prev" title="FSMC—扩展外部SRAM">
       <i class="fa fa-chevron-left"></i> FSMC—扩展外部SRAM
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/" rel="next" title="stm32F407移植LVGL+GUI">
+      stm32F407移植LVGL+GUI <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -324,7 +343,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">内存管理</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E7%AE%80%E4%BB%8B"><span class="nav-number">1.0.1.</span> <span class="nav-text">1、内存管理简介</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -340,7 +359,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -353,7 +372,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-count">25</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
