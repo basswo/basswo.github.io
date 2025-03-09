@@ -62,6 +62,35 @@
       </tags>
   </entry>
   <entry>
+    <title>FreeRTOS</title>
+    <url>/2025/02/19/FreeRTOS/</url>
+    <content><![CDATA[<h1 id="FreeRTOS"><a href="#FreeRTOS" class="headerlink" title="FreeRTOS"></a>FreeRTOS</h1><p>以下内容是根据野火的<a href="https://weread.qq.com/web/reader/38f32720717e5b0b38f24a4ka87322c014a87ff679a21ea">FreeRTOS内核实现与应用开发实战指南</a> 以及AI搜索进行集合的记录。</p>
+<h3 id="为什么学习RTOS"><a href="#为什么学习RTOS" class="headerlink" title="为什么学习RTOS"></a>为什么学习RTOS</h3><p>我们进入嵌入式这个领域开始，首先在大学时开始接触电路、汇编以及51单片机，后来是stm32，在到操作系统RTOS、linux等。stm32和51都是裸机编程。常见的RTOS有国外的FreeRTOS、μC&#x2F;OS、RTX和国内的FreeRTOS、Huawei LiteOS和AliOS-Things等，其中，开源且免费的FreeRTOS的市场占有率最高。</p>
+<p>在裸机系统中，所有的程序都是自己来完成的，并且所有的操作或者实现的工程都是在一个无线的循环中的，但是现在的生活中的电子产品不在满足裸机开发，更加多的功能，更加复杂的需求，这些都需要由操作系统来实现。</p>
+<span id="more"></span>
+
+<h3 id="第一章初识FreeRTOS"><a href="#第一章初识FreeRTOS" class="headerlink" title="第一章	初识FreeRTOS"></a>第一章	初识FreeRTOS</h3><p>FreeRTOS于2018年被亚马逊收购，改名为AWS FreeRTOS，版本号升级为V10，且开源协议也由原来的GPLv2+修改为MIT，与GPLv2+相比，MIT更加开放，你完全可以理解为完全免费。V9以前的版本还是维持原样，V10版本相比于V9就是加入了一些物联网相关的组件，内核基本不变。亚马逊收购FreeRTOS也是为了进军物联网和人工智能领域。本书还是以V9版本来讲解。</p>
+<h3 id="第二章新建FreeRTOS工程"><a href="#第二章新建FreeRTOS工程" class="headerlink" title="第二章	新建FreeRTOS工程"></a>第二章	新建FreeRTOS工程</h3><h4 id="1、新建本地工程文件"><a href="#1、新建本地工程文件" class="headerlink" title="1、新建本地工程文件"></a>1、新建本地工程文件</h4><p>在开始创建工程之前，我们现在本地中新建一个文件夹用于存放工程，在该文件夹中新建各个文件夹和文件，下面是文件夹的包含关系和具体的作用。</p>
+<p><img src="/2025/02/19/FreeRTOS/151023.png" alt="工程文件夹根目录下的文件夹及其作用"> </p>
+<h4 id="2、使用keil创建工程"><a href="#2、使用keil创建工程" class="headerlink" title="2、使用keil创建工程"></a>2、使用keil创建工程</h4><h4 id="3、在keil工程中新建文件组"><a href="#3、在keil工程中新建文件组" class="headerlink" title="3、在keil工程中新建文件组"></a>3、在keil工程中新建文件组</h4><p>在工程中添加user、FreeRTOS&#x2F;Posrt、FreeRTOS&#x2F;source、doc这个几个文件组。</p>
+<h4 id="4、在keil工程中添加文件"><a href="#4、在keil工程中添加文件" class="headerlink" title="4、在keil工程中添加文件"></a>4、在keil工程中添加文件</h4><p>在工程中添加组后，需要将本地工程中新建的文件添加到工程中。</p>
+<h3 id="第三章裸机系统与多任务系统"><a href="#第三章裸机系统与多任务系统" class="headerlink" title="第三章	裸机系统与多任务系统"></a>第三章	裸机系统与多任务系统</h3><h4 id="1、裸机系统"><a href="#1、裸机系统" class="headerlink" title="1、裸机系统"></a>1、裸机系统</h4><p>裸机系统通常分为轮询系统和前后台系统。</p>
+<h5 id="轮询系统"><a href="#轮询系统" class="headerlink" title="轮询系统"></a>轮询系统</h5><p>轮询系统就是在裸机编程中，先编写硬件的相关初始化，然后在mian主程序中的while死循环中不断的循环，依次的实现功能。例如LED灯反转、串口输出等，只是按照顺序执行的功能；但是要是实现按键等操作，就需要检测外部信号，这时在用轮询系统，就会实时性大大降低。</p>
+<h5 id="前后台系统"><a href="#前后台系统" class="headerlink" title="前后台系统"></a>前后台系统</h5><p>相对于轮询系统，前后台系统就是在其基础上加入中断，前台依然按照顺序执行，但是当后台由中断产生时，前台就要停止手上的任务，执行后台的任务，只有当中断任务执行完成后，再返回执行刚才放下的前台任务。</p>
+<h4 id="2、多任务系统"><a href="#2、多任务系统" class="headerlink" title="2、多任务系统"></a>2、多任务系统</h4><p>相对于轮询系统、前后台系统，多任务系统优化的是前台。再前台按顺序执行的基础上，我们增加一个优先级功能。在多任务系统中，任务和中断都具有优先级，但是普遍中断的优先级都比任务的优先级高。所以当中断信号产生时，还是优先执行中断。而前台执行的任务那，就也有紧急的和不紧急的区别，高优先级的比低优先的任务优先执行。</p>
+<p>除了优先级还有优化了循环的问题。在前后台系统中，依然是在一个大循环中执行，而多任务系统中，我们可以根据程序的功能，把程序主体分为一个k一个独立的、互不干扰的的小任务。每个任务都具备优先级，由操作系统调度管理。</p>
+<p><img src="/2025/02/19/FreeRTOS/153950.png" alt="轮询、前后台、多任务系统的区别"></p>
+<h3 id="第四章数据结构–列表和列表项"><a href="#第四章数据结构–列表和列表项" class="headerlink" title="第四章	数据结构–列表和列表项"></a>第四章	数据结构–列表和列表项</h3>]]></content>
+      <categories>
+        <category>stm32学习</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>操作系统</tag>
+        <tag>FreeRTOS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>FSMC—扩展外部SRAM</title>
     <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
     <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
@@ -134,35 +163,6 @@
       <tags>
         <tag>stm32F407</tag>
         <tag>多媒体项目</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>FreeRTOS</title>
-    <url>/2025/02/19/FreeRTOS/</url>
-    <content><![CDATA[<h1 id="FreeRTOS"><a href="#FreeRTOS" class="headerlink" title="FreeRTOS"></a>FreeRTOS</h1><p>以下内容是根据野火的<a href="https://weread.qq.com/web/reader/38f32720717e5b0b38f24a4ka87322c014a87ff679a21ea">FreeRTOS内核实现与应用开发实战指南</a> 以及AI搜索进行集合的记录。</p>
-<h3 id="为什么学习RTOS"><a href="#为什么学习RTOS" class="headerlink" title="为什么学习RTOS"></a>为什么学习RTOS</h3><p>我们进入嵌入式这个领域开始，首先在大学时开始接触电路、汇编以及51单片机，后来是stm32，在到操作系统RTOS、linux等。stm32和51都是裸机编程。常见的RTOS有国外的FreeRTOS、μC&#x2F;OS、RTX和国内的FreeRTOS、Huawei LiteOS和AliOS-Things等，其中，开源且免费的FreeRTOS的市场占有率最高。</p>
-<p>在裸机系统中，所有的程序都是自己来完成的，并且所有的操作或者实现的工程都是在一个无线的循环中的，但是现在的生活中的电子产品不在满足裸机开发，更加多的功能，更加复杂的需求，这些都需要由操作系统来实现。</p>
-<span id="more"></span>
-
-<h3 id="第一章初识FreeRTOS"><a href="#第一章初识FreeRTOS" class="headerlink" title="第一章	初识FreeRTOS"></a>第一章	初识FreeRTOS</h3><p>FreeRTOS于2018年被亚马逊收购，改名为AWS FreeRTOS，版本号升级为V10，且开源协议也由原来的GPLv2+修改为MIT，与GPLv2+相比，MIT更加开放，你完全可以理解为完全免费。V9以前的版本还是维持原样，V10版本相比于V9就是加入了一些物联网相关的组件，内核基本不变。亚马逊收购FreeRTOS也是为了进军物联网和人工智能领域。本书还是以V9版本来讲解。</p>
-<h3 id="第二章新建FreeRTOS工程"><a href="#第二章新建FreeRTOS工程" class="headerlink" title="第二章	新建FreeRTOS工程"></a>第二章	新建FreeRTOS工程</h3><h4 id="1、新建本地工程文件"><a href="#1、新建本地工程文件" class="headerlink" title="1、新建本地工程文件"></a>1、新建本地工程文件</h4><p>在开始创建工程之前，我们现在本地中新建一个文件夹用于存放工程，在该文件夹中新建各个文件夹和文件，下面是文件夹的包含关系和具体的作用。</p>
-<p><img src="/2025/02/19/FreeRTOS/151023.png" alt="工程文件夹根目录下的文件夹及其作用"> </p>
-<h4 id="2、使用keil创建工程"><a href="#2、使用keil创建工程" class="headerlink" title="2、使用keil创建工程"></a>2、使用keil创建工程</h4><h4 id="3、在keil工程中新建文件组"><a href="#3、在keil工程中新建文件组" class="headerlink" title="3、在keil工程中新建文件组"></a>3、在keil工程中新建文件组</h4><p>在工程中添加user、FreeRTOS&#x2F;Posrt、FreeRTOS&#x2F;source、doc这个几个文件组。</p>
-<h4 id="4、在keil工程中添加文件"><a href="#4、在keil工程中添加文件" class="headerlink" title="4、在keil工程中添加文件"></a>4、在keil工程中添加文件</h4><p>在工程中添加组后，需要将本地工程中新建的文件添加到工程中。</p>
-<h3 id="第三章裸机系统与多任务系统"><a href="#第三章裸机系统与多任务系统" class="headerlink" title="第三章	裸机系统与多任务系统"></a>第三章	裸机系统与多任务系统</h3><h4 id="1、裸机系统"><a href="#1、裸机系统" class="headerlink" title="1、裸机系统"></a>1、裸机系统</h4><p>裸机系统通常分为轮询系统和前后台系统。</p>
-<h5 id="轮询系统"><a href="#轮询系统" class="headerlink" title="轮询系统"></a>轮询系统</h5><p>轮询系统就是在裸机编程中，先编写硬件的相关初始化，然后在mian主程序中的while死循环中不断的循环，依次的实现功能。例如LED灯反转、串口输出等，只是按照顺序执行的功能；但是要是实现按键等操作，就需要检测外部信号，这时在用轮询系统，就会实时性大大降低。</p>
-<h5 id="前后台系统"><a href="#前后台系统" class="headerlink" title="前后台系统"></a>前后台系统</h5><p>相对于轮询系统，前后台系统就是在其基础上加入中断，前台依然按照顺序执行，但是当后台由中断产生时，前台就要停止手上的任务，执行后台的任务，只有当中断任务执行完成后，再返回执行刚才放下的前台任务。</p>
-<h4 id="2、多任务系统"><a href="#2、多任务系统" class="headerlink" title="2、多任务系统"></a>2、多任务系统</h4><p>相对于轮询系统、前后台系统，多任务系统优化的是前台。再前台按顺序执行的基础上，我们增加一个优先级功能。在多任务系统中，任务和中断都具有优先级，但是普遍中断的优先级都比任务的优先级高。所以当中断信号产生时，还是优先执行中断。而前台执行的任务那，就也有紧急的和不紧急的区别，高优先级的比低优先的任务优先执行。</p>
-<p>除了优先级还有优化了循环的问题。在前后台系统中，依然是在一个大循环中执行，而多任务系统中，我们可以根据程序的功能，把程序主体分为一个k一个独立的、互不干扰的的小任务。每个任务都具备优先级，由操作系统调度管理。</p>
-<p><img src="/2025/02/19/FreeRTOS/153950.png" alt="轮询、前后台、多任务系统的区别"></p>
-<h3 id="第四章数据结构–列表和列表项"><a href="#第四章数据结构–列表和列表项" class="headerlink" title="第四章	数据结构–列表和列表项"></a>第四章	数据结构–列表和列表项</h3>]]></content>
-      <categories>
-        <category>stm32学习</category>
-      </categories>
-      <tags>
-        <tag>stm32学习</tag>
-        <tag>操作系统</tag>
-        <tag>FreeRTOS</tag>
       </tags>
   </entry>
   <entry>
@@ -263,24 +263,129 @@
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2025/01/21/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+    <title>stm32F407HAL库学习-USART串口</title>
+    <url>/2025/02/28/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-USART%E4%B8%B2%E5%8F%A3/</url>
+    <content><![CDATA[<h1 id="stm32F407HAL库学习-USART串口"><a href="#stm32F407HAL库学习-USART串口" class="headerlink" title="stm32F407HAL库学习-USART串口"></a>stm32F407HAL库学习-USART串口</h1><p>前期准备：</p>
+<ul>
+<li>stm32F407ZGT6开发板</li>
+<li>STM32CubIDE软件</li>
+<li>串口：使用USART1，PA9、PA10</li>
+</ul>
 <span id="more"></span>
 
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<h4 id="1、工程创建"><a href="#1、工程创建" class="headerlink" title="1、工程创建"></a>1、工程创建</h4><ul>
+<li><p>1、设置RCC</p>
+<ul>
+<li><p>设置为告诉外部时钟HSE ，选择外部时钟源</p>
+<p>  ![](屏幕截图 2025-02-28 092839.png)</p>
+</li>
+</ul>
+</li>
+<li><p>2、设置串口</p>
+<ul>
+<li><p>点击USART1</p>
+</li>
+<li><p>设置Mode为<strong>异步通信(Asynchronous)</strong> 。</p>
+<ul>
+<li>其他模式选项包括：<ul>
+<li>Synchronous（同步模式）：用于需要时钟信号的通信，适合与 SPI 或其他同步设备通信。</li>
+<li>Single Wire (Half-Duplex)（单线半双工）：使用单根数据线进行双向通信，常见于节省引脚的应用。</li>
+<li>Multiprocessor Communication（多处理器通信）：用于多个设备通过同一总线通信。</li>
+<li>IrDA（红外数据通信）：用于红外通信。</li>
+<li>LIN（本地互联网络）：用于汽车电子领域的低速通信。</li>
+<li>SmartCard（智能卡）：用于与智能卡通信。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>基础参数：<strong>波特率为115200 Bits&#x2F;s。传输数据长度为8 Bit。奇偶检验无，停止位1   接收和发送都使能</strong> </p>
+</li>
+<li><p>GPIO引脚设置 USART1_RX&#x2F;USART_TX</p>
+</li>
+<li><p>NVIC Settings 一栏使能接收中断</p>
+<p>  ![](屏幕截图 2025-02-28 093134.png)</p>
+</li>
+</ul>
+</li>
+<li><p>3、设置时钟</p>
+<p>  ![](屏幕截图 2025-02-28 093359.png)</p>
+</li>
+<li><p>4、生成代码</p>
+</li>
+</ul>
+<h4 id="重新定义Printf函数"><a href="#重新定义Printf函数" class="headerlink" title="重新定义Printf函数"></a>重新定义Printf函数</h4><ul>
+<li><p>在main.c文件中加入下面代码。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">#ifdef __GNUC__</span><br><span class="line">#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)</span><br><span class="line">#else</span><br><span class="line">#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">PUTCHAR_PROTOTYPE</span><br><span class="line">&#123;</span><br><span class="line">	HAL_UART_Transmit(&amp;huart1, (uint8_t*)&amp;ch,1,HAL_MAX_DELAY);</span><br><span class="line">    return ch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="中断方式接收数据"><a href="#中断方式接收数据" class="headerlink" title="中断方式接收数据"></a>中断方式接收数据</h4><p>1、USART中断接收的基本原理</p>
+<p>USART（通用同步异步收发器）shi为控制器常用的通信模块，通过串口与外部设备进行通信。中断接收是当USART接收到数据时，硬件会触发一个中断，通知CPU执行预定义的回调函数来处理数据。</p>
+<p>2、stm32HAL库中的中断接收</p>
+<ul>
+<li><p>函数原型：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<ul>
+<li>huart：UART 句柄，例如 &amp;huart1，指向已初始化的 UART 实例。</li>
+<li>pData：接收数据的缓冲区指针。</li>
+<li>Size：期望接收的字节数。</li>
+</ul>
+</li>
+<li><p>工作机制：</p>
+<ul>
+<li>调用HAL_UART_Receive_IT后，硬件会收指定size的数据后触发中断</li>
+<li>当中断发生后，HAL库会调用回调函数，HAL_UART_RxCpltCallback。</li>
+<li>在回调函数中，可以处理接收到的数据，并重新调用HAL_UART_Receive_IT 继续接收。</li>
+</ul>
+</li>
+</ul>
+<p>3、中断接收实现</p>
+<p>实现一个基于环形缓冲区的UART中断接收机制。</p>
+<ul>
+<li><p>初始化</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    HAL_Init();</span><br><span class="line">    SystemClock_Config();</span><br><span class="line">    MX_GPIO_Init();</span><br><span class="line">    MX_USART1_UART_Init();  // 初始化 USART1</span><br><span class="line">    uint8_t rxBuffer[1] = &#123;0&#125;;</span><br><span class="line">    HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 启动中断接收</span><br><span class="line">    while (1)</span><br><span class="line">    &#123;</span><br><span class="line">        while (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">            uint8_t data = UART_RX_GetByte();</span><br><span class="line">            HAL_UART_Transmit(&amp;huart1, &amp;data, 1, 100);  // 回显数据</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<ul>
+<li>MX_USART1_UART_Init：初始化USART1</li>
+<li>HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);：启动中断接收，每次接收1字节并存储到rxBuffer中。</li>
+</ul>
+</li>
+<li><p>中断回调处理</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)</span><br><span class="line">&#123;</span><br><span class="line">    if (huart-&gt;Instance == USART1) &#123;</span><br><span class="line">        UART_RX_PutByte(rxBuffer[0]);  // 将接收到的字节存入环形缓冲区</span><br><span class="line">        HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 重新启动接收</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<ul>
+<li>数据储存：将接收的数据存入环形缓冲区。</li>
+<li>持续接收</li>
+</ul>
+</li>
+<li><p>环形缓冲区管理</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    uint8_t buffer[UART_RX_BUFFER_SIZE];</span><br><span class="line">    volatile uint16_t head;  // 写指针</span><br><span class="line">    volatile uint16_t tail;  // 读指针</span><br><span class="line">&#125; UART_RX_CircularBuffer;</span><br><span class="line"></span><br><span class="line">// 判断缓冲区是否满</span><br><span class="line">bool UART_RX_IsFull(void) &#123;</span><br><span class="line">    return ((uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE) == uart_rx_buffer.tail;</span><br><span class="line">&#125;</span><br><span class="line">// 判断缓冲区是否空</span><br><span class="line">bool UART_RX_IsEmpty(void) &#123;</span><br><span class="line">    return (uart_rx_buffer.head == uart_rx_buffer.tail);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 写入一个字节到缓冲区</span><br><span class="line">void UART_RX_PutByte(uint8_t data) &#123;</span><br><span class="line">    if (!UART_RX_IsFull()) &#123;</span><br><span class="line">        uart_rx_buffer.buffer[uart_rx_buffer.head] = data;</span><br><span class="line">        uart_rx_buffer.head = (uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 从缓冲区读取一个字节</span><br><span class="line">uint8_t UART_RX_GetByte(void) &#123;</span><br><span class="line">    uint8_t data = 0;</span><br><span class="line">    if (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">        data = uart_rx_buffer.buffer[uart_rx_buffer.tail];</span><br><span class="line">        uart_rx_buffer.tail = (uart_rx_buffer.tail + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    return data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<ul>
+<li><p>环形缓冲区：通过head和tail指针实现循环使用，避免数据覆盖。</p>
+</li>
+<li><p>中断安全：head和tail使用volation修饰，请避免了错误</p>
+</li>
+<li><p><strong>UART_RX_IsFull</strong> ：判断缓冲区是否已满。</p>
+</li>
+<li><p><strong>UART_RX_IsEmpty</strong>：判断缓冲区是否已空</p>
+</li>
+<li><p><strong>UART_RX_PutByte</strong>：写入一个字节到缓冲区，如果未满，则写入head当前的下一个位置，并且用%的方法来循环写入缓冲区。</p>
+</li>
+<li><p><strong>UART_RX_GetByte</strong>：读取一个字节到缓冲区，如果未满，则读取tail当前的下一个位置，并且用%的方法来循环读取缓冲区。</p>
+</li>
+</ul>
+</li>
+</ul>
 ]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32</tag>
+        <tag>stm32cubide</tag>
+        <tag>HAL</tag>
+        <tag>USART</tag>
+      </tags>
   </entry>
   <entry>
     <title>Pinctrl和GPIO子系统</title>
@@ -433,6 +538,189 @@
       </tags>
   </entry>
   <entry>
+    <title>Hello World</title>
+    <url>/2025/01/21/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>stm32F407移植LVGL+GUI</title>
+    <url>/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/</url>
+    <content><![CDATA[<h1 id="stm32F407移植LVGL-GUI"><a href="#stm32F407移植LVGL-GUI" class="headerlink" title="stm32F407移植LVGL+GUI"></a>stm32F407移植LVGL+GUI</h1><h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><ul>
+<li>我现在使用的开发板是STM32F407ZGT6.</li>
+<li>从网站上下载LVGL。官方网址：<a href="https://github.com/lvgl/lvgl%EF%BC%8C%E6%88%91%E5%9C%A8%E8%BF%99%E6%AC%A1%E7%A7%BB%E6%A4%8D%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E7%89%88%E6%9C%AC%E4%B8%BAv8.2%E3%80%82%EF%BC%88%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E7%9B%B8%E5%90%8C%E7%89%88%E6%9C%AC%E7%9A%84%EF%BC%8C%E5%9C%A8%E5%90%8E%E9%9D%A2%E5%A6%82%E6%9E%9C%E7%89%88%E6%9C%AC%E4%B8%8D%E5%8C%B9%E9%85%8D%E7%9A%84%E8%AF%9D%EF%BC%8C%E4%BC%9A%E5%87%BA%E7%8E%B0%E5%90%84%E7%A7%8D%E9%97%AE%E9%A2%98%EF%BC%8C%E6%89%80%E4%BB%A5%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E5%92%8C%E6%88%91%E4%B8%80%E6%A0%B7%E7%9A%84%E7%89%88%E6%9C%AC%EF%BC%89">https://github.com/lvgl/lvgl，我在这次移植过程中使用的版本为v8.2。（建议使用相同版本的，在后面如果版本不匹配的话，会出现各种问题，所以建议使用和我一样的版本）</a></li>
+<li>移植之前，准备好LCD显示实验、触摸屏实验、基本定时器实验、内存管理实验。（这里使用的所有文件都是正点原子的例程代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/165612.png"></li>
+<li>我们以内存管理实现为基础，向其添加其他文件所用的相关代码。并编译后，没有报错的话，开始正式移植。</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="移植LVGL"><a href="#移植LVGL" class="headerlink" title="移植LVGL"></a>移植LVGL</h3><h4 id="1、准备LVGL源码"><a href="#1、准备LVGL源码" class="headerlink" title="1、准备LVGL源码"></a>1、准备LVGL源码</h4><p>1、当你从上述网址中下载了LVGL的源码后，你会得到一个压缩包，解压后会得到一个如图所示的文件夹。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170022.png"></p>
+<p>2、将上图中的lv_conf_template.h 文件改名为 lv_conf.h。然后打开这个文件，在最开始的地方，找到下面的代码，并按下面的要求修改。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
+
+
+
+<p>3、删除一些我们不要的文件。</p>
+<p>在lvgl-8.2.0目录下的文件，除了demos、examples、src、lv_conf.h、lvgl.h，其他文件全部删除。最后的结果如图</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170831.png"></p>
+<p>然后打开文件examples，将其中的文件除了porting，其他全部删除。结果如图。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171049.png"></p>
+<h3 id="2、裸机移植LVGL"><a href="#2、裸机移植LVGL" class="headerlink" title="2、裸机移植LVGL"></a>2、裸机移植LVGL</h3><p>打开内存管理实验文件夹，没有移植之前的工程目录大概如下。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171409.png"></p>
+<p>我们在其中新建一些文件夹，用来存放我们要移植的代码，从Middlewares开始创建，内容如图.</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171555.png"></p>
+<p>创建完成后，我们可以把处理好的LVGL中的文件examples、src、lv_conf.h、lvgl.h这四个复制到Middlewares&#x2F;LVGL&#x2F;GUI&#x2F;lvgl目录下。结果如图</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171908.png"></p>
+<p>打开内存管理的工程，进入到keil界面的操作。</p>
+<p>点击图中红色方框。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172136.png"></p>
+<p>进入到下图这个界面按照图中创建分组，并添加相关的代码。（请注意，添加的代码比较烦，所以一定要注意）</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172319.png"></p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172602.png"></p>
+<p>添加相关的头文件路径（按照图中自上而下顺序操作）</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172743.png"></p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172917.png"></p>
+<p>开启C99模式</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/173013.png"></p>
+<p>然后编译一下，如果报错了，请检查一下，文件是否添加进来了，头文件路径是否正确。如果正常没有报错，但是会有一些报错。不必理会。</p>
+<h3 id="修改代码"><a href="#修改代码" class="headerlink" title="修改代码"></a>修改代码</h3><p>1、为LVGL提供时基。</p>
+<p>打开我们工程中的timer.c。在头部添加LVGL的头文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lvgl.h&quot;  </span><br></pre></td></tr></table></figure>
+
+<p>在中断中添加lvgl的心跳函数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//定时器3中断服务函数</span><br><span class="line">void TIM3_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET) //溢出中断</span><br><span class="line">	&#123;</span><br><span class="line">		 lv_tick_inc ( 1 );</span><br><span class="line">	&#125;</span><br><span class="line">	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述源码中，定时器中断回调函数调用了 LVGL 的 lv_tick_inc 函数，该函数可以让 LVGL内部的时基参数加 1 （入口参数为 1 的情况下）， 这里要注意，你定时器设置多少毫秒进入一次中断，那么， lv_tick_inc();函数的入口参数就设置为多少，不然时基就不准确。</p>
+<p>接下来打开main.c文件，在mian函数中添加初始化。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">TIM3_Int_Init(999,167);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>2、配置显示屏、触摸输入驱动。</p>
+<p>打开 Middlewares&#x2F;lvgl&#x2F;examples&#x2F;porting 分组中的 lv_port_disp_template.c&#x2F;h（显示屏相关）和 lv_port_indev_template.c&#x2F;h （触摸输入相关）文件，将这 4 个文件中的条件编译指令 #if 0 都修改成#if 1 ，如下源码所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>1、修改lv_port_disp_template.c文件。（基本按照图中改好，可能跟下面的截图不同，以下为准，因为这是我添加别的功能，修改了代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code.png"></p>
+<ul>
+<li><p>添加lcd的头文件，我们要使用lcd显示界面。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lcd.h&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置屏幕的分辨率。我是用的3.5存的TFTLCD屏幕，代码如下</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define MY_DISP_HOR_RES 320   /* 屏幕宽度 */</span><br><span class="line">#define MY_DISP_VER_RES 480   /* 屏幕高度 */</span><br></pre></td></tr></table></figure>
+
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175313.png"></p>
+</li>
+<li><p>在lv_port_disp_init函数中，按照图片注释下面的，保留上面的。初始化缓冲区，我们默认使用单行缓冲区。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175409.png"></p>
+</li>
+<li><p>修改分辨率。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175438.png"></p>
+</li>
+<li><p>在disp_init函数中，添加LCD的初始化。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175501.png"></p>
+</li>
+<li><p>配置花点函数，这个函数在lcd.h中可以找到。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175534.png"></p>
+</li>
+</ul>
+</li>
+<li><p>2、修改lv_port_indev_template.c文件</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code2.png"></p>
+<ul>
+<li><p>添加头文件</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180544.png"></p>
+</li>
+<li><p>注销处理显示屏之外的东西</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180611.png"></p>
+</li>
+<li><p>触摸屏初始化</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">   tp_dev . init ();</span><br><span class="line">        /* 电阻屏坐标矫正 */</span><br><span class="line">        if (KEY_Scan( 0 ) == KEY0_PRES) /* KEY0 按下 , 则执行校准程序 */</span><br><span class="line">        &#123;</span><br><span class="line">        LCD_Clear(WHITE); /* 清屏 */</span><br><span class="line">        TP_Adjust(); /* 屏幕校准 */</span><br><span class="line">        TP_Save_Adjdata();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">	//TP_Init();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检测屏幕是否被按下，</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*Return true is the touchpad is pressed*/</span><br><span class="line">static bool touchpad_is_pressed(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    tp_dev.scan(0);</span><br><span class="line">    if(tp_dev.sta &amp; TP_PRES_DOWN)</span><br><span class="line">        return true;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>返回按下的坐标</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    (*x) = tp_dev.x[0];</span><br><span class="line">    (*y) = tp_dev.y[0];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>3、修改main.c文件</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;sys.h&quot;</span><br><span class="line">#include &quot;delay.h&quot;</span><br><span class="line">#include &quot;usart.h&quot;</span><br><span class="line">#include &quot;led.h&quot;</span><br><span class="line">#include &quot;lcd.h&quot;</span><br><span class="line">#include &quot;key.h&quot;    </span><br><span class="line">#include &quot;malloc.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#include &quot;timer.h&quot;</span><br><span class="line">#include &quot;sram.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/* LVGL */</span><br><span class="line">#include &quot;lvgl.h&quot;</span><br><span class="line">#include &quot;lv_port_indev_template.h&quot;</span><br><span class="line">#include &quot;lv_port_disp_template.h&quot;</span><br><span class="line"></span><br><span class="line">#include &quot;lv_demo_stress.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;        </span><br><span class="line">    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);</span><br><span class="line">    delay_init(168);</span><br><span class="line">    uart_init(115200);</span><br><span class="line">    LED_Init();</span><br><span class="line">    LCD_Init();</span><br><span class="line">    KEY_Init(); </span><br><span class="line">    TIM3_Int_Init(999,167);</span><br><span class="line"> </span><br><span class="line">    lv_init();</span><br><span class="line">    lv_port_disp_init();</span><br><span class="line">    lv_port_indev_init();</span><br><span class="line">    </span><br><span class="line">	lv_obj_t *label = lv_label_create(lv_scr_act());</span><br><span class="line">   	lv_label_set_text(label,&quot;Hello KUrumi!!!&quot;);</span><br><span class="line">   	lv_obj_center(label);/</span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">    &#123;	</span><br><span class="line">        lv_task_handler();</span><br><span class="line">        delay_ms(5);</span><br><span class="line">    &#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>然后你会在屏幕上看到相对应的字符串。说明移植成功。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/181528.png"></p>
+</li>
+</ul>
+<h3 id="移植GUI"><a href="#移植GUI" class="headerlink" title="移植GUI"></a>移植GUI</h3><p>1、首先你要下载一个软件，GUI-Guider工具，提供了界面设计和代码生成的功能，使用这个工具能够让我们很快的设计好一个界面。（注意：你所下载的版本最好和LVGL的版本所匹配，GUI是基于LVGL的一个工具。）</p>
+<p>2、下载后，打开软件，你会看到下面这个界面。点击创建新建项目。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131252.png"></p>
+<p>3、然后你会进入一个选择LVGL版本的界面，如图，选择你项目中使用的版本号。前面使用的v8.2，所以我们选择v8.2。点击下一步。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131409.png"></p>
+<p>跳转到下面的界面，双击simulator（模拟器），这一步是选择空白的模拟器。再点击下一步。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131853.png"></p>
+<p>进入到了Templates模板界面中，我们选择EmptyUI。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/132016.png"></p>
+<p>进入带项目配置信息界面。再右侧输入栏中。我们先填写项目的名称，例如我们输入xianshi。下面是工程的路径，最后生成的代码也在这。在下面是面板类型，我们在下拉菜单中选择Custom…，下面出现新的一行，我们依次输入LCD，宽度：320；高度：480。输入完成后，点击创建。</p>
+<p>然后进入到了下面的界面，你就可以创建你的界面了。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/132920.png"></p>
+<p>下面编辑界面我就不讲解了，讲起来比较麻烦，截图太多。下面我讲解你设计好界面后如何生成代码，如何加入到工程中。</p>
+<p>插一句：如果你设计好了界面，想看看效果，GUI提供了模拟器，可以查看，点击图中绿色的按钮，选择C，就可以模拟。但是有一个前提，就是要在你的电脑上安装Java环境，才能用模拟器。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/133552.png"></p>
+<p>如何导出代码。有两种办法。</p>
+<ul>
+<li><p>你可以去你创建时的那个目录中寻找。</p>
+</li>
+<li><p>你可以直接在工具栏中选择工具-》代码导出-》路径选择桌面。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/133832.png"></p>
+</li>
+</ul>
+<p>我用的第二种方法，在桌面上你可以看到两个文件夹，custom和generated。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134002.png"></p>
+<p>复制这两个文件夹到我们工程目录的中 “移植gui\Middlewares\LVGL\GUI_APP\“目录中</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134203.png"></p>
+<p>打开工程，在keil添加分组，为分组中添加文件中所有的.c文件。再添加文件路径。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134359.png"></p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134444.png"></p>
+<p>这样就成功把GUi生成的代码加入到了我们工程中了。</p>
+<p>然后再修改mian.c中的内容。</p>
+<ul>
+<li><p>添加头文件</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">#include &quot;gui_guider.h&quot;</span><br><span class="line">#include &quot;events_init.h&quot;</span><br><span class="line">#include &quot;custom.h&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>添加全局变量</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lv_ui guider_ui;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在mian函数中添加初始化。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setup_ui(&amp;guider_ui);</span><br><span class="line">   events_init(&amp;guider_ui);</span><br><span class="line">   custom_init(&amp;guider_ui);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译没有报错，你就可以在你的LCD屏幕上看到你设计的界面了。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32F407</tag>
+        <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>stm32F407HAL库学习-点亮LED灯</title>
     <url>/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/</url>
     <content><![CDATA[<h1 id="stm32F407HAL库学习-点亮LED灯"><a href="#stm32F407HAL库学习-点亮LED灯" class="headerlink" title="stm32F407HAL库学习-点亮LED灯"></a>stm32F407HAL库学习-点亮LED灯</h1><p>前期准备：</p>
@@ -573,249 +861,6 @@
         <tag>stm32</tag>
         <tag>stm32cubide</tag>
         <tag>HAL</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>stm32F407HAL库学习-USART串口</title>
-    <url>/2025/02/28/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-USART%E4%B8%B2%E5%8F%A3/</url>
-    <content><![CDATA[<h1 id="stm32F407HAL库学习-USART串口"><a href="#stm32F407HAL库学习-USART串口" class="headerlink" title="stm32F407HAL库学习-USART串口"></a>stm32F407HAL库学习-USART串口</h1><p>前期准备：</p>
-<ul>
-<li>stm32F407ZGT6开发板</li>
-<li>STM32CubIDE软件</li>
-<li>串口：使用USART1，PA9、PA10</li>
-</ul>
-<span id="more"></span>
-
-<h4 id="1、工程创建"><a href="#1、工程创建" class="headerlink" title="1、工程创建"></a>1、工程创建</h4><ul>
-<li><p>1、设置RCC</p>
-<ul>
-<li><p>设置为告诉外部时钟HSE ，选择外部时钟源</p>
-<p>  ![](屏幕截图 2025-02-28 092839.png)</p>
-</li>
-</ul>
-</li>
-<li><p>2、设置串口</p>
-<ul>
-<li><p>点击USART1</p>
-</li>
-<li><p>设置Mode为<strong>异步通信(Asynchronous)</strong> 。</p>
-<ul>
-<li>其他模式选项包括：<ul>
-<li>Synchronous（同步模式）：用于需要时钟信号的通信，适合与 SPI 或其他同步设备通信。</li>
-<li>Single Wire (Half-Duplex)（单线半双工）：使用单根数据线进行双向通信，常见于节省引脚的应用。</li>
-<li>Multiprocessor Communication（多处理器通信）：用于多个设备通过同一总线通信。</li>
-<li>IrDA（红外数据通信）：用于红外通信。</li>
-<li>LIN（本地互联网络）：用于汽车电子领域的低速通信。</li>
-<li>SmartCard（智能卡）：用于与智能卡通信。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>基础参数：<strong>波特率为115200 Bits&#x2F;s。传输数据长度为8 Bit。奇偶检验无，停止位1   接收和发送都使能</strong> </p>
-</li>
-<li><p>GPIO引脚设置 USART1_RX&#x2F;USART_TX</p>
-</li>
-<li><p>NVIC Settings 一栏使能接收中断</p>
-<p>  ![](屏幕截图 2025-02-28 093134.png)</p>
-</li>
-</ul>
-</li>
-<li><p>3、设置时钟</p>
-<p>  ![](屏幕截图 2025-02-28 093359.png)</p>
-</li>
-<li><p>4、生成代码</p>
-</li>
-</ul>
-<h4 id="重新定义Printf函数"><a href="#重新定义Printf函数" class="headerlink" title="重新定义Printf函数"></a>重新定义Printf函数</h4><ul>
-<li><p>在main.c文件中加入下面代码。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">#ifdef __GNUC__</span><br><span class="line">#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)</span><br><span class="line">#else</span><br><span class="line">#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">PUTCHAR_PROTOTYPE</span><br><span class="line">&#123;</span><br><span class="line">	HAL_UART_Transmit(&amp;huart1, (uint8_t*)&amp;ch,1,HAL_MAX_DELAY);</span><br><span class="line">    return ch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="中断方式接收数据"><a href="#中断方式接收数据" class="headerlink" title="中断方式接收数据"></a>中断方式接收数据</h4><p>1、USART中断接收的基本原理</p>
-<p>USART（通用同步异步收发器）shi为控制器常用的通信模块，通过串口与外部设备进行通信。中断接收是当USART接收到数据时，硬件会触发一个中断，通知CPU执行预定义的回调函数来处理数据。</p>
-<p>2、stm32HAL库中的中断接收</p>
-<ul>
-<li><p>函数原型：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>huart：UART 句柄，例如 &amp;huart1，指向已初始化的 UART 实例。</li>
-<li>pData：接收数据的缓冲区指针。</li>
-<li>Size：期望接收的字节数。</li>
-</ul>
-</li>
-<li><p>工作机制：</p>
-<ul>
-<li>调用HAL_UART_Receive_IT后，硬件会收指定size的数据后触发中断</li>
-<li>当中断发生后，HAL库会调用回调函数，HAL_UART_RxCpltCallback。</li>
-<li>在回调函数中，可以处理接收到的数据，并重新调用HAL_UART_Receive_IT 继续接收。</li>
-</ul>
-</li>
-</ul>
-<p>3、中断接收实现</p>
-<p>实现一个基于环形缓冲区的UART中断接收机制。</p>
-<ul>
-<li><p>初始化</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    HAL_Init();</span><br><span class="line">    SystemClock_Config();</span><br><span class="line">    MX_GPIO_Init();</span><br><span class="line">    MX_USART1_UART_Init();  // 初始化 USART1</span><br><span class="line">    uint8_t rxBuffer[1] = &#123;0&#125;;</span><br><span class="line">    HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 启动中断接收</span><br><span class="line">    while (1)</span><br><span class="line">    &#123;</span><br><span class="line">        while (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">            uint8_t data = UART_RX_GetByte();</span><br><span class="line">            HAL_UART_Transmit(&amp;huart1, &amp;data, 1, 100);  // 回显数据</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>MX_USART1_UART_Init：初始化USART1</li>
-<li>HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);：启动中断接收，每次接收1字节并存储到rxBuffer中。</li>
-</ul>
-</li>
-<li><p>中断回调处理</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)</span><br><span class="line">&#123;</span><br><span class="line">    if (huart-&gt;Instance == USART1) &#123;</span><br><span class="line">        UART_RX_PutByte(rxBuffer[0]);  // 将接收到的字节存入环形缓冲区</span><br><span class="line">        HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 重新启动接收</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>数据储存：将接收的数据存入环形缓冲区。</li>
-<li>持续接收</li>
-</ul>
-</li>
-<li><p>环形缓冲区管理</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    uint8_t buffer[UART_RX_BUFFER_SIZE];</span><br><span class="line">    volatile uint16_t head;  // 写指针</span><br><span class="line">    volatile uint16_t tail;  // 读指针</span><br><span class="line">&#125; UART_RX_CircularBuffer;</span><br><span class="line"></span><br><span class="line">// 判断缓冲区是否满</span><br><span class="line">bool UART_RX_IsFull(void) &#123;</span><br><span class="line">    return ((uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE) == uart_rx_buffer.tail;</span><br><span class="line">&#125;</span><br><span class="line">// 判断缓冲区是否空</span><br><span class="line">bool UART_RX_IsEmpty(void) &#123;</span><br><span class="line">    return (uart_rx_buffer.head == uart_rx_buffer.tail);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 写入一个字节到缓冲区</span><br><span class="line">void UART_RX_PutByte(uint8_t data) &#123;</span><br><span class="line">    if (!UART_RX_IsFull()) &#123;</span><br><span class="line">        uart_rx_buffer.buffer[uart_rx_buffer.head] = data;</span><br><span class="line">        uart_rx_buffer.head = (uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 从缓冲区读取一个字节</span><br><span class="line">uint8_t UART_RX_GetByte(void) &#123;</span><br><span class="line">    uint8_t data = 0;</span><br><span class="line">    if (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">        data = uart_rx_buffer.buffer[uart_rx_buffer.tail];</span><br><span class="line">        uart_rx_buffer.tail = (uart_rx_buffer.tail + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    return data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>环形缓冲区：通过head和tail指针实现循环使用，避免数据覆盖。</p>
-</li>
-<li><p>中断安全：head和tail使用volation修饰，请避免了错误</p>
-</li>
-<li><p><strong>UART_RX_IsFull</strong> ：判断缓冲区是否已满。</p>
-</li>
-<li><p><strong>UART_RX_IsEmpty</strong>：判断缓冲区是否已空</p>
-</li>
-<li><p><strong>UART_RX_PutByte</strong>：写入一个字节到缓冲区，如果未满，则写入head当前的下一个位置，并且用%的方法来循环写入缓冲区。</p>
-</li>
-<li><p><strong>UART_RX_GetByte</strong>：读取一个字节到缓冲区，如果未满，则读取tail当前的下一个位置，并且用%的方法来循环读取缓冲区。</p>
-</li>
-</ul>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32</tag>
-        <tag>stm32cubide</tag>
-        <tag>HAL</tag>
-        <tag>USART</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>stm32F407移植LVGL+GUI</title>
-    <url>/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/</url>
-    <content><![CDATA[<h1 id="stm32F407移植LVGL-GUI"><a href="#stm32F407移植LVGL-GUI" class="headerlink" title="stm32F407移植LVGL+GUI"></a>stm32F407移植LVGL+GUI</h1><h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><ul>
-<li>我现在使用的开发板是STM32F407ZGT6.</li>
-<li>从网站上下载LVGL。官方网址：<a href="https://github.com/lvgl/lvgl%EF%BC%8C%E6%88%91%E5%9C%A8%E8%BF%99%E6%AC%A1%E7%A7%BB%E6%A4%8D%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E7%89%88%E6%9C%AC%E4%B8%BAv8.2%E3%80%82%EF%BC%88%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E7%9B%B8%E5%90%8C%E7%89%88%E6%9C%AC%E7%9A%84%EF%BC%8C%E5%9C%A8%E5%90%8E%E9%9D%A2%E5%A6%82%E6%9E%9C%E7%89%88%E6%9C%AC%E4%B8%8D%E5%8C%B9%E9%85%8D%E7%9A%84%E8%AF%9D%EF%BC%8C%E4%BC%9A%E5%87%BA%E7%8E%B0%E5%90%84%E7%A7%8D%E9%97%AE%E9%A2%98%EF%BC%8C%E6%89%80%E4%BB%A5%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E5%92%8C%E6%88%91%E4%B8%80%E6%A0%B7%E7%9A%84%E7%89%88%E6%9C%AC%EF%BC%89">https://github.com/lvgl/lvgl，我在这次移植过程中使用的版本为v8.2。（建议使用相同版本的，在后面如果版本不匹配的话，会出现各种问题，所以建议使用和我一样的版本）</a></li>
-<li>移植之前，准备好LCD显示实验、触摸屏实验、基本定时器实验、内存管理实验。（这里使用的所有文件都是正点原子的例程代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/165612.png"></li>
-<li>我们以内存管理实现为基础，向其添加其他文件所用的相关代码。并编译后，没有报错的话，开始正式移植。</li>
-</ul>
-<span id="more"></span>
-
-<h3 id="移植LVGL"><a href="#移植LVGL" class="headerlink" title="移植LVGL"></a>移植LVGL</h3><h4 id="1、准备LVGL源码"><a href="#1、准备LVGL源码" class="headerlink" title="1、准备LVGL源码"></a>1、准备LVGL源码</h4><p>1、当你从上述网址中下载了LVGL的源码后，你会得到一个压缩包，解压后会得到一个如图所示的文件夹。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170022.png"></p>
-<p>2、将上图中的lv_conf_template.h 文件改名为 lv_conf.h。然后打开这个文件，在最开始的地方，找到下面的代码，并按下面的要求修改。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
-
-
-
-<p>3、删除一些我们不要的文件。</p>
-<p>在lvgl-8.2.0目录下的文件，除了demos、examples、src、lv_conf.h、lvgl.h，其他文件全部删除。最后的结果如图</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170831.png"></p>
-<p>然后打开文件examples，将其中的文件除了porting，其他全部删除。结果如图。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171049.png"></p>
-<h3 id="2、裸机移植LVGL"><a href="#2、裸机移植LVGL" class="headerlink" title="2、裸机移植LVGL"></a>2、裸机移植LVGL</h3><p>打开内存管理实验文件夹，没有移植之前的工程目录大概如下。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171409.png"></p>
-<p>我们在其中新建一些文件夹，用来存放我们要移植的代码，从Middlewares开始创建，内容如图.</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171555.png"></p>
-<p>创建完成后，我们可以把处理好的LVGL中的文件examples、src、lv_conf.h、lvgl.h这四个复制到Middlewares&#x2F;LVGL&#x2F;GUI&#x2F;lvgl目录下。结果如图</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171908.png"></p>
-<p>打开内存管理的工程，进入到keil界面的操作。</p>
-<p>点击图中红色方框。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172136.png"></p>
-<p>进入到下图这个界面按照图中创建分组，并添加相关的代码。（请注意，添加的代码比较烦，所以一定要注意）</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172319.png"></p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172602.png"></p>
-<p>添加相关的头文件路径（按照图中自上而下顺序操作）</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172743.png"></p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172917.png"></p>
-<p>开启C99模式</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/173013.png"></p>
-<p>然后编译一下，如果报错了，请检查一下，文件是否添加进来了，头文件路径是否正确。如果正常没有报错，但是会有一些报错。不必理会。</p>
-<h3 id="修改代码"><a href="#修改代码" class="headerlink" title="修改代码"></a>修改代码</h3><p>1、为LVGL提供时基。</p>
-<p>打开我们工程中的timer.c。在头部添加LVGL的头文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lvgl.h&quot;  </span><br></pre></td></tr></table></figure>
-
-<p>在中断中添加lvgl的心跳函数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//定时器3中断服务函数</span><br><span class="line">void TIM3_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET) //溢出中断</span><br><span class="line">	&#123;</span><br><span class="line">		 lv_tick_inc ( 1 );</span><br><span class="line">	&#125;</span><br><span class="line">	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上述源码中，定时器中断回调函数调用了 LVGL 的 lv_tick_inc 函数，该函数可以让 LVGL内部的时基参数加 1 （入口参数为 1 的情况下）， 这里要注意，你定时器设置多少毫秒进入一次中断，那么， lv_tick_inc();函数的入口参数就设置为多少，不然时基就不准确。</p>
-<p>接下来打开main.c文件，在mian函数中添加初始化。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">TIM3_Int_Init(999,167);</span><br></pre></td></tr></table></figure>
-
-
-
-<p>2、配置显示屏、触摸输入驱动。</p>
-<p>打开 Middlewares&#x2F;lvgl&#x2F;examples&#x2F;porting 分组中的 lv_port_disp_template.c&#x2F;h（显示屏相关）和 lv_port_indev_template.c&#x2F;h （触摸输入相关）文件，将这 4 个文件中的条件编译指令 #if 0 都修改成#if 1 ，如下源码所示：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>1、修改lv_port_disp_template.c文件。（基本按照图中改好，可能跟下面的截图不同，以下为准，因为这是我添加别的功能，修改了代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code.png"></p>
-<ul>
-<li><p>添加lcd的头文件，我们要使用lcd显示界面。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lcd.h&quot;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>配置屏幕的分辨率。我是用的3.5存的TFTLCD屏幕，代码如下</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define MY_DISP_HOR_RES 320   /* 屏幕宽度 */</span><br><span class="line">#define MY_DISP_VER_RES 480   /* 屏幕高度 */</span><br></pre></td></tr></table></figure>
-
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175313.png"></p>
-</li>
-<li><p>在lv_port_disp_init函数中，按照图片注释下面的，保留上面的。初始化缓冲区，我们默认使用单行缓冲区。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175409.png"></p>
-</li>
-<li><p>修改分辨率。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175438.png"></p>
-</li>
-<li><p>在disp_init函数中，添加LCD的初始化。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175501.png"></p>
-</li>
-<li><p>配置花点函数，这个函数在lcd.h中可以找到。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175534.png"></p>
-</li>
-</ul>
-</li>
-<li><p>2、修改lv_port_indev_template.c文件</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code2.png"></p>
-<ul>
-<li><p>添加头文件</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180544.png"></p>
-</li>
-<li><p>注销处理显示屏之外的东西</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180611.png"></p>
-</li>
-<li><p>触摸屏初始化</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">   tp_dev . init ();</span><br><span class="line">        /* 电阻屏坐标矫正 */</span><br><span class="line">        if (KEY_Scan( 0 ) == KEY0_PRES) /* KEY0 按下 , 则执行校准程序 */</span><br><span class="line">        &#123;</span><br><span class="line">        LCD_Clear(WHITE); /* 清屏 */</span><br><span class="line">        TP_Adjust(); /* 屏幕校准 */</span><br><span class="line">        TP_Save_Adjdata();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">	//TP_Init();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>检测屏幕是否被按下，</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*Return true is the touchpad is pressed*/</span><br><span class="line">static bool touchpad_is_pressed(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    tp_dev.scan(0);</span><br><span class="line">    if(tp_dev.sta &amp; TP_PRES_DOWN)</span><br><span class="line">        return true;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>返回按下的坐标</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    (*x) = tp_dev.x[0];</span><br><span class="line">    (*y) = tp_dev.y[0];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>3、修改main.c文件</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;sys.h&quot;</span><br><span class="line">#include &quot;delay.h&quot;</span><br><span class="line">#include &quot;usart.h&quot;</span><br><span class="line">#include &quot;led.h&quot;</span><br><span class="line">#include &quot;lcd.h&quot;</span><br><span class="line">#include &quot;key.h&quot;    </span><br><span class="line">#include &quot;malloc.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#include &quot;timer.h&quot;</span><br><span class="line">#include &quot;sram.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/* LVGL */</span><br><span class="line">#include &quot;lvgl.h&quot;</span><br><span class="line">#include &quot;lv_port_indev_template.h&quot;</span><br><span class="line">#include &quot;lv_port_disp_template.h&quot;</span><br><span class="line"></span><br><span class="line">#include &quot;lv_demo_stress.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;        </span><br><span class="line">    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);</span><br><span class="line">    delay_init(168);</span><br><span class="line">    uart_init(115200);</span><br><span class="line">    LED_Init();</span><br><span class="line">    LCD_Init();</span><br><span class="line">    KEY_Init(); </span><br><span class="line">    TIM3_Int_Init(999,167);</span><br><span class="line"> </span><br><span class="line">    lv_init();</span><br><span class="line">    lv_port_disp_init();</span><br><span class="line">    lv_port_indev_init();</span><br><span class="line">    </span><br><span class="line">	lv_obj_t *label = lv_label_create(lv_scr_act());</span><br><span class="line">   	lv_label_set_text(label,&quot;Hello KUrumi!!!&quot;);</span><br><span class="line">   	lv_obj_center(label);/</span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">    &#123;	</span><br><span class="line">        lv_task_handler();</span><br><span class="line">        delay_ms(5);</span><br><span class="line">    &#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>然后你会在屏幕上看到相对应的字符串。说明移植成功。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/181528.png"></p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32F407</tag>
-        <tag>多媒体项目</tag>
       </tags>
   </entry>
   <entry>
@@ -966,6 +1011,74 @@
       <tags>
         <tag>多媒体项目</tag>
         <tag>stm32</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
+    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
+    <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>杂项设备</title>
+    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
+    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
+<li><p>概念：</p>
+<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
+</li>
+<li><p>特点：</p>
+<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
+<p>  结构简单</p>
+<p>  提供基本的读写操作接口</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​	2、定义文件操作结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	3、定义杂项设备结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	参数：</p>
+<pre><code>	* minor：次设备号。
+	* name：设备节点名称。
+	* fops：文件操作结构体指针。
+	* 其他的用到的不多，用到可以在搜。
+</code></pre>
+<p>​	4、注册杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	5、注销杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
+<li><p>创建设备节点：</p>
+<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
+</li>
+<li><p>应用程序访问：</p>
+<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>杂项设备</tag>
+        <tag>平台总线</tag>
       </tags>
   </entry>
   <entry>
@@ -1371,74 +1484,6 @@
 ]]></content>
       <tags>
         <tag>测试</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>杂项设备</title>
-    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
-    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
-<li><p>概念：</p>
-<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
-</li>
-<li><p>特点：</p>
-<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
-<p>  结构简单</p>
-<p>  提供基本的读写操作接口</p>
-</li>
-</ul>
-<span id="more"></span>
-
-<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
-
-<p>​	2、定义文件操作结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	3、定义杂项设备结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	参数：</p>
-<pre><code>	* minor：次设备号。
-	* name：设备节点名称。
-	* fops：文件操作结构体指针。
-	* 其他的用到的不多，用到可以在搜。
-</code></pre>
-<p>​	4、注册杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	5、注销杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
-
-
-
-<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
-<li><p>创建设备节点：</p>
-<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
-</li>
-<li><p>应用程序访问：</p>
-<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>杂项设备</tag>
-        <tag>平台总线</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
-    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
-    <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
