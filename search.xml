@@ -91,81 +91,6 @@
       </tags>
   </entry>
   <entry>
-    <title>FSMC—扩展外部SRAM</title>
-    <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
-    <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
-<p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
-<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
-<ul>
-<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
-<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
-<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
-<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
-</ul>
-<span id="more"></span>
-
-<p>在我们使用的是IS62WV51216的SRAM芯片内部结构框图。以他为模型学习。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092613.png"></p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092731.png"></p>
-<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092950.png"></p>
-<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
-<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits）。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/093304.png"></p>
-<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
-<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
-<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
-<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
-<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
-<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
-<p>OE、WE可以控制读写使能，防止误操作。</p>
-<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/094859.png"></p>
-<p>读写时序的流程：</p>
-<ul>
-<li>主机使能地址信号线，发送要访问的存储器地址。</li>
-<li>控制片选信号CS1、CS2，使能存储芯片</li>
-<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
-<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
-<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
-</ul>
-<h4 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h4><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
-<h4 id="3、FSMC框图解析"><a href="#3、FSMC框图解析" class="headerlink" title="3、FSMC框图解析"></a>3、FSMC框图解析</h4><p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095536.png"></p>
-<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095737.png"></p>
-<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
-<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
-<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
-<ul>
-<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
-</li>
-<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
-</li>
-<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
-</li>
-</ul>
-<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
-<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/100215.png"></p>
-<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
-<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/105408.png"></p>
-<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111455.png"></p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111509.png"></p>
-<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
-<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。在地址建立周期中，地址线发出要访问的地址， 数据掩码信号线指示出要读取地址的高、低字节部分，片选信号使能存储器芯片；地址建立周期结束后读使能信号线发出读使能信号， 接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</p>
-<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32F407</tag>
-        <tag>多媒体项目</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>OTA远程更新</title>
     <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
     <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
@@ -263,128 +188,78 @@
       </tags>
   </entry>
   <entry>
-    <title>stm32F407HAL库学习-USART串口</title>
-    <url>/2025/02/28/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-USART%E4%B8%B2%E5%8F%A3/</url>
-    <content><![CDATA[<h1 id="stm32F407HAL库学习-USART串口"><a href="#stm32F407HAL库学习-USART串口" class="headerlink" title="stm32F407HAL库学习-USART串口"></a>stm32F407HAL库学习-USART串口</h1><p>前期准备：</p>
+    <title>FSMC—扩展外部SRAM</title>
+    <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
+    <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
+<p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
+<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
 <ul>
-<li>stm32F407ZGT6开发板</li>
-<li>STM32CubIDE软件</li>
-<li>串口：使用USART1，PA9、PA10</li>
+<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
+<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
+<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
+<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
 </ul>
 <span id="more"></span>
 
-<h4 id="1、工程创建"><a href="#1、工程创建" class="headerlink" title="1、工程创建"></a>1、工程创建</h4><ul>
-<li><p>1、设置RCC</p>
+<p>在我们使用的是IS62WV51216的SRAM芯片内部结构框图。以他为模型学习。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092613.png"></p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092731.png"></p>
+<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092950.png"></p>
+<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
+<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits）。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/093304.png"></p>
+<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
+<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
+<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
+<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
+<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
+<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
+<p>OE、WE可以控制读写使能，防止误操作。</p>
+<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/094859.png"></p>
+<p>读写时序的流程：</p>
 <ul>
-<li><p>设置为告诉外部时钟HSE ，选择外部时钟源</p>
-<p>  ![](屏幕截图 2025-02-28 092839.png)</p>
-</li>
+<li>主机使能地址信号线，发送要访问的存储器地址。</li>
+<li>控制片选信号CS1、CS2，使能存储芯片</li>
+<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
+<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
+<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
 </ul>
-</li>
-<li><p>2、设置串口</p>
+<h4 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h4><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
+<h4 id="3、FSMC框图解析"><a href="#3、FSMC框图解析" class="headerlink" title="3、FSMC框图解析"></a>3、FSMC框图解析</h4><p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095536.png"></p>
+<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095737.png"></p>
+<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
+<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
+<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
 <ul>
-<li><p>点击USART1</p>
+<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
 </li>
-<li><p>设置Mode为<strong>异步通信(Asynchronous)</strong> 。</p>
-<ul>
-<li>其他模式选项包括：<ul>
-<li>Synchronous（同步模式）：用于需要时钟信号的通信，适合与 SPI 或其他同步设备通信。</li>
-<li>Single Wire (Half-Duplex)（单线半双工）：使用单根数据线进行双向通信，常见于节省引脚的应用。</li>
-<li>Multiprocessor Communication（多处理器通信）：用于多个设备通过同一总线通信。</li>
-<li>IrDA（红外数据通信）：用于红外通信。</li>
-<li>LIN（本地互联网络）：用于汽车电子领域的低速通信。</li>
-<li>SmartCard（智能卡）：用于与智能卡通信。</li>
-</ul>
+<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
+</li>
+<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
 </li>
 </ul>
-</li>
-<li><p>基础参数：<strong>波特率为115200 Bits&#x2F;s。传输数据长度为8 Bit。奇偶检验无，停止位1   接收和发送都使能</strong> </p>
-</li>
-<li><p>GPIO引脚设置 USART1_RX&#x2F;USART_TX</p>
-</li>
-<li><p>NVIC Settings 一栏使能接收中断</p>
-<p>  ![](屏幕截图 2025-02-28 093134.png)</p>
-</li>
-</ul>
-</li>
-<li><p>3、设置时钟</p>
-<p>  ![](屏幕截图 2025-02-28 093359.png)</p>
-</li>
-<li><p>4、生成代码</p>
-</li>
-</ul>
-<h4 id="重新定义Printf函数"><a href="#重新定义Printf函数" class="headerlink" title="重新定义Printf函数"></a>重新定义Printf函数</h4><ul>
-<li><p>在main.c文件中加入下面代码。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">#ifdef __GNUC__</span><br><span class="line">#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)</span><br><span class="line">#else</span><br><span class="line">#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">PUTCHAR_PROTOTYPE</span><br><span class="line">&#123;</span><br><span class="line">	HAL_UART_Transmit(&amp;huart1, (uint8_t*)&amp;ch,1,HAL_MAX_DELAY);</span><br><span class="line">    return ch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="中断方式接收数据"><a href="#中断方式接收数据" class="headerlink" title="中断方式接收数据"></a>中断方式接收数据</h4><p>1、USART中断接收的基本原理</p>
-<p>USART（通用同步异步收发器）shi为控制器常用的通信模块，通过串口与外部设备进行通信。中断接收是当USART接收到数据时，硬件会触发一个中断，通知CPU执行预定义的回调函数来处理数据。</p>
-<p>2、stm32HAL库中的中断接收</p>
-<ul>
-<li><p>函数原型：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>huart：UART 句柄，例如 &amp;huart1，指向已初始化的 UART 实例。</li>
-<li>pData：接收数据的缓冲区指针。</li>
-<li>Size：期望接收的字节数。</li>
-</ul>
-</li>
-<li><p>工作机制：</p>
-<ul>
-<li>调用HAL_UART_Receive_IT后，硬件会收指定size的数据后触发中断</li>
-<li>当中断发生后，HAL库会调用回调函数，HAL_UART_RxCpltCallback。</li>
-<li>在回调函数中，可以处理接收到的数据，并重新调用HAL_UART_Receive_IT 继续接收。</li>
-</ul>
-</li>
-</ul>
-<p>3、中断接收实现</p>
-<p>实现一个基于环形缓冲区的UART中断接收机制。</p>
-<ul>
-<li><p>初始化</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    HAL_Init();</span><br><span class="line">    SystemClock_Config();</span><br><span class="line">    MX_GPIO_Init();</span><br><span class="line">    MX_USART1_UART_Init();  // 初始化 USART1</span><br><span class="line">    uint8_t rxBuffer[1] = &#123;0&#125;;</span><br><span class="line">    HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 启动中断接收</span><br><span class="line">    while (1)</span><br><span class="line">    &#123;</span><br><span class="line">        while (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">            uint8_t data = UART_RX_GetByte();</span><br><span class="line">            HAL_UART_Transmit(&amp;huart1, &amp;data, 1, 100);  // 回显数据</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>MX_USART1_UART_Init：初始化USART1</li>
-<li>HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);：启动中断接收，每次接收1字节并存储到rxBuffer中。</li>
-</ul>
-</li>
-<li><p>中断回调处理</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)</span><br><span class="line">&#123;</span><br><span class="line">    if (huart-&gt;Instance == USART1) &#123;</span><br><span class="line">        UART_RX_PutByte(rxBuffer[0]);  // 将接收到的字节存入环形缓冲区</span><br><span class="line">        HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 重新启动接收</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>数据储存：将接收的数据存入环形缓冲区。</li>
-<li>持续接收</li>
-</ul>
-</li>
-<li><p>环形缓冲区管理</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    uint8_t buffer[UART_RX_BUFFER_SIZE];</span><br><span class="line">    volatile uint16_t head;  // 写指针</span><br><span class="line">    volatile uint16_t tail;  // 读指针</span><br><span class="line">&#125; UART_RX_CircularBuffer;</span><br><span class="line"></span><br><span class="line">// 判断缓冲区是否满</span><br><span class="line">bool UART_RX_IsFull(void) &#123;</span><br><span class="line">    return ((uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE) == uart_rx_buffer.tail;</span><br><span class="line">&#125;</span><br><span class="line">// 判断缓冲区是否空</span><br><span class="line">bool UART_RX_IsEmpty(void) &#123;</span><br><span class="line">    return (uart_rx_buffer.head == uart_rx_buffer.tail);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 写入一个字节到缓冲区</span><br><span class="line">void UART_RX_PutByte(uint8_t data) &#123;</span><br><span class="line">    if (!UART_RX_IsFull()) &#123;</span><br><span class="line">        uart_rx_buffer.buffer[uart_rx_buffer.head] = data;</span><br><span class="line">        uart_rx_buffer.head = (uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 从缓冲区读取一个字节</span><br><span class="line">uint8_t UART_RX_GetByte(void) &#123;</span><br><span class="line">    uint8_t data = 0;</span><br><span class="line">    if (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">        data = uart_rx_buffer.buffer[uart_rx_buffer.tail];</span><br><span class="line">        uart_rx_buffer.tail = (uart_rx_buffer.tail + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    return data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>环形缓冲区：通过head和tail指针实现循环使用，避免数据覆盖。</p>
-</li>
-<li><p>中断安全：head和tail使用volation修饰，请避免了错误</p>
-</li>
-<li><p><strong>UART_RX_IsFull</strong> ：判断缓冲区是否已满。</p>
-</li>
-<li><p><strong>UART_RX_IsEmpty</strong>：判断缓冲区是否已空</p>
-</li>
-<li><p><strong>UART_RX_PutByte</strong>：写入一个字节到缓冲区，如果未满，则写入head当前的下一个位置，并且用%的方法来循环写入缓冲区。</p>
-</li>
-<li><p><strong>UART_RX_GetByte</strong>：读取一个字节到缓冲区，如果未满，则读取tail当前的下一个位置，并且用%的方法来循环读取缓冲区。</p>
-</li>
-</ul>
-</li>
-</ul>
+<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
+<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/100215.png"></p>
+<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
+<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/105408.png"></p>
+<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111455.png"></p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111509.png"></p>
+<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
+<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。在地址建立周期中，地址线发出要访问的地址， 数据掩码信号线指示出要读取地址的高、低字节部分，片选信号使能存储器芯片；地址建立周期结束后读使能信号线发出读使能信号， 接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</p>
+<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
 ]]></content>
       <categories>
         <category>stm32F407</category>
       </categories>
       <tags>
-        <tag>stm32</tag>
-        <tag>stm32cubide</tag>
-        <tag>HAL</tag>
-        <tag>USART</tag>
+        <tag>stm32F407</tag>
+        <tag>多媒体项目</tag>
       </tags>
   </entry>
   <entry>
@@ -535,6 +410,131 @@
         <tag>Pinctrl子系统</tag>
         <tag>GPIO子系统</tag>
         <tag>Linux学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>stm32F407HAL库学习-USART串口</title>
+    <url>/2025/02/28/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-USART%E4%B8%B2%E5%8F%A3/</url>
+    <content><![CDATA[<h1 id="stm32F407HAL库学习-USART串口"><a href="#stm32F407HAL库学习-USART串口" class="headerlink" title="stm32F407HAL库学习-USART串口"></a>stm32F407HAL库学习-USART串口</h1><p>前期准备：</p>
+<ul>
+<li>stm32F407ZGT6开发板</li>
+<li>STM32CubIDE软件</li>
+<li>串口：使用USART1，PA9、PA10</li>
+</ul>
+<span id="more"></span>
+
+<h4 id="1、工程创建"><a href="#1、工程创建" class="headerlink" title="1、工程创建"></a>1、工程创建</h4><ul>
+<li><p>1、设置RCC</p>
+<ul>
+<li><p>设置为告诉外部时钟HSE ，选择外部时钟源</p>
+<p>  ![](屏幕截图 2025-02-28 092839.png)</p>
+</li>
+</ul>
+</li>
+<li><p>2、设置串口</p>
+<ul>
+<li><p>点击USART1</p>
+</li>
+<li><p>设置Mode为<strong>异步通信(Asynchronous)</strong> 。</p>
+<ul>
+<li>其他模式选项包括：<ul>
+<li>Synchronous（同步模式）：用于需要时钟信号的通信，适合与 SPI 或其他同步设备通信。</li>
+<li>Single Wire (Half-Duplex)（单线半双工）：使用单根数据线进行双向通信，常见于节省引脚的应用。</li>
+<li>Multiprocessor Communication（多处理器通信）：用于多个设备通过同一总线通信。</li>
+<li>IrDA（红外数据通信）：用于红外通信。</li>
+<li>LIN（本地互联网络）：用于汽车电子领域的低速通信。</li>
+<li>SmartCard（智能卡）：用于与智能卡通信。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>基础参数：<strong>波特率为115200 Bits&#x2F;s。传输数据长度为8 Bit。奇偶检验无，停止位1   接收和发送都使能</strong> </p>
+</li>
+<li><p>GPIO引脚设置 USART1_RX&#x2F;USART_TX</p>
+</li>
+<li><p>NVIC Settings 一栏使能接收中断</p>
+<p>  ![](屏幕截图 2025-02-28 093134.png)</p>
+</li>
+</ul>
+</li>
+<li><p>3、设置时钟</p>
+<p>  ![](屏幕截图 2025-02-28 093359.png)</p>
+</li>
+<li><p>4、生成代码</p>
+</li>
+</ul>
+<h4 id="重新定义Printf函数"><a href="#重新定义Printf函数" class="headerlink" title="重新定义Printf函数"></a>重新定义Printf函数</h4><ul>
+<li><p>在main.c文件中加入下面代码。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">#ifdef __GNUC__</span><br><span class="line">#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)</span><br><span class="line">#else</span><br><span class="line">#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">PUTCHAR_PROTOTYPE</span><br><span class="line">&#123;</span><br><span class="line">	HAL_UART_Transmit(&amp;huart1, (uint8_t*)&amp;ch,1,HAL_MAX_DELAY);</span><br><span class="line">    return ch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="中断方式接收数据"><a href="#中断方式接收数据" class="headerlink" title="中断方式接收数据"></a>中断方式接收数据</h4><p>1、USART中断接收的基本原理</p>
+<p>USART（通用同步异步收发器）shi为控制器常用的通信模块，通过串口与外部设备进行通信。中断接收是当USART接收到数据时，硬件会触发一个中断，通知CPU执行预定义的回调函数来处理数据。</p>
+<p>2、stm32HAL库中的中断接收</p>
+<ul>
+<li><p>函数原型：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>huart：UART 句柄，例如 &amp;huart1，指向已初始化的 UART 实例。</li>
+<li>pData：接收数据的缓冲区指针。</li>
+<li>Size：期望接收的字节数。</li>
+</ul>
+</li>
+<li><p>工作机制：</p>
+<ul>
+<li>调用HAL_UART_Receive_IT后，硬件会收指定size的数据后触发中断</li>
+<li>当中断发生后，HAL库会调用回调函数，HAL_UART_RxCpltCallback。</li>
+<li>在回调函数中，可以处理接收到的数据，并重新调用HAL_UART_Receive_IT 继续接收。</li>
+</ul>
+</li>
+</ul>
+<p>3、中断接收实现</p>
+<p>实现一个基于环形缓冲区的UART中断接收机制。</p>
+<ul>
+<li><p>初始化</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    HAL_Init();</span><br><span class="line">    SystemClock_Config();</span><br><span class="line">    MX_GPIO_Init();</span><br><span class="line">    MX_USART1_UART_Init();  // 初始化 USART1</span><br><span class="line">    uint8_t rxBuffer[1] = &#123;0&#125;;</span><br><span class="line">    HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 启动中断接收</span><br><span class="line">    while (1)</span><br><span class="line">    &#123;</span><br><span class="line">        while (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">            uint8_t data = UART_RX_GetByte();</span><br><span class="line">            HAL_UART_Transmit(&amp;huart1, &amp;data, 1, 100);  // 回显数据</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>MX_USART1_UART_Init：初始化USART1</li>
+<li>HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);：启动中断接收，每次接收1字节并存储到rxBuffer中。</li>
+</ul>
+</li>
+<li><p>中断回调处理</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)</span><br><span class="line">&#123;</span><br><span class="line">    if (huart-&gt;Instance == USART1) &#123;</span><br><span class="line">        UART_RX_PutByte(rxBuffer[0]);  // 将接收到的字节存入环形缓冲区</span><br><span class="line">        HAL_UART_Receive_IT(&amp;huart1, rxBuffer, 1);  // 重新启动接收</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>数据储存：将接收的数据存入环形缓冲区。</li>
+<li>持续接收</li>
+</ul>
+</li>
+<li><p>环形缓冲区管理</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    uint8_t buffer[UART_RX_BUFFER_SIZE];</span><br><span class="line">    volatile uint16_t head;  // 写指针</span><br><span class="line">    volatile uint16_t tail;  // 读指针</span><br><span class="line">&#125; UART_RX_CircularBuffer;</span><br><span class="line"></span><br><span class="line">// 判断缓冲区是否满</span><br><span class="line">bool UART_RX_IsFull(void) &#123;</span><br><span class="line">    return ((uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE) == uart_rx_buffer.tail;</span><br><span class="line">&#125;</span><br><span class="line">// 判断缓冲区是否空</span><br><span class="line">bool UART_RX_IsEmpty(void) &#123;</span><br><span class="line">    return (uart_rx_buffer.head == uart_rx_buffer.tail);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 写入一个字节到缓冲区</span><br><span class="line">void UART_RX_PutByte(uint8_t data) &#123;</span><br><span class="line">    if (!UART_RX_IsFull()) &#123;</span><br><span class="line">        uart_rx_buffer.buffer[uart_rx_buffer.head] = data;</span><br><span class="line">        uart_rx_buffer.head = (uart_rx_buffer.head + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 从缓冲区读取一个字节</span><br><span class="line">uint8_t UART_RX_GetByte(void) &#123;</span><br><span class="line">    uint8_t data = 0;</span><br><span class="line">    if (!UART_RX_IsEmpty()) &#123;</span><br><span class="line">        data = uart_rx_buffer.buffer[uart_rx_buffer.tail];</span><br><span class="line">        uart_rx_buffer.tail = (uart_rx_buffer.tail + 1) % UART_RX_BUFFER_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    return data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>环形缓冲区：通过head和tail指针实现循环使用，避免数据覆盖。</p>
+</li>
+<li><p>中断安全：head和tail使用volation修饰，请避免了错误</p>
+</li>
+<li><p><strong>UART_RX_IsFull</strong> ：判断缓冲区是否已满。</p>
+</li>
+<li><p><strong>UART_RX_IsEmpty</strong>：判断缓冲区是否已空</p>
+</li>
+<li><p><strong>UART_RX_PutByte</strong>：写入一个字节到缓冲区，如果未满，则写入head当前的下一个位置，并且用%的方法来循环写入缓冲区。</p>
+</li>
+<li><p><strong>UART_RX_GetByte</strong>：读取一个字节到缓冲区，如果未满，则读取tail当前的下一个位置，并且用%的方法来循环读取缓冲区。</p>
+</li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32</tag>
+        <tag>stm32cubide</tag>
+        <tag>HAL</tag>
+        <tag>USART</tag>
       </tags>
   </entry>
   <entry>
@@ -710,6 +710,10 @@
 </li>
 <li><p>编译没有报错，你就可以在你的LCD屏幕上看到你设计的界面了。</p>
 </li>
+<li><p>如果编译报错，如下面这样，提示#include “lv_font.h”出错，找到guider_fonts.h文件，修改#include “lv_font.h”。修改完成后如下，或者你可直接找到lv_font.h文件，直接复制到generated文件夹中。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">..\Middlewares\LVGL\GUI_APP\generated\guider_fonts\guider_fonts.h(8): error:  #5: cannot open source input file &quot;lv_font.h&quot;: No such file or directory</span><br><span class="line">      #include &quot;lv_font.h&quot;</span><br></pre></td></tr></table></figure>
+
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef GUIDER_FONTS_H</span><br><span class="line">#define GUIDER_FONTS_H</span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">extern &quot;C&quot; &#123;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#include &quot;../../GUI/lvgl/src/font/lv_font.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line">#endif</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
 </ul>
 ]]></content>
       <categories>
@@ -861,224 +865,6 @@
         <tag>stm32</tag>
         <tag>stm32cubide</tag>
         <tag>HAL</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ubuntu根文件系统移植</title>
-    <url>/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><p>现在有更好的教程了。还是两个结合的看把。</p>
-<p><a href="https://blog.csdn.net/weixin_51963312/article/details/142416613?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%B0%86ubuntu%E7%A7%BB%E6%A4%8D%E5%88%B0stm32mp157%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E3%80%82&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-142416613.142%5Ev101%5Epc_search_result_base8&spm=1018.2226.3001.4187">https://blog.csdn.net/weixin_51963312/article/details/142416613?ops_request_misc=&amp;request_id=&amp;biz_id=102&amp;utm_term=%E5%B0%86ubuntu%E7%A7%BB%E6%A4%8D%E5%88%B0stm32mp157%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E3%80%82&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-142416613.142^v101^pc_search_result_base8&amp;spm=1018.2226.3001.4187</a></p>
-<h3 id="移植前的准备"><a href="#移植前的准备" class="headerlink" title="移植前的准备"></a>移植前的准备</h3><p>在移植之前，我们首先要在电脑上安装Ubuntu。在ubuntu中的终端操作下面步骤。</p>
-<p>在移植之前我们需要一个辅助工具，用来对根文件系统进行一个基本的搭建，就能模拟出根文件系统运行的状态。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install qemu-user-static</span><br></pre></td></tr></table></figure>
-
-<p>其中qemu-user-static安装包的作用时一个QEMU的一个子模块。QEMU是一个开源的虚拟化和模拟器的工具。而子模块专注于用户模式模拟，允许你在当前主机架构上运行另一个架构的二进制文件，而无需启动完整的虚拟机。</p>
-<span id="more"></span>
-
-<h3 id="下载根文件系统"><a href="#下载根文件系统" class="headerlink" title="下载根文件系统"></a>下载根文件系统</h3><p>ubuntu以提供了基本的可移植到嵌入式的根文件系统，因此我们去官网下载即可。</p>
-<p><a href="http://cdimage.ubuntu.com/">http://cdimage.ubuntu.com/</a></p>
-<p>点击网址后进入网站，点击红色标注的选项。</p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/140807.png">S</p>
-<p>点击后，进入下面界面，继续点击。</p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141134.png"></p>
-<p>然后选择其中一个版本，点击下载。</p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141337.png"></p>
-<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141435.png"></p>
-<p>下载好安装包，等会要用。</p>
-<h3 id="开始移植"><a href="#开始移植" class="headerlink" title="开始移植"></a>开始移植</h3><h4 id="1、在根目录中创建一个文件。"><a href="#1、在根目录中创建一个文件。" class="headerlink" title="1、在根目录中创建一个文件。"></a>1、在根目录中创建一个文件。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir rootfs</span><br></pre></td></tr></table></figure>
-
-<h4 id="2、解压刚才下载的安装包，到rootfs文件中。"><a href="#2、解压刚才下载的安装包，到rootfs文件中。" class="headerlink" title="2、解压刚才下载的安装包，到rootfs文件中。"></a>2、解压刚才下载的安装包，到rootfs文件中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo tar -vzxf ubuntu-base-16.04.6-base-armhf.tar.gz </span><br></pre></td></tr></table></figure>
-
-<h4 id="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"><a href="#3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。" class="headerlink" title="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"></a>3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /usr/bin/qemu-arm-static ./usr/bin/</span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /etc/resolv.conf ./etc/resolv.conf</span><br><span class="line">将主机的DNS配置文件（/etc/resolv.conf）复制到根文件系统的/etc/resolv.conf。</span><br><span class="line">根文件系统可以解析域名（例如访问apt源），从而正常联网。</span><br></pre></td></tr></table></figure>
-
-<p>复制完毕后，进入到resolv.conf文件中，修改其中的内容。保存退出。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo vim /etc/resolv.conf</span><br></pre></td></tr></table></figure>
-
-<p>修改后的resolv.conf文件中界面如下：<br><strong>nameserver 202.96.128.86。</strong> </p>
-<p>202.96.128.86是电脑网络的DNS服务器端口。配置成功后可以通过下面测试网络</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ping www.baidu.com</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>如果能解析并ping，说明DNS配置成功。</li>
-</ul>
-<h4 id="4、挂载VFS"><a href="#4、挂载VFS" class="headerlink" title="4、挂载VFS"></a>4、挂载VFS</h4><ul>
-<li>VFS是虚拟的文件系统，用于统一管理各种文件系统。</li>
-<li>挂载VFS是为了根文件系统太难记必要的虚拟文件系统支持。</li>
-</ul>
-<h5 id="1、创建一个mk-sh的脚本。"><a href="#1、创建一个mk-sh的脚本。" class="headerlink" title="1、创建一个mk.sh的脚本。"></a>1、创建一个mk.sh的脚本。</h5><p>在rootfs的父目录中创建一个名字为mk.sh的脚本文件，并修改其的权限。在文件中添加下面代码。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ touch mk.sh</span><br><span class="line">h@h-virtual-machine:~/h$ chomd 777 mk.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">mnt () </span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;MOUNTING&quot;</span><br><span class="line">    sudo mount -t proc /proc $&#123;2&#125;proc</span><br><span class="line">    sudo mount -t sysfs /sys $&#123;2&#125;sys</span><br><span class="line">    sudo mount -o bind /dev $&#123;2&#125;dev</span><br><span class="line">    sudo mount -o bind /dev/pts $&#123;2&#125;dev/pts      </span><br><span class="line">    sudo chroot $&#123;2&#125;    </span><br><span class="line">&#125;</span><br><span class="line">umnt ()</span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;UNMOUNTING&quot;</span><br><span class="line">    sudo umount $&#123;2&#125;proc</span><br><span class="line">    sudo umount $&#123;2&#125;sys</span><br><span class="line">    sudo umount $&#123;2&#125;dev/pts</span><br><span class="line">    sudo umount $&#123;2&#125;dev </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if [ &quot;$1&quot; = &quot;-m&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    mnt $1 $2</span><br><span class="line">    echo &quot;mnt -m pwd&quot;</span><br><span class="line">elif [ &quot;$1&quot; = &quot;-u&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    umnt $1 $2</span><br><span class="line">    echo &quot;mnt -u pwd&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;Either 1&#x27;st, 2&#x27;nd or bothparameters were missing&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;1&#x27;st parameter can be one ofthese: -m(mount) OR -u(umount)&quot;</span><br><span class="line">    echo &quot;2&#x27;nd parameter is the rootfs path&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;For example: ./mk.sh -m ./rootfs/&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo 1st parameter : $&#123;1&#125;</span><br><span class="line">    echo 2nd parameter : $&#123;2&#125;</span><br><span class="line">fi</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>保存退出后，执行下面代码，就可以进入到我们制作的rootfs根文件系统中。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ ./mk.sh -m ./rootfs/</span><br></pre></td></tr></table></figure>
-
-<p>如果成功挂载，会出现下面这样的：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MOUNTING</span><br><span class="line">[sudo] h 的密码：</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/# ls</span><br><span class="line">bin   dev  home  media  opt   root  sbin  sys  usr</span><br><span class="line">boot  etc  lib   mnt    proc  run   srv   tmp  var</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>如果想退出，可以输入exit，在退出后，接着输入**.&#x2F;mk.sh -u .&#x2F;rootfs&#x2F;** 。退出 chroot 后，挂载的VFS（proc、sysfs、dev 等）仍然存在，需要清理以避免影响下次操作。</p>
-<h4 id="5、安装常用的命令和软件"><a href="#5、安装常用的命令和软件" class="headerlink" title="5、安装常用的命令和软件"></a>5、安装常用的命令和软件</h4><p>在根文件挂载的界面操作下，执行下面命令。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt install sudo</span><br><span class="line">apt install vim</span><br><span class="line">apt install kmod net-tools ethtool ifupdown language-pack-en-base rsyslog htop iputils-ping</span><br></pre></td></tr></table></figure>
-
-<h4 id="6、设置root用户密码"><a href="#6、设置root用户密码" class="headerlink" title="6、设置root用户密码"></a>6、设置root用户密码</h4><p>设置一下 root 用户的密码，命令如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd root </span><br></pre></td></tr></table></figure>
-
-<p>输入“passwd root”以后会让你输入 root 用户密码，输入两次</p>
-<h4 id="7、创建用户"><a href="#7、创建用户" class="headerlink" title="7、创建用户"></a>7、创建用户</h4><p>添加一个用户sdr：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">useradd -s &#x27;/bin/bash&#x27; -m -G adm,sudo sdr</span><br></pre></td></tr></table></figure>
-
-<p>给用户设置密码：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd sdr</span><br></pre></td></tr></table></figure>
-
-<h4 id="8、设置主机名和IP"><a href="#8、设置主机名和IP" class="headerlink" title="8、设置主机名和IP"></a>8、设置主机名和IP</h4><p>输入如下命令设置本机名称和IP地址</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo &quot;sdr&quot; &gt; /etc/hostname</span><br><span class="line">echo &quot;127.0.0.1 localhost&quot; &gt;&gt; /etc/hosts</span><br><span class="line">echo &quot;127.0.0.1 sdr&quot; &gt;&gt; /etc/hosts</span><br></pre></td></tr></table></figure>
-
-<p>127.0.0.1代表的本机的意思，不用改。</p>
-<h4 id="9、终端设置"><a href="#9、终端设置" class="headerlink" title="9、终端设置"></a>9、终端设置</h4><p>因为我们的开发板是使用串口作为终端的，所以需要设置一下，比如我们开发板使用的UART1对应的串口设备文件为ttySTM0、我们输入如下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@ttySTM0.service</span><br><span class="line"></span><br><span class="line">注意：ttySAC2为串口节点，具体根据自己的板子设置</span><br></pre></td></tr></table></figure>
-
-<h4 id="10、退出配置"><a href="#10、退出配置" class="headerlink" title="10、退出配置"></a>10、退出配置</h4><p>这样基本配置我们就设置好了，我们退出这个根文件系统，然后取消挂载。设置好以后就可以退出根文件系统了，输入如下命令退出：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exit</span><br><span class="line">./mk.sh -u ./rootfs/</span><br></pre></td></tr></table></figure>
-
-<h4 id="11、将根文件系统下载进开发板中"><a href="#11、将根文件系统下载进开发板中" class="headerlink" title="11、将根文件系统下载进开发板中"></a>11、将根文件系统下载进开发板中</h4><p>之前我们在开发板上运行linux，使用的是老师给的。现在我们只改变了根文件系统，uboot和linux内核不变，所以我们修改原来的rootfs。为了做区别，我使用newrootfs为新的根文件系统的名称。</p>
-<ul>
-<li><p>1、我们要把newrootfs转移到opt目录下。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mv newrootfs /opt/</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>2、修改&#x2F;etc&#x2F;exports</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在主机终端执行</span><br><span class="line">sudo vi /etc/exports</span><br></pre></td></tr></table></figure>
-
-<p>  在文件中，加入下面这段话。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/opt/newrootfs *(rw,sync,no_root_squash,no_subtree_check)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>3、重新运行一下。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo exportfs -ra</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>4、重新启动开发板，在开始输出东西时，一直按下enter键。直到到进入U-boot模式。</p>
-<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203017.png"></p>
-<p>  第一个红框时U-boot的版本信息。</p>
-<p>  第二个是进入U-boot的结果。</p>
-</li>
-<li><p>5、输入下面命令，可以产看参数。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在U-Boot控制台执行</span><br><span class="line">printenv bootargs</span><br></pre></td></tr></table></figure>
-
-<p>  输出如下：</p>
-<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203258.png"></p>
-</li>
-<li><p>6、执行 <code>setenv</code> 命令修改 <code>bootargs</code> 环境变量：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setenv bootargs &#x27;root=/dev/nfs nfsroot=192.168.60.30:/opt/newrootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200&#x27;</span><br></pre></td></tr></table></figure>
-
-<p>  上面的截图是我修改过后的，原先是下面这样</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bootargs=root=/dev/nfs nfsroot=192.168.60.30:/opt/rootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>7、执行 <code>saveenv</code> 命令保存环境变量</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">saveenv</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>8、重启开发板，最后会看到下图：<br>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/204228.png"></p>
-</li>
-</ul>
-<p>到此在stm32mp157的开发板上就跑起来了linux。</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux移植</tag>
-        <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>内存管理</title>
-    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
-    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
-<p>下面是对内存的动态管理。</p>
-<span id="more"></span>
-
-<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
-<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
-<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
-<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
-<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
-<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
-<p><strong>分配原理</strong> </p>
-<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
-<p><strong>释放原理</strong> </p>
-<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>多媒体项目</tag>
-        <tag>stm32</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
-    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
-    <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>杂项设备</title>
-    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
-    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
-<li><p>概念：</p>
-<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
-</li>
-<li><p>特点：</p>
-<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
-<p>  结构简单</p>
-<p>  提供基本的读写操作接口</p>
-</li>
-</ul>
-<span id="more"></span>
-
-<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
-
-<p>​	2、定义文件操作结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	3、定义杂项设备结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	参数：</p>
-<pre><code>	* minor：次设备号。
-	* name：设备节点名称。
-	* fops：文件操作结构体指针。
-	* 其他的用到的不多，用到可以在搜。
-</code></pre>
-<p>​	4、注册杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	5、注销杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
-
-
-
-<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
-<li><p>创建设备节点：</p>
-<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
-</li>
-<li><p>应用程序访问：</p>
-<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>杂项设备</tag>
-        <tag>平台总线</tag>
       </tags>
   </entry>
   <entry>
@@ -1477,6 +1263,18 @@
       </tags>
   </entry>
   <entry>
+    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
+    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
+    <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>测试文章</title>
     <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
     <content><![CDATA[<p>这是以个测试</p>
@@ -1484,6 +1282,212 @@
 ]]></content>
       <tags>
         <tag>测试</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ubuntu根文件系统移植</title>
+    <url>/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
+    <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><p>现在有更好的教程了。还是两个结合的看把。</p>
+<p><a href="https://blog.csdn.net/weixin_51963312/article/details/142416613?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%B0%86ubuntu%E7%A7%BB%E6%A4%8D%E5%88%B0stm32mp157%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E3%80%82&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-142416613.142%5Ev101%5Epc_search_result_base8&spm=1018.2226.3001.4187">https://blog.csdn.net/weixin_51963312/article/details/142416613?ops_request_misc=&amp;request_id=&amp;biz_id=102&amp;utm_term=%E5%B0%86ubuntu%E7%A7%BB%E6%A4%8D%E5%88%B0stm32mp157%E5%BC%80%E5%8F%91%E6%9D%BF%E4%B8%8A%E3%80%82&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-142416613.142^v101^pc_search_result_base8&amp;spm=1018.2226.3001.4187</a></p>
+<h3 id="移植前的准备"><a href="#移植前的准备" class="headerlink" title="移植前的准备"></a>移植前的准备</h3><p>在移植之前，我们首先要在电脑上安装Ubuntu。在ubuntu中的终端操作下面步骤。</p>
+<p>在移植之前我们需要一个辅助工具，用来对根文件系统进行一个基本的搭建，就能模拟出根文件系统运行的状态。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install qemu-user-static</span><br></pre></td></tr></table></figure>
+
+<p>其中qemu-user-static安装包的作用时一个QEMU的一个子模块。QEMU是一个开源的虚拟化和模拟器的工具。而子模块专注于用户模式模拟，允许你在当前主机架构上运行另一个架构的二进制文件，而无需启动完整的虚拟机。</p>
+<span id="more"></span>
+
+<h3 id="下载根文件系统"><a href="#下载根文件系统" class="headerlink" title="下载根文件系统"></a>下载根文件系统</h3><p>ubuntu以提供了基本的可移植到嵌入式的根文件系统，因此我们去官网下载即可。</p>
+<p><a href="http://cdimage.ubuntu.com/">http://cdimage.ubuntu.com/</a></p>
+<p>点击网址后进入网站，点击红色标注的选项。</p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/140807.png">S</p>
+<p>点击后，进入下面界面，继续点击。</p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141134.png"></p>
+<p>然后选择其中一个版本，点击下载。</p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141337.png"></p>
+<p><img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/141435.png"></p>
+<p>下载好安装包，等会要用。</p>
+<h3 id="开始移植"><a href="#开始移植" class="headerlink" title="开始移植"></a>开始移植</h3><h4 id="1、在根目录中创建一个文件。"><a href="#1、在根目录中创建一个文件。" class="headerlink" title="1、在根目录中创建一个文件。"></a>1、在根目录中创建一个文件。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir rootfs</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、解压刚才下载的安装包，到rootfs文件中。"><a href="#2、解压刚才下载的安装包，到rootfs文件中。" class="headerlink" title="2、解压刚才下载的安装包，到rootfs文件中。"></a>2、解压刚才下载的安装包，到rootfs文件中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo tar -vzxf ubuntu-base-16.04.6-base-armhf.tar.gz </span><br></pre></td></tr></table></figure>
+
+<h4 id="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"><a href="#3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。" class="headerlink" title="3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。"></a>3、复制之前下载的qemu-user-static其中某些文件到刚刚解压的根文件系统中。</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /usr/bin/qemu-arm-static ./usr/bin/</span><br><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo cp /etc/resolv.conf ./etc/resolv.conf</span><br><span class="line">将主机的DNS配置文件（/etc/resolv.conf）复制到根文件系统的/etc/resolv.conf。</span><br><span class="line">根文件系统可以解析域名（例如访问apt源），从而正常联网。</span><br></pre></td></tr></table></figure>
+
+<p>复制完毕后，进入到resolv.conf文件中，修改其中的内容。保存退出。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/rootfs$ sudo vim /etc/resolv.conf</span><br></pre></td></tr></table></figure>
+
+<p>修改后的resolv.conf文件中界面如下：<br><strong>nameserver 202.96.128.86。</strong> </p>
+<p>202.96.128.86是电脑网络的DNS服务器端口。配置成功后可以通过下面测试网络</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ping www.baidu.com</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果能解析并ping，说明DNS配置成功。</li>
+</ul>
+<h4 id="4、挂载VFS"><a href="#4、挂载VFS" class="headerlink" title="4、挂载VFS"></a>4、挂载VFS</h4><ul>
+<li>VFS是虚拟的文件系统，用于统一管理各种文件系统。</li>
+<li>挂载VFS是为了根文件系统太难记必要的虚拟文件系统支持。</li>
+</ul>
+<h5 id="1、创建一个mk-sh的脚本。"><a href="#1、创建一个mk-sh的脚本。" class="headerlink" title="1、创建一个mk.sh的脚本。"></a>1、创建一个mk.sh的脚本。</h5><p>在rootfs的父目录中创建一个名字为mk.sh的脚本文件，并修改其的权限。在文件中添加下面代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ touch mk.sh</span><br><span class="line">h@h-virtual-machine:~/h$ chomd 777 mk.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">mnt () </span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;MOUNTING&quot;</span><br><span class="line">    sudo mount -t proc /proc $&#123;2&#125;proc</span><br><span class="line">    sudo mount -t sysfs /sys $&#123;2&#125;sys</span><br><span class="line">    sudo mount -o bind /dev $&#123;2&#125;dev</span><br><span class="line">    sudo mount -o bind /dev/pts $&#123;2&#125;dev/pts      </span><br><span class="line">    sudo chroot $&#123;2&#125;    </span><br><span class="line">&#125;</span><br><span class="line">umnt ()</span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;UNMOUNTING&quot;</span><br><span class="line">    sudo umount $&#123;2&#125;proc</span><br><span class="line">    sudo umount $&#123;2&#125;sys</span><br><span class="line">    sudo umount $&#123;2&#125;dev/pts</span><br><span class="line">    sudo umount $&#123;2&#125;dev </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if [ &quot;$1&quot; = &quot;-m&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    mnt $1 $2</span><br><span class="line">    echo &quot;mnt -m pwd&quot;</span><br><span class="line">elif [ &quot;$1&quot; = &quot;-u&quot; ] &amp;&amp; [ -n &quot;$2&quot; ];</span><br><span class="line">then</span><br><span class="line">    umnt $1 $2</span><br><span class="line">    echo &quot;mnt -u pwd&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;Either 1&#x27;st, 2&#x27;nd or bothparameters were missing&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;1&#x27;st parameter can be one ofthese: -m(mount) OR -u(umount)&quot;</span><br><span class="line">    echo &quot;2&#x27;nd parameter is the rootfs path&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo &quot;For example: ./mk.sh -m ./rootfs/&quot;</span><br><span class="line">    echo &quot;&quot;</span><br><span class="line">    echo 1st parameter : $&#123;1&#125;</span><br><span class="line">    echo 2nd parameter : $&#123;2&#125;</span><br><span class="line">fi</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>保存退出后，执行下面代码，就可以进入到我们制作的rootfs根文件系统中。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h$ ./mk.sh -m ./rootfs/</span><br></pre></td></tr></table></figure>
+
+<p>如果成功挂载，会出现下面这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">MOUNTING</span><br><span class="line">[sudo] h 的密码：</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/#</span><br><span class="line">root@h-virtual-machine:/# ls</span><br><span class="line">bin   dev  home  media  opt   root  sbin  sys  usr</span><br><span class="line">boot  etc  lib   mnt    proc  run   srv   tmp  var</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果想退出，可以输入exit，在退出后，接着输入**.&#x2F;mk.sh -u .&#x2F;rootfs&#x2F;** 。退出 chroot 后，挂载的VFS（proc、sysfs、dev 等）仍然存在，需要清理以避免影响下次操作。</p>
+<h4 id="5、安装常用的命令和软件"><a href="#5、安装常用的命令和软件" class="headerlink" title="5、安装常用的命令和软件"></a>5、安装常用的命令和软件</h4><p>在根文件挂载的界面操作下，执行下面命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">apt update</span><br><span class="line">apt install sudo</span><br><span class="line">apt install vim</span><br><span class="line">apt install kmod net-tools ethtool ifupdown language-pack-en-base rsyslog htop iputils-ping</span><br></pre></td></tr></table></figure>
+
+<h4 id="6、设置root用户密码"><a href="#6、设置root用户密码" class="headerlink" title="6、设置root用户密码"></a>6、设置root用户密码</h4><p>设置一下 root 用户的密码，命令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd root </span><br></pre></td></tr></table></figure>
+
+<p>输入“passwd root”以后会让你输入 root 用户密码，输入两次</p>
+<h4 id="7、创建用户"><a href="#7、创建用户" class="headerlink" title="7、创建用户"></a>7、创建用户</h4><p>添加一个用户sdr：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">useradd -s &#x27;/bin/bash&#x27; -m -G adm,sudo sdr</span><br></pre></td></tr></table></figure>
+
+<p>给用户设置密码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">passwd sdr</span><br></pre></td></tr></table></figure>
+
+<h4 id="8、设置主机名和IP"><a href="#8、设置主机名和IP" class="headerlink" title="8、设置主机名和IP"></a>8、设置主机名和IP</h4><p>输入如下命令设置本机名称和IP地址</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo &quot;sdr&quot; &gt; /etc/hostname</span><br><span class="line">echo &quot;127.0.0.1 localhost&quot; &gt;&gt; /etc/hosts</span><br><span class="line">echo &quot;127.0.0.1 sdr&quot; &gt;&gt; /etc/hosts</span><br></pre></td></tr></table></figure>
+
+<p>127.0.0.1代表的本机的意思，不用改。</p>
+<h4 id="9、终端设置"><a href="#9、终端设置" class="headerlink" title="9、终端设置"></a>9、终端设置</h4><p>因为我们的开发板是使用串口作为终端的，所以需要设置一下，比如我们开发板使用的UART1对应的串口设备文件为ttySTM0、我们输入如下命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@ttySTM0.service</span><br><span class="line"></span><br><span class="line">注意：ttySAC2为串口节点，具体根据自己的板子设置</span><br></pre></td></tr></table></figure>
+
+<h4 id="10、退出配置"><a href="#10、退出配置" class="headerlink" title="10、退出配置"></a>10、退出配置</h4><p>这样基本配置我们就设置好了，我们退出这个根文件系统，然后取消挂载。设置好以后就可以退出根文件系统了，输入如下命令退出：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exit</span><br><span class="line">./mk.sh -u ./rootfs/</span><br></pre></td></tr></table></figure>
+
+<h4 id="11、将根文件系统下载进开发板中"><a href="#11、将根文件系统下载进开发板中" class="headerlink" title="11、将根文件系统下载进开发板中"></a>11、将根文件系统下载进开发板中</h4><p>之前我们在开发板上运行linux，使用的是老师给的。现在我们只改变了根文件系统，uboot和linux内核不变，所以我们修改原来的rootfs。为了做区别，我使用newrootfs为新的根文件系统的名称。</p>
+<ul>
+<li><p>1、我们要把newrootfs转移到opt目录下。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mv newrootfs /opt/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>2、修改&#x2F;etc&#x2F;exports</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在主机终端执行</span><br><span class="line">sudo vi /etc/exports</span><br></pre></td></tr></table></figure>
+
+<p>  在文件中，加入下面这段话。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/opt/newrootfs *(rw,sync,no_root_squash,no_subtree_check)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>3、重新运行一下。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo exportfs -ra</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>4、重新启动开发板，在开始输出东西时，一直按下enter键。直到到进入U-boot模式。</p>
+<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203017.png"></p>
+<p>  第一个红框时U-boot的版本信息。</p>
+<p>  第二个是进入U-boot的结果。</p>
+</li>
+<li><p>5、输入下面命令，可以产看参数。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 在U-Boot控制台执行</span><br><span class="line">printenv bootargs</span><br></pre></td></tr></table></figure>
+
+<p>  输出如下：</p>
+<p>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/203258.png"></p>
+</li>
+<li><p>6、执行 <code>setenv</code> 命令修改 <code>bootargs</code> 环境变量：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setenv bootargs &#x27;root=/dev/nfs nfsroot=192.168.60.30:/opt/newrootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>  上面的截图是我修改过后的，原先是下面这样</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bootargs=root=/dev/nfs nfsroot=192.168.60.30:/opt/rootfs intr rsize=1024 wsize=1024 rootwait rw earlyprintk ip=192.168.60.90 console=ttySTM0,115200</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>7、执行 <code>saveenv</code> 命令保存环境变量</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">saveenv</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>8、重启开发板，最后会看到下图：<br>  <img src="/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/204228.png"></p>
+</li>
+</ul>
+<p>到此在stm32mp157的开发板上就跑起来了linux。</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+        <tag>linux移植</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>杂项设备</title>
+    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
+    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
+<li><p>概念：</p>
+<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
+</li>
+<li><p>特点：</p>
+<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
+<p>  结构简单</p>
+<p>  提供基本的读写操作接口</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​	2、定义文件操作结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	3、定义杂项设备结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	参数：</p>
+<pre><code>	* minor：次设备号。
+	* name：设备节点名称。
+	* fops：文件操作结构体指针。
+	* 其他的用到的不多，用到可以在搜。
+</code></pre>
+<p>​	4、注册杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	5、注销杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
+<li><p>创建设备节点：</p>
+<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
+</li>
+<li><p>应用程序访问：</p>
+<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>杂项设备</tag>
+        <tag>平台总线</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>内存管理</title>
+    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
+    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
+<p>下面是对内存的动态管理。</p>
+<span id="more"></span>
+
+<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
+<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
+<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
+<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
+<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
+<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
+<p><strong>分配原理</strong> </p>
+<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
+<p><strong>释放原理</strong> </p>
+<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>多媒体项目</tag>
+        <tag>stm32</tag>
       </tags>
   </entry>
   <entry>
