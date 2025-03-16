@@ -62,178 +62,6 @@
       </tags>
   </entry>
   <entry>
-    <title>FSMC—扩展外部SRAM</title>
-    <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
-    <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
-<p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
-<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
-<ul>
-<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
-<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
-<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
-<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
-</ul>
-<span id="more"></span>
-
-<p>在我们使用的是IS62WV51216的SRAM芯片内部结构框图。以他为模型学习。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092613.png"></p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092731.png"></p>
-<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092950.png"></p>
-<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
-<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits）。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/093304.png"></p>
-<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
-<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
-<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
-<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
-<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
-<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
-<p>OE、WE可以控制读写使能，防止误操作。</p>
-<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/094859.png"></p>
-<p>读写时序的流程：</p>
-<ul>
-<li>主机使能地址信号线，发送要访问的存储器地址。</li>
-<li>控制片选信号CS1、CS2，使能存储芯片</li>
-<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
-<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
-<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
-</ul>
-<h4 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h4><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
-<h4 id="3、FSMC框图解析"><a href="#3、FSMC框图解析" class="headerlink" title="3、FSMC框图解析"></a>3、FSMC框图解析</h4><p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095536.png"></p>
-<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095737.png"></p>
-<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
-<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
-<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
-<ul>
-<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
-</li>
-<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
-</li>
-<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
-</li>
-</ul>
-<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
-<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/100215.png"></p>
-<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
-<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/105408.png"></p>
-<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111455.png"></p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111509.png"></p>
-<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
-<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。在地址建立周期中，地址线发出要访问的地址， 数据掩码信号线指示出要读取地址的高、低字节部分，片选信号使能存储器芯片；地址建立周期结束后读使能信号线发出读使能信号， 接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</p>
-<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32F407</tag>
-        <tag>多媒体项目</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>OTA远程更新</title>
-    <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
-    <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
-<span id="more"></span>
-
-<h4 id="1、基本原理"><a href="#1、基本原理" class="headerlink" title="1、基本原理"></a>1、基本原理</h4><p>stm32的OTA升级，简单的来说就是通过某种痛惜方式（例如串口，WIFI，4G等）将新的固件程序下载到STM32的Flash存储器中，然后通过引导程序（Bootloader）将新的固件程序启动起来，从而实现程序的更新。</p>
-<p>要是实现OTA，至少需要两个程序：</p>
-<ul>
-<li>Bootloader程序：负责接收新的固件程序，将其写入到Flash，并在必要时启动新的固件程序。Bootloader程序通常是固定的，不会被OTA更新。</li>
-<li>应用程序（APP）：这是用户实际运行的程序，会被OTA更新。</li>
-</ul>
-<h4 id="2、工程准备"><a href="#2、工程准备" class="headerlink" title="2、工程准备"></a>2、工程准备</h4><ul>
-<li><p>使用stm32F103C8T6开发板。</p>
-</li>
-<li><p>使用软件STM32CubelIDE软件。</p>
-</li>
-<li><p>创建工程</p>
-<ul>
-<li>在STM32CubeIDE中，选择“File” -&gt; “New” -&gt; “STM32 Project”。</li>
-<li>在“Target Selection”窗口中，搜索并选择“STM32F103C8Tx”，然后点击“Next”</li>
-<li>在“Project Name”中输入“Bootloader”，然后点击“Next”。</li>
-<li>在“Initialise all peripherals with their default Mode?”界面<strong>务必选择“No”</strong>。这将允许我们手动配置所需的外设，避免不必要的代码和潜在的冲突。然后点击“Finish”。</li>
-</ul>
-</li>
-<li><p>配置时钟</p>
-<ul>
-<li>双击项目根目录下的 <code>.ioc</code> 文件（例如 <code>Bootloader.ioc</code>），打开STM32CubeMX配置界面。</li>
-<li>在左侧的“System Core”中选择“RCC”。</li>
-<li>在“HSE”下拉菜单中选择“Crystal&#x2F;Ceramic Resonator”（假设你使用外部晶振）。<ul>
-<li>菜单中选择项的解释：</li>
-<li><strong>Disable</strong> ：禁用</li>
-<li><strong>Bypass Clock Source（旁路时钟源）</strong> ：选择此项表示使用外部时钟源直接输入到 MCU，绕过内部的振荡器电路。这意味着外部提供一个稳定的时钟信号到 OSC_IN 引脚，而 OSC_OUT 引脚则悬空。使用此选项时，外部时钟源必须已经产生稳定的时钟信号。</li>
-<li><strong>Crystal&#x2F;Ceramic Resonator（晶体&#x2F;陶瓷谐振器）</strong>：选择此项表示使用外部晶体或陶瓷谐振器作为时钟源。这是最常见的配置方式。在这种模式下，晶振连接到 OSC_IN 和 OSC_OUT 引脚，并且通常需要配合合适的负载电容使用，以确保晶振正常起振</li>
-</ul>
-</li>
-<li>在“PLLCLK”选项卡中配置PLL倍频器，将系统时钟配置为72MHz。通常的配置是：<ul>
-<li>PLL Source Mux: HSE</li>
-<li>PLL Multiplier: x9</li>
-</ul>
-</li>
-<li>确认“SYSCLK”显示为72MHz。</li>
-<li>保存 <code>.ioc</code> 文件（Ctrl+S 或 File -&gt; Save），STM32CubeIDE会自动生成或更新代码。</li>
-</ul>
-</li>
-<li><p>配置串口</p>
-<ul>
-<li>在左侧的“Connectivity”中选择“USART1”。</li>
-<li>在中间的配置界面中：<ul>
-<li>“Mode”选择“Asynchronous”。（异步，还有其他几个选择，）<ul>
-<li>Mode选择项：</li>
-<li><strong>Asynchronous（异步模式）</strong>：这是 USART 最常用的模式。在这种模式下，数据传输不需要单独的时钟线进行同步，而是通过起始位、数据位、校验位和停止位来定义数据帧的结构。发送方和接收方需要预先约定好波特率（即每秒传输的比特数），以确保数据能够正确传输。</li>
-<li><strong>Synchronous（同步模式）</strong>：在这种模式下，数据传输需要一根额外的时钟线（通常称为 SCLK 或 CK）进行同步。发送方提供时钟信号，接收方根据时钟信号进行数据的采样和接收。</li>
-<li><strong>Single Wire (Half-Duplex)（单线（半双工）模式）</strong>：在这种模式下，USART 使用同一根线进行发送和接收，但不能同时进行。</li>
-<li><strong>Multiprocessor Communication（多处理器通信模式）</strong>：这种模式允许多个处理器通过同一条 USART 总线进行通信。在这种模式下，每个处理器都有一个唯一的地址。</li>
-<li><strong>IrDA（红外数据协会）</strong>：这种模式支持红外线通信协议。</li>
-<li><strong>LIN（本地互联网络）</strong>：LIN 是一种低成本的串行通信协议，常用于汽车电子等领域。</li>
-<li><strong>SmartCard（智能卡模式）</strong>：这种模式支持智能卡（例如 SIM 卡、银行卡）的通信协议。</li>
-</ul>
-</li>
-<li>“Baud Rate”设置为115200（或其他你需要的波特率）。</li>
-<li>“Word Length”选择“8 Bits”。</li>
-<li>“Parity”选择“None”。（奇偶校验）</li>
-<li>“Stop Bits”选择“1 Stop Bit”。</li>
-<li>使能“NVIC Settings”中的USART1全局中断。这将在之后允许我们使用中断方式接收串口数据（虽然在之前的简化版本中未使用中断，但这是一个良好的习惯，后续会用到）。</li>
-</ul>
-</li>
-<li>保存 <code>.ioc</code> 文件。</li>
-</ul>
-</li>
-<li><p>配置Flash分区</p>
-<ul>
-<li><p>在项目资源管理器中，展开“Bootloader”项目，打开 <code>STM32F103C8Tx_FLASH.ld</code> 文件。</p>
-</li>
-<li><p>找到以下代码段：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 64K</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>将其修改为：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K</span><br></pre></td></tr></table></figure>
-
-<p>  这会将Flash的前16KB分配给Bootloader。应用程序将从<code>0x08004000</code>开始。</p>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="3、代码编辑"><a href="#3、代码编辑" class="headerlink" title="3、代码编辑"></a>3、代码编辑</h4><ul>
-<li>串口接收数据</li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32学习</category>
-      </categories>
-      <tags>
-        <tag>stm32学习</tag>
-        <tag>OTA</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>FreeRTOS</title>
     <url>/2025/02/19/FreeRTOS/</url>
     <content><![CDATA[<h1 id="FreeRTOS"><a href="#FreeRTOS" class="headerlink" title="FreeRTOS"></a>FreeRTOS</h1><p>以下内容是根据野火的<a href="https://weread.qq.com/web/reader/38f32720717e5b0b38f24a4ka87322c014a87ff679a21ea">FreeRTOS内核实现与应用开发实战指南</a> 以及AI搜索进行集合的记录。</p>
@@ -413,24 +241,101 @@
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2025/01/21/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+    <title>OTA远程更新</title>
+    <url>/2025/01/23/OTA%E8%BF%9C%E7%A8%8B%E6%9B%B4%E6%96%B0/</url>
+    <content><![CDATA[<h1 id="OTA远程更新"><a href="#OTA远程更新" class="headerlink" title="OTA远程更新"></a>OTA远程更新</h1><p>OTA全称 Over-The-Air Technology，中文译为“空中下载技术”。简单的来说，它是一种通过无线网络对设备进行远程更新和管理的技术。就像我们手机更新App或者更新系统一样。</p>
 <span id="more"></span>
 
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<h4 id="1、基本原理"><a href="#1、基本原理" class="headerlink" title="1、基本原理"></a>1、基本原理</h4><p>stm32的OTA升级，简单的来说就是通过某种痛惜方式（例如串口，WIFI，4G等）将新的固件程序下载到STM32的Flash存储器中，然后通过引导程序（Bootloader）将新的固件程序启动起来，从而实现程序的更新。</p>
+<p>要是实现OTA，至少需要两个程序：</p>
+<ul>
+<li>Bootloader程序：负责接收新的固件程序，将其写入到Flash，并在必要时启动新的固件程序。Bootloader程序通常是固定的，不会被OTA更新。</li>
+<li>应用程序（APP）：这是用户实际运行的程序，会被OTA更新。</li>
+</ul>
+<h4 id="2、工程准备"><a href="#2、工程准备" class="headerlink" title="2、工程准备"></a>2、工程准备</h4><ul>
+<li><p>使用stm32F103C8T6开发板。</p>
+</li>
+<li><p>使用软件STM32CubelIDE软件。</p>
+</li>
+<li><p>创建工程</p>
+<ul>
+<li>在STM32CubeIDE中，选择“File” -&gt; “New” -&gt; “STM32 Project”。</li>
+<li>在“Target Selection”窗口中，搜索并选择“STM32F103C8Tx”，然后点击“Next”</li>
+<li>在“Project Name”中输入“Bootloader”，然后点击“Next”。</li>
+<li>在“Initialise all peripherals with their default Mode?”界面<strong>务必选择“No”</strong>。这将允许我们手动配置所需的外设，避免不必要的代码和潜在的冲突。然后点击“Finish”。</li>
+</ul>
+</li>
+<li><p>配置时钟</p>
+<ul>
+<li>双击项目根目录下的 <code>.ioc</code> 文件（例如 <code>Bootloader.ioc</code>），打开STM32CubeMX配置界面。</li>
+<li>在左侧的“System Core”中选择“RCC”。</li>
+<li>在“HSE”下拉菜单中选择“Crystal&#x2F;Ceramic Resonator”（假设你使用外部晶振）。<ul>
+<li>菜单中选择项的解释：</li>
+<li><strong>Disable</strong> ：禁用</li>
+<li><strong>Bypass Clock Source（旁路时钟源）</strong> ：选择此项表示使用外部时钟源直接输入到 MCU，绕过内部的振荡器电路。这意味着外部提供一个稳定的时钟信号到 OSC_IN 引脚，而 OSC_OUT 引脚则悬空。使用此选项时，外部时钟源必须已经产生稳定的时钟信号。</li>
+<li><strong>Crystal&#x2F;Ceramic Resonator（晶体&#x2F;陶瓷谐振器）</strong>：选择此项表示使用外部晶体或陶瓷谐振器作为时钟源。这是最常见的配置方式。在这种模式下，晶振连接到 OSC_IN 和 OSC_OUT 引脚，并且通常需要配合合适的负载电容使用，以确保晶振正常起振</li>
+</ul>
+</li>
+<li>在“PLLCLK”选项卡中配置PLL倍频器，将系统时钟配置为72MHz。通常的配置是：<ul>
+<li>PLL Source Mux: HSE</li>
+<li>PLL Multiplier: x9</li>
+</ul>
+</li>
+<li>确认“SYSCLK”显示为72MHz。</li>
+<li>保存 <code>.ioc</code> 文件（Ctrl+S 或 File -&gt; Save），STM32CubeIDE会自动生成或更新代码。</li>
+</ul>
+</li>
+<li><p>配置串口</p>
+<ul>
+<li>在左侧的“Connectivity”中选择“USART1”。</li>
+<li>在中间的配置界面中：<ul>
+<li>“Mode”选择“Asynchronous”。（异步，还有其他几个选择，）<ul>
+<li>Mode选择项：</li>
+<li><strong>Asynchronous（异步模式）</strong>：这是 USART 最常用的模式。在这种模式下，数据传输不需要单独的时钟线进行同步，而是通过起始位、数据位、校验位和停止位来定义数据帧的结构。发送方和接收方需要预先约定好波特率（即每秒传输的比特数），以确保数据能够正确传输。</li>
+<li><strong>Synchronous（同步模式）</strong>：在这种模式下，数据传输需要一根额外的时钟线（通常称为 SCLK 或 CK）进行同步。发送方提供时钟信号，接收方根据时钟信号进行数据的采样和接收。</li>
+<li><strong>Single Wire (Half-Duplex)（单线（半双工）模式）</strong>：在这种模式下，USART 使用同一根线进行发送和接收，但不能同时进行。</li>
+<li><strong>Multiprocessor Communication（多处理器通信模式）</strong>：这种模式允许多个处理器通过同一条 USART 总线进行通信。在这种模式下，每个处理器都有一个唯一的地址。</li>
+<li><strong>IrDA（红外数据协会）</strong>：这种模式支持红外线通信协议。</li>
+<li><strong>LIN（本地互联网络）</strong>：LIN 是一种低成本的串行通信协议，常用于汽车电子等领域。</li>
+<li><strong>SmartCard（智能卡模式）</strong>：这种模式支持智能卡（例如 SIM 卡、银行卡）的通信协议。</li>
+</ul>
+</li>
+<li>“Baud Rate”设置为115200（或其他你需要的波特率）。</li>
+<li>“Word Length”选择“8 Bits”。</li>
+<li>“Parity”选择“None”。（奇偶校验）</li>
+<li>“Stop Bits”选择“1 Stop Bit”。</li>
+<li>使能“NVIC Settings”中的USART1全局中断。这将在之后允许我们使用中断方式接收串口数据（虽然在之前的简化版本中未使用中断，但这是一个良好的习惯，后续会用到）。</li>
+</ul>
+</li>
+<li>保存 <code>.ioc</code> 文件。</li>
+</ul>
+</li>
+<li><p>配置Flash分区</p>
+<ul>
+<li><p>在项目资源管理器中，展开“Bootloader”项目，打开 <code>STM32F103C8Tx_FLASH.ld</code> 文件。</p>
+</li>
+<li><p>找到以下代码段：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 64K</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将其修改为：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 16K</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<p>  这会将Flash的前16KB分配给Bootloader。应用程序将从<code>0x08004000</code>开始。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3、代码编辑"><a href="#3、代码编辑" class="headerlink" title="3、代码编辑"></a>3、代码编辑</h4><ul>
+<li>串口接收数据</li>
+</ul>
 ]]></content>
+      <categories>
+        <category>stm32学习</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>OTA</tag>
+      </tags>
   </entry>
   <entry>
     <title>stm32F407HAL库学习-USART串口</title>
@@ -701,6 +606,26 @@
       </tags>
   </entry>
   <entry>
+    <title>Hello World</title>
+    <url>/2025/01/21/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
     <title>stm32F407移植LVGL+GUI</title>
     <url>/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/</url>
     <content><![CDATA[<h1 id="stm32F407移植LVGL-GUI"><a href="#stm32F407移植LVGL-GUI" class="headerlink" title="stm32F407移植LVGL+GUI"></a>stm32F407移植LVGL+GUI</h1><h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><ul>
@@ -868,29 +793,78 @@
       </tags>
   </entry>
   <entry>
-    <title>内存管理</title>
-    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
-    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
-<p>下面是对内存的动态管理。</p>
+    <title>FSMC—扩展外部SRAM</title>
+    <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
+    <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
+<p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
+<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
+<ul>
+<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
+<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
+<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
+<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
+</ul>
 <span id="more"></span>
 
-<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
-<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
-<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
-<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
-<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
-<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
-<p><strong>分配原理</strong> </p>
-<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
-<p><strong>释放原理</strong> </p>
-<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+<p>在我们使用的是IS62WV51216的SRAM芯片内部结构框图。以他为模型学习。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092613.png"></p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092731.png"></p>
+<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092950.png"></p>
+<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
+<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits）。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/093304.png"></p>
+<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
+<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
+<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
+<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
+<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
+<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
+<p>OE、WE可以控制读写使能，防止误操作。</p>
+<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/094859.png"></p>
+<p>读写时序的流程：</p>
+<ul>
+<li>主机使能地址信号线，发送要访问的存储器地址。</li>
+<li>控制片选信号CS1、CS2，使能存储芯片</li>
+<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
+<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
+<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
+</ul>
+<h4 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h4><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
+<h4 id="3、FSMC框图解析"><a href="#3、FSMC框图解析" class="headerlink" title="3、FSMC框图解析"></a>3、FSMC框图解析</h4><p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095536.png"></p>
+<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095737.png"></p>
+<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
+<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
+<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
+<ul>
+<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
+</li>
+<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
+</li>
+<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
+</li>
+</ul>
+<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
+<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/100215.png"></p>
+<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
+<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/105408.png"></p>
+<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111455.png"></p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111509.png"></p>
+<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
+<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。在地址建立周期中，地址线发出要访问的地址， 数据掩码信号线指示出要读取地址的高、低字节部分，片选信号使能存储器芯片；地址建立周期结束后读使能信号线发出读使能信号， 接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</p>
+<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
 ]]></content>
       <categories>
         <category>stm32F407</category>
       </categories>
       <tags>
+        <tag>stm32F407</tag>
         <tag>多媒体项目</tag>
-        <tag>stm32</tag>
       </tags>
   </entry>
   <entry>
@@ -1018,6 +992,32 @@
       </tags>
   </entry>
   <entry>
+    <title>内存管理</title>
+    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
+    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
+<p>下面是对内存的动态管理。</p>
+<span id="more"></span>
+
+<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
+<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
+<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
+<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
+<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
+<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
+<p><strong>分配原理</strong> </p>
+<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
+<p><strong>释放原理</strong> </p>
+<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32</tag>
+        <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
     <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
     <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
@@ -1027,6 +1027,62 @@
       </categories>
       <tags>
         <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>杂项设备</title>
+    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
+    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
+<li><p>概念：</p>
+<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
+</li>
+<li><p>特点：</p>
+<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
+<p>  结构简单</p>
+<p>  提供基本的读写操作接口</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​	2、定义文件操作结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	3、定义杂项设备结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	参数：</p>
+<pre><code>	* minor：次设备号。
+	* name：设备节点名称。
+	* fops：文件操作结构体指针。
+	* 其他的用到的不多，用到可以在搜。
+</code></pre>
+<p>​	4、注册杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	5、注销杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
+<li><p>创建设备节点：</p>
+<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
+</li>
+<li><p>应用程序访问：</p>
+<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>杂项设备</tag>
+        <tag>平台总线</tag>
       </tags>
   </entry>
   <entry>
@@ -1425,59 +1481,277 @@
       </tags>
   </entry>
   <entry>
-    <title>杂项设备</title>
-    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
-    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
-<li><p>概念：</p>
-<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
-</li>
-<li><p>特点：</p>
-<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
-<p>  结构简单</p>
-<p>  提供基本的读写操作接口</p>
-</li>
-</ul>
+    <title>测试文章</title>
+    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <content><![CDATA[<p>这是以个测试</p>
+<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
+]]></content>
+      <tags>
+        <tag>测试</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>音频播放</title>
+    <url>/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/</url>
+    <content><![CDATA[<h1 id="音频播放"><a href="#音频播放" class="headerlink" title="音频播放"></a>音频播放</h1><h3 id="前其准备"><a href="#前其准备" class="headerlink" title="前其准备"></a>前其准备</h3><p>我以思维导图的方式写了相关的原理和所需要的知识点。</p>
+<p><img src="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/123.png"></p>
+<p><a href="https://mubu.com/app/edit/home/6T6aswkdt2I#m">https://mubu.com/app/edit/home/6T6aswkdt2I#m</a></p>
 <span id="more"></span>
 
-<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="代码解读"><a href="#代码解读" class="headerlink" title="代码解读"></a>代码解读</h3><h4 id="audioplay-c"><a href="#audioplay-c" class="headerlink" title="audioplay.c"></a>audioplay.c</h4><ul>
+<li>全局变量</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bool play_initialized = false;              // 播放是否初始化完成</span><br><span class="line">​static u8 *current_song = NULL;            // 当前播放的歌曲路径</span><br><span class="line">​static u32 last_fillnum = WAV_I2S_TX_DMA_BUFSIZE; // 上次填充的缓冲区大小</span><br><span class="line">​static DIR wavdir;                         // 音乐目录句柄</span><br><span class="line">​static u16 *wavindextbl;                   // WAV 文件索引表</span><br><span class="line">​static u16 totwavnum;                      // 路径下的文件总数</span><br><span class="line">​static u16 curindex;                       // 当前播放的歌曲索引</span><br><span class="line">​static char song_name[256] = &quot;Unknown&quot;;    // 当前歌曲名称</span><br></pre></td></tr></table></figure>
 
-<p>​	2、定义文件操作结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>audio_start开始播放函数、audio_pause暂停播放函数、audio_resume从暂停状态到播放状态</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 开始音频播放</span><br><span class="line">void audio_start(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status = 3 &lt;&lt; 0; // 开始播放+非暂停</span><br><span class="line">    I2S_Play_Start();</span><br><span class="line">&#125;</span><br><span class="line">// 暂停音频播放（仅停止硬件，不释放资源）</span><br><span class="line">void audio_pause(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status &amp;= ~(1 &lt;&lt; 0); // 清除bit0，标记暂停</span><br><span class="line">    I2S_Play_Stop();              // 停止I2S硬件播放</span><br><span class="line">&#125;</span><br><span class="line">// 继续播放（从暂停状态恢复）</span><br><span class="line">void audio_resume(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status |= (1 &lt;&lt; 0); // 设置bit0，继续播放</span><br><span class="line">    I2S_Play_Start();            // 恢复I2S硬件播放</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>​	3、定义杂项设备结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	参数：</p>
-<pre><code>	* minor：次设备号。
-	* name：设备节点名称。
-	* fops：文件操作结构体指针。
-	* 其他的用到的不多，用到可以在搜。
-</code></pre>
-<p>​	4、注册杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	5、注销杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
-
-
-
-<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
-<li><p>创建设备节点：</p>
-<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
+<ul>
+<li><p>结构体的内容如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef __packed struct</span><br><span class="line">&#123;  </span><br><span class="line">    u8 *i2sbuf1;</span><br><span class="line">    u8 *i2sbuf2;</span><br><span class="line">    u8 *tbuf;</span><br><span class="line">    FIL *file;</span><br><span class="line">    u8 status;</span><br><span class="line">&#125;__audiodev;</span><br></pre></td></tr></table></figure></li>
+</ul>
 </li>
-<li><p>应用程序访问：</p>
-<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
+<li><p>audio_stop：停止播放并清理空间</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void audio_stop(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status = 0;</span><br><span class="line">    I2S_Play_Stop();</span><br><span class="line">    play_initialized = false;</span><br><span class="line">    if (current_song)</span><br><span class="line">    &#123;</span><br><span class="line">        myfree(SRAMIN, current_song);</span><br><span class="line">        current_song = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (audiodev.file)</span><br><span class="line">    &#123;</span><br><span class="line">        f_close(audiodev.file);</span><br><span class="line">        myfree(SRAMIN, audiodev.file);</span><br><span class="line">        audiodev.file = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (wavindextbl)</span><br><span class="line">    &#123;</span><br><span class="line">        myfree(SRAMIN, wavindextbl);</span><br><span class="line">        wavindextbl = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">	strcpy(song_name, &quot;Unknown&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>清零status。关闭I2S。</li>
+<li>重置音乐播放标志位为false。</li>
+<li>释放申请的内存。</li>
+<li>将音乐界面的标签重置为”Unknown”。</li>
+</ul>
+</li>
+<li><p>audio_get_tnum：获取目录中的WAV文件总数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u16 audio_get_tnum(u8 *path)</span><br><span class="line">&#123;</span><br><span class="line">    u8 res;</span><br><span class="line">    u16 rval = 0;</span><br><span class="line">    DIR tdir;</span><br><span class="line">    FILINFO tfileinfo;</span><br><span class="line">    u8 *fn;</span><br><span class="line">    res = f_opendir(&amp;tdir, (const TCHAR*)path);</span><br><span class="line">    tfileinfo.lfsize = _MAX_LFN * 2 + 1;</span><br><span class="line">    tfileinfo.lfname = mymalloc(SRAMIN, tfileinfo.lfsize);</span><br><span class="line">    if (res == FR_OK &amp;&amp; tfileinfo.lfname != NULL)</span><br><span class="line">    &#123;</span><br><span class="line">        while (1)</span><br><span class="line">        &#123;</span><br><span class="line">            res = f_readdir(&amp;tdir, &amp;tfileinfo);</span><br><span class="line">            if (res != FR_OK || tfileinfo.fname[0] == 0) break;</span><br><span class="line">            fn = (u8*)(*tfileinfo.lfname ? tfileinfo.lfname : tfileinfo.fname);</span><br><span class="line">            res = f_typetell(fn);</span><br><span class="line">            if ((res &amp; 0XF0) == 0X40) rval++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMIN, tfileinfo.lfname);</span><br><span class="line">    return rval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用f_opendir打开目录。<ul>
+<li>f_opendir(DIR *dp, const TCHAR *path)<ul>
+<li>第一参数dp：指向DIR结构体的指针，用于存储目录信息。、</li>
+<li>返回值：FR—OK表示读取成功。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>动态分配文件名缓冲区（lfname）。<ul>
+<li>_MAX_LFN * 2 + 1<ul>
+<li>_MAX_LFN ：表示最大的文件名长度。</li>
+<li>乘2：再FATFS文件系统中LFN采用UTF-16，每个字符需要2个字节。</li>
+<li>+1：表示在字符的结尾加上字符串结束符“\0”。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>使用f_readdir依次读取目录中的文件。</li>
+<li>使用f_typetell 判断文件类型，0x40表示WAV文件。<ul>
+<li>f_typetell 用于判断文件类型。返回值res用于表示文件类型。</li>
+<li>低8位：大类（音频、视频、文档等）</li>
+<li>高8位：具体类型（MP3、WAV、TXT）</li>
+</ul>
+</li>
+<li>返回WAV文件总数rval。</li>
+</ul>
+</li>
+<li><p>audio_play_init：初始化播放器</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u8 audio_play_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    // 配置 WM8978 音频编解码器</span><br><span class="line">    WM8978_ADDA_Cfg(1, 0);  // 使能 DAC，关闭 ADC</span><br><span class="line">    WM8978_Input_Cfg(0, 0, 0);  // 关闭输入路径</span><br><span class="line">    WM8978_Output_Cfg(1, 0);    // 使能 DAC 输出</span><br><span class="line"></span><br><span class="line">    // 打开音乐目录</span><br><span class="line">    while (f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;)) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    // 获取 WAV 文件总数</span><br><span class="line">    totwavnum = audio_get_tnum(&quot;0:/MUSIC&quot;);</span><br><span class="line">    if (totwavnum == 0) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    // 分配内存</span><br><span class="line">    wavfileinfo.lfsize = _MAX_LFN * 2 + 1;</span><br><span class="line">    wavfileinfo.lfname = mymalloc(SRAMIN, wavfileinfo.lfsize);</span><br><span class="line">    current_song = mymalloc(SRAMIN, wavfileinfo.lfsize);</span><br><span class="line">    wavindextbl = mymalloc(SRAMIN, 2 * totwavnum);</span><br><span class="line"></span><br><span class="line">    // 构建 WAV 文件索引表</span><br><span class="line">    res = f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;);</span><br><span class="line">    if (res == FR_OK)</span><br><span class="line">    &#123;</span><br><span class="line">        curindex = 0;</span><br><span class="line">        while (1)</span><br><span class="line">        &#123;</span><br><span class="line">            u16 temp = wavdir.index;</span><br><span class="line">            res = f_readdir(&amp;wavdir, &amp;wavfileinfo);</span><br><span class="line">            if (res != FR_OK || wavfileinfo.fname[0] == 0) break;</span><br><span class="line">            fn = (u8*)(*wavfileinfo.lfname ? wavfileinfo.lfname : wavfileinfo.fname);</span><br><span class="line">            res = f_typetell(fn);</span><br><span class="line">            if ((res &amp; 0XF0) == 0X40)</span><br><span class="line">            &#123;</span><br><span class="line">                wavindextbl[curindex] = temp;</span><br><span class="line">                curindex++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMIN, wavfileinfo.lfname);</span><br><span class="line">    curindex = 0; // 从第一首开始</span><br><span class="line">    return audio_play_next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>配置WM8978：启用DAC输出，关闭输入和ADC。</p>
+<ul>
+<li>使能DAC，即打开音频播放功能。</li>
+<li>关闭ADC，不使用音频录制。</li>
+<li>输入数据：关闭了ADC，音频数据不会从MIC或者LIN IN进入，而是通过I2S总线输入。</li>
+<li>使能DAC输出，时音频信号能够经过耳机或者喇叭输出。</li>
+</ul>
+</li>
+<li><p>打开0:&#x2F;MUSIC目录并统计WAV文件数。</p>
+</li>
+<li><p>分配内存：歌曲路径长文件名缓冲区和索引表</p>
+</li>
+<li><p>构建索引表：记录每个WAV文件的目录索引</p>
+<ul>
+<li><p>temp：存储这个当前遍历到的文件在目录中索引（从1开始计数）</p>
+</li>
+<li><p>例如：0:&#x2F;MUSIC目录下有四个文件，分别为one.wav、two.text、screen.wav、four.mp3。</p>
+</li>
+<li><table>
+<thead>
+<tr>
+<th><code>wavdir.index (temp)</code></th>
+<th>文件名</th>
+<th><code>res = f_typetell(fn)</code></th>
+<th><code>(res &amp; 0XF0) == 0X40</code></th>
+<th><code>wavindextbl[curindex]</code></th>
+<th><code>curindex</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>one.wav</td>
+<td>0x41</td>
+<td>✅（是 WAV）</td>
+<td><code>wavindextbl[0] = 1</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>two.txt</td>
+<td>0x30</td>
+<td>❌（不是 WAV）</td>
+<td>不存入数组</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>screen.wav</td>
+<td>0x41</td>
+<td>✅（是 WAV）</td>
+<td><code>wavindextbl[1] = 3</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>four.mp3</td>
+<td>0x50</td>
+<td>❌（不是 WAV）</td>
+<td>不存入数组</td>
+<td>2</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>调用audio_play_next函数，播放第一首歌。</p>
+</li>
+</ul>
+</li>
+<li><p>audio_play_next:播放下一首</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u8 audio_play_next(void)</span><br><span class="line">&#123;</span><br><span class="line">    // 如果已有文件打开，先关闭</span><br><span class="line">    if (audiodev.file) &#123; f_close(audiodev.file); myfree(SRAMIN, audiodev.file); audiodev.file = NULL; &#125;</span><br><span class="line"></span><br><span class="line">    // 循环播放</span><br><span class="line">    if (curindex &gt;= totwavnum) curindex = 0;</span><br><span class="line"></span><br><span class="line">    // 获取下一首歌信息</span><br><span class="line">    res = f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;);</span><br><span class="line">    dir_sdi(&amp;wavdir, wavindextbl[curindex]);</span><br><span class="line">    res = f_readdir(&amp;wavdir, &amp;wavfileinfo);</span><br><span class="line">    </span><br><span class="line">    //构建完整的路径</span><br><span class="line">    strcpy((char*)current_song, &quot;0:/MUSIC/&quot;);</span><br><span class="line">    strcat((char*)current_song, (const char*)fn);</span><br><span class="line">    strncpy(song_name, (char*)fn, sizeof(song_name) - 1);</span><br><span class="line"></span><br><span class="line">    // 初始化 WAV 解码</span><br><span class="line">    res = wav_decode_init(current_song, &amp;wavctrl);</span><br><span class="line">    if (res == 0)</span><br><span class="line">    &#123;</span><br><span class="line">        // 配置 I2S 根据 WAV 参数</span><br><span class="line">        if (wavctrl.bps == 16) &#123; ... &#125;</span><br><span class="line">        else if (wavctrl.bps == 24) &#123; ... &#125;</span><br><span class="line">        I2S2_SampleRate_Set(wavctrl.samplerate);</span><br><span class="line">        I2S2_TX_DMA_Init(audiodev.i2sbuf1, audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE / 2);</span><br><span class="line">        i2s_tx_callback = wav_i2s_dma_tx_callback;</span><br><span class="line"></span><br><span class="line">        // 打开文件并填充缓冲区</span><br><span class="line">        audiodev.file = mymalloc(SRAMIN, sizeof(FIL));</span><br><span class="line">        res = f_open(audiodev.file, (TCHAR*)current_song, FA_READ);</span><br><span class="line">        f_lseek(audiodev.file, wavctrl.datastart);</span><br><span class="line">        last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">        last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">        play_initialized = true;</span><br><span class="line">        audio_start();</span><br><span class="line">        curindex++;</span><br><span class="line">    &#125;</span><br><span class="line">    return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>关闭当前文件</li>
+<li>检查索引，并实现循环播放。</li>
+<li>打开目录，定位到下一首歌，构建完整的路劲，并提取歌曲名称。<ul>
+<li>dir_sdi（）：用于设置目录读取索引，相当于告诉f_readdir（）从某个索引位置开始读取。这样就能<strong>直接跳到指定的 WAV 文件</strong>，而不是重新遍历整个目录。</li>
+<li>构建完整的路径：<ul>
+<li>strcpy((char*)current_song, “0:&#x2F;MUSIC&#x2F;“)：将字符串”0:&#x2F;MUSIC&#x2F;“复制到current_song。</li>
+<li>strcat((char*)current_song, (const char*)fn);：将fn凭借到current_song的末尾。</li>
+<li>strncpy(song_name, (char*)fn, sizeof(song_name) - 1);：将fn复制到song_name，去除\0。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>调用wav_decode_init 解析WAV头文件，获取参数（采样率、位深、通道数等）<ul>
+<li>i2s_tx_callback &#x3D; wav_i2s_dma_tx_callback;：当 I2S 通过 DMA 发送完一部分数据时，会触发 <code>wav_i2s_dma_tx_callback</code>。</li>
+</ul>
+</li>
+<li>配置I2S和DMA，根据WAV文件的位深设置格式。<ul>
+<li>f_lseek(audiodev.file, wavctrl.datastart);：<ul>
+<li><code>f_lseek()</code> <strong>用于移动文件指针</strong>，</li>
+<li><code>wavctrl.datastart</code> 代表<strong>WAV 音频数据起始地址</strong>，</li>
+</ul>
+</li>
+<li>last_fillnum &#x3D; wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);<br>  last_fillnum &#x3D; wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);<ul>
+<li><strong><code>wav_buffill()</code> 用于填充 I2S DMA 缓冲区</strong>，确保音频数据连续传输。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>更行curindex索引，为下一首歌做准备。</li>
+</ul>
+</li>
+<li><p>audio_play_prev：播放上一首歌</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u8 audio_seek(u32 position)</span><br><span class="line">&#123;</span><br><span class="line">    if (!play_initialized || !audiodev.file) return 1;</span><br><span class="line"></span><br><span class="line">    // 计算目标文件位置</span><br><span class="line">    u32 file_pos = wavctrl.datastart + (position * (wavctrl.datasize / 100));</span><br><span class="line">    if (file_pos &gt; (wavctrl.datastart + wavctrl.datasize))</span><br><span class="line">        file_pos = wavctrl.datastart + wavctrl.datasize;</span><br><span class="line"></span><br><span class="line">    // 暂停播放</span><br><span class="line">    audio_pause();</span><br><span class="line"></span><br><span class="line">    // 调整文件指针</span><br><span class="line">    f_lseek(audiodev.file, file_pos);</span><br><span class="line">    wavctrl.cursec = (position * wavctrl.totsec) / 100;</span><br><span class="line"></span><br><span class="line">    // 重新填充缓冲区</span><br><span class="line">    last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">    last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line"></span><br><span class="line">    // 恢复播放</span><br><span class="line">    audio_resume();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 非阻塞播放任务</span><br><span class="line">void audio_play_task(void)</span><br><span class="line">&#123;</span><br><span class="line">    if (play_initialized &amp;&amp; (audiodev.status &amp; (1 &lt;&lt; 1))) // 检查是否在播放状态</span><br><span class="line">    &#123;</span><br><span class="line">        if (wavtransferend)</span><br><span class="line">        &#123;</span><br><span class="line">            wavtransferend = 0;</span><br><span class="line">            if (last_fillnum != WAV_I2S_TX_DMA_BUFSIZE)</span><br><span class="line">            &#123;</span><br><span class="line">                audio_pause(); // 先暂停当前播放</span><br><span class="line">                if (audio_play_next() != 0) // 切换到下一首</span><br><span class="line">                &#123;</span><br><span class="line">                    audio_stop();</span><br><span class="line">                    printf(&quot;Music list finished\n&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                if (wavwitchbuf)</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                else</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                wav_get_curtime(audiodev.file, &amp;wavctrl);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>与 audio_play_next() 类似，但将 curindex 减 1，并在边界时循环到最后一首。</li>
+</ul>
+</li>
+<li><p>audio_play_task：非阻塞播放任务</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void audio_play_task(void)</span><br><span class="line">&#123;</span><br><span class="line">    if (play_initialized &amp;&amp; (audiodev.status &amp; (1 &lt;&lt; 1)))</span><br><span class="line">    &#123;</span><br><span class="line">        if (wavtransferend)</span><br><span class="line">        &#123;</span><br><span class="line">            wavtransferend = 0;</span><br><span class="line">            if (last_fillnum != WAV_I2S_TX_DMA_BUFSIZE)</span><br><span class="line">            &#123;</span><br><span class="line">                audio_pause();</span><br><span class="line">                if (audio_play_next() != 0) audio_stop();</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                if (wavwitchbuf)</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                else</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                wav_get_curtime(audiodev.file, &amp;wavctrl);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>检查播放状态和DMA传输完成标志。<ul>
+<li>只有 <strong>播放初始化完成</strong> 且 <strong>当前处于播放状态</strong>，任务才会继续执行。</li>
+</ul>
+</li>
+<li>如果缓冲区未满，切换下一首。<ul>
+<li>last_fillnum !&#x3D; WAV_I2S_TX_DMA_BUFSIZE<ul>
+<li>如果上一次的缓冲区未满，则当前的肯定为0，则表示读取结束，开始下一首。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>否则，根据当前缓冲区填充数据，并更新播放时间。</li>
+</ul>
+</li>
+</ul>
+<h3 id="wavplay-c"><a href="#wavplay-c" class="headerlink" title="wavplay.c"></a>wavplay.c</h3><ul>
+<li><p>全局变量</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">__wavctrl wavctrl;       // WAV 文件控制结构体</span><br><span class="line">vu8 wavtransferend = 0;  // I2S DMA 传输完成标志</span><br><span class="line">vu8 wavwitchbuf = 0;     // 当前处理的缓冲区指示（0 = i2sbuf1，1 = i2sbuf2）</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>wav_decode_init：初始化WAV文件解析</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u8 wav_decode_init(u8* fname, __wavctrl* wavx)</span><br><span class="line">&#123;</span><br><span class="line">    FIL* ftemp;</span><br><span class="line">    u8 *buf;</span><br><span class="line">    u32 br = 0;</span><br><span class="line">    u8 res = 0;</span><br><span class="line"></span><br><span class="line">    ChunkRIFF *riff;</span><br><span class="line">    ChunkFMT *fmt;</span><br><span class="line">    ChunkFACT *fact;</span><br><span class="line">    ChunkDATA *data;</span><br><span class="line"></span><br><span class="line">    ftemp = (FIL*)mymalloc(SRAMIN, sizeof(FIL));</span><br><span class="line">    buf = mymalloc(SRAMIN, 512);</span><br><span class="line">    if (ftemp &amp;&amp; buf)  // 内存分配成功</span><br><span class="line">    &#123;</span><br><span class="line">        res = f_open(ftemp, (TCHAR*)fname, FA_READ);  // 打开文件</span><br><span class="line">        if (res == FR_OK)</span><br><span class="line">        &#123;</span><br><span class="line">            f_read(ftemp, buf, 512, &amp;br);  // 读取前 512 字节</span><br><span class="line">            riff = (ChunkRIFF *)buf;       // RIFF 块</span><br><span class="line">            if (riff-&gt;Format == 0X45564157)  // &quot;WAVE&quot; (WAV 文件标识)</span><br><span class="line">            &#123;</span><br><span class="line">                fmt = (ChunkFMT *)(buf + 12);  // FMT 块</span><br><span class="line">                fact = (ChunkFACT *)(buf + 12 + 8 + fmt-&gt;ChunkSize);  // FACT 块</span><br><span class="line">                if (fact-&gt;ChunkID == 0X74636166 || fact-&gt;ChunkID == 0X5453494C)  // &quot;fact&quot; 或 &quot;LIST&quot;</span><br><span class="line">                    wavx-&gt;datastart = 12 + 8 + fmt-&gt;ChunkSize + 8 + fact-&gt;ChunkSize;</span><br><span class="line">                else</span><br><span class="line">                    wavx-&gt;datastart = 12 + 8 + fmt-&gt;ChunkSize;  // 无 FACT/LIST 块</span><br><span class="line">                data = (ChunkDATA *)(buf + wavx-&gt;datastart);  // DATA 块</span><br><span class="line">                if (data-&gt;ChunkID == 0X61746164)  // &quot;data&quot;</span><br><span class="line">                &#123;</span><br><span class="line">                    // 提取 WAV 文件信息</span><br><span class="line">                    wavx-&gt;audioformat = fmt-&gt;AudioFormat;  // 音频格式 (1 = PCM)</span><br><span class="line">                    wavx-&gt;nchannels = fmt-&gt;NumOfChannels;  // 通道数</span><br><span class="line">                    wavx-&gt;samplerate = fmt-&gt;SampleRate;    // 采样率</span><br><span class="line">                    wavx-&gt;bitrate = fmt-&gt;ByteRate * 8;     // 位速 (bps)</span><br><span class="line">                    wavx-&gt;blockalign = fmt-&gt;BlockAlign;    // 块对齐</span><br><span class="line">                    wavx-&gt;bps = fmt-&gt;BitsPerSample;        // 位深 (16/24/32)</span><br><span class="line">                    wavx-&gt;datasize = data-&gt;ChunkSize;      // 数据大小</span><br><span class="line">                    wavx-&gt;datastart = wavx-&gt;datastart + 8; // 数据起始位置</span><br><span class="line"></span><br><span class="line">                    // 调试输出</span><br><span class="line">                    printf(&quot;wavx-&gt;audioformat:%d\r\n&quot;, wavx-&gt;audioformat);</span><br><span class="line">                    printf(&quot;wavx-&gt;nchannels:%d\r\n&quot;, wavx-&gt;nchannels);</span><br><span class="line">                    printf(&quot;wavx-&gt;samplerate:%d\r\n&quot;, wavx-&gt;samplerate);</span><br><span class="line">                    printf(&quot;wavx-&gt;bitrate:%d\r\n&quot;, wavx-&gt;bitrate);</span><br><span class="line">                    printf(&quot;wavx-&gt;blockalign:%d\r\n&quot;, wavx-&gt;blockalign);</span><br><span class="line">                    printf(&quot;wavx-&gt;bps:%d\r\n&quot;, wavx-&gt;bps);</span><br><span class="line">                    printf(&quot;wavx-&gt;datasize:%d\r\n&quot;, wavx-&gt;datasize);</span><br><span class="line">                    printf(&quot;wavx-&gt;datastart:%d\r\n&quot;, wavx-&gt;datastart);</span><br><span class="line">                &#125; else res = 3;  // 未找到 DATA 块</span><br><span class="line">            &#125; else res = 2;  // 非 WAV 文件</span><br><span class="line">        &#125; else res = 1;  // 打开文件失败</span><br><span class="line">    &#125;</span><br><span class="line">    f_close(ftemp);</span><br><span class="line">    myfree(SRAMIN, ftemp);</span><br><span class="line">    myfree(SRAMIN, buf);</span><br><span class="line">    return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分配内存：文件对象ftmp和缓冲区buf。</li>
+<li>打开文件并读取前512字节。</li>
+<li>检查RIFF块，确认文件格式为WAVE。</li>
+<li>解析FMT块，提取音乐格式、通道数、采样率等信息。</li>
+<li>检查是否FACT或者LIST块，并计算数据的起始位置datastart。</li>
+<li>解析DATA块，获取数据大小，并更新datastart。</li>
+</ul>
+</li>
+<li><p>wav_buffill：填充音频缓冲区</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u32 wav_buffill(u8 *buf, u16 size, u8 bits)</span><br><span class="line">&#123;</span><br><span class="line">    u16 readlen = 0;</span><br><span class="line">    u32 bread;</span><br><span class="line">    u16 i;</span><br><span class="line">    u8 *p;</span><br><span class="line">    if (bits == 24)  // 24 位音频</span><br><span class="line">    &#123;</span><br><span class="line">        readlen = (size / 4) * 3;  // 计算读取字节数</span><br><span class="line">        f_read(audiodev.file, audiodev.tbuf, readlen, (UINT*)&amp;bread);</span><br><span class="line">        p = audiodev.tbuf;</span><br><span class="line">        for (i = 0; i &lt; size;)</span><br><span class="line">        &#123;</span><br><span class="line">            buf[i++] = p[1];  // 中间字节</span><br><span class="line">            buf[i] = p[2];    // 高字节</span><br><span class="line">            i += 2;</span><br><span class="line">            buf[i++] = p[0];  // 低字节</span><br><span class="line">            p += 3;</span><br><span class="line">        &#125;</span><br><span class="line">        bread = (bread * 4) / 3;  // 调整填充后的大小</span><br><span class="line">    &#125; else &#123;  // 16 位音频</span><br><span class="line">        f_read(audiodev.file, buf, size, (UINT*)&amp;bread);</span><br><span class="line">        if (bread &lt; size)  // 数据不足，补 0</span><br><span class="line">            for (i = bread; i &lt; size - bread; i++) buf[i] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">    return bread;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数<ul>
+<li>buf：目标缓冲区</li>
+<li>size：要填充的字节数</li>
+<li>bits：音频位深</li>
+</ul>
+</li>
+<li>24位：没三个字节数据拓展为4字节，调整字节顺序<ul>
+<li>在I2S传输时要么传输16位，要么传输32位数据。24位数据要补充一个字节的数据。</li>
+<li>不能补充在最低位，也不能补充在最高位。最低为决定了信号的精度、最高决定以了信号的振幅，也就是音量。所以补充在中间。</li>
+</ul>
+</li>
+<li>16位：直接读取数据，不足为0.</li>
+</ul>
+</li>
+<li><p>wav_i2s_dma_tx_callback：DMA回调和时间计算</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void wav_i2s_dma_tx_callback(void)</span><br><span class="line">&#123;</span><br><span class="line">    u16 i;</span><br><span class="line">    if (DMA1_Stream4-&gt;CR &amp; (1 &lt;&lt; 19))  // DMA 传输 i2sbuf1</span><br><span class="line">    &#123;</span><br><span class="line">        wavwitchbuf = 0;</span><br><span class="line">        if ((audiodev.status &amp; 0X01) == 0)  // 暂停状态</span><br><span class="line">            for (i = 0; i &lt; WAV_I2S_TX_DMA_BUFSIZE; i++) audiodev.i2sbuf1[i] = 0;  // 填充 0</span><br><span class="line">    &#125; else &#123;  // DMA 传输 i2sbuf2</span><br><span class="line">        wavwitchbuf = 1;</span><br><span class="line">        if ((audiodev.status &amp; 0X01) == 0)  // 暂停状态</span><br><span class="line">            for (i = 0; i &lt; WAV_I2S_TX_DMA_BUFSIZE; i++) audiodev.i2sbuf2[i] = 0;  // 填充 0</span><br><span class="line">    &#125;</span><br><span class="line">    wavtransferend = 1;  // 标记传输完成</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>功能：I2S DMA 传输完成时的回调函数。</li>
+<li>检查DMA流状态，判断当前传输的是buf1还是buf2.</li>
+<li>更新wavwitchbuf 指示标志。</li>
+<li>如果处于暂停状态，填充缓冲区为0，静音。</li>
+<li>设置wavwitchbuf &#x3D; 1，通知传输完成。</li>
+</ul>
+</li>
+<li><p>wav_get_curtime：计算当前播放时间</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void wav_get_curtime(FIL* fx, __wavctrl *wavx)</span><br><span class="line">&#123;</span><br><span class="line">    long long fpos;</span><br><span class="line">    wavx-&gt;totsec = wavx-&gt;datasize / (wavx-&gt;bitrate / 8);  // 总时长 (秒)</span><br><span class="line">    fpos = fx-&gt;fptr - wavx-&gt;datastart;                    // 当前位置</span><br><span class="line">    wavx-&gt;cursec = fpos * wavx-&gt;totsec / wavx-&gt;datasize;  // 当前播放时间 (秒)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>计算：总时常 &#x3D; 数据大小 &#x2F; 字节速率。<ul>
+<li>字节速率bitrate &#x3D;  采样率 * 通道数 * 位深。单位（每秒初始多少位）。</li>
+<li>除8：转化为每秒传输多少字节。</li>
+</ul>
+</li>
+<li>当前时间 &#x3D; （当前偏移量 &#x2F; 数据大小） * 总时长。</li>
+</ul>
 </li>
 </ul>
 ]]></content>
       <categories>
-        <category>Linux驱动</category>
+        <category>stm32F407</category>
       </categories>
       <tags>
-        <tag>Linux学习</tag>
-        <tag>杂项设备</tag>
-        <tag>平台总线</tag>
+        <tag>stm32F407</tag>
+        <tag>多媒体项目</tag>
       </tags>
   </entry>
   <entry>
@@ -1919,16 +2193,6 @@
       </tags>
   </entry>
   <entry>
-    <title>测试文章</title>
-    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
-    <content><![CDATA[<p>这是以个测试</p>
-<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
-]]></content>
-      <tags>
-        <tag>测试</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>驱动和设备匹配过程</title>
     <url>/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/</url>
     <content><![CDATA[<h1 id="匹配过程及其问题"><a href="#匹配过程及其问题" class="headerlink" title="匹配过程及其问题"></a>匹配过程及其问题</h1><h4 id="1、匹配过程"><a href="#1、匹配过程" class="headerlink" title="1、匹配过程"></a>1、匹配过程</h4><p>​	在linux驱动中，目前学到了三种编写代码的方式。</p>
@@ -2029,152 +2293,6 @@
         <tag>平台驱动</tag>
         <tag>平台设备</tag>
         <tag>平台匹配</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>音频播放</title>
-    <url>/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/</url>
-    <content><![CDATA[<h1 id="音频播放"><a href="#音频播放" class="headerlink" title="音频播放"></a>音频播放</h1><h3 id="前其准备"><a href="#前其准备" class="headerlink" title="前其准备"></a>前其准备</h3><p>我以思维导图的方式写了相关的原理和所需要的知识点。</p>
-<p><img src="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/123.png"></p>
-<p><a href="https://mubu.com/app/edit/home/6T6aswkdt2I#m">https://mubu.com/app/edit/home/6T6aswkdt2I#m</a></p>
-<span id="more"></span>
-
-<h3 id="代码解读"><a href="#代码解读" class="headerlink" title="代码解读"></a>代码解读</h3><h4 id="audioplay-c"><a href="#audioplay-c" class="headerlink" title="audioplay.c"></a>audioplay.c</h4><ul>
-<li>全局变量</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bool play_initialized = false;              // 播放是否初始化完成</span><br><span class="line">​static u8 *current_song = NULL;            // 当前播放的歌曲路径</span><br><span class="line">​static u32 last_fillnum = WAV_I2S_TX_DMA_BUFSIZE; // 上次填充的缓冲区大小</span><br><span class="line">​static DIR wavdir;                         // 音乐目录句柄</span><br><span class="line">​static u16 *wavindextbl;                   // WAV 文件索引表</span><br><span class="line">​static u16 totwavnum;                      // 路径下的文件总数</span><br><span class="line">​static u16 curindex;                       // 当前播放的歌曲索引</span><br><span class="line">​static char song_name[256] = &quot;Unknown&quot;;    // 当前歌曲名称</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>audio_start开始播放函数、audio_pause暂停播放函数、audio_resume从暂停状态到播放状态</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 开始音频播放</span><br><span class="line">void audio_start(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status = 3 &lt;&lt; 0; // 开始播放+非暂停</span><br><span class="line">    I2S_Play_Start();</span><br><span class="line">&#125;</span><br><span class="line">// 暂停音频播放（仅停止硬件，不释放资源）</span><br><span class="line">void audio_pause(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status &amp;= ~(1 &lt;&lt; 0); // 清除bit0，标记暂停</span><br><span class="line">    I2S_Play_Stop();              // 停止I2S硬件播放</span><br><span class="line">&#125;</span><br><span class="line">// 继续播放（从暂停状态恢复）</span><br><span class="line">void audio_resume(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status |= (1 &lt;&lt; 0); // 设置bit0，继续播放</span><br><span class="line">    I2S_Play_Start();            // 恢复I2S硬件播放</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>结构体的内容如下：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef __packed struct</span><br><span class="line">&#123;  </span><br><span class="line">    u8 *i2sbuf1;</span><br><span class="line">    u8 *i2sbuf2;</span><br><span class="line">    u8 *tbuf;</span><br><span class="line">    FIL *file;</span><br><span class="line">    u8 status;</span><br><span class="line">&#125;__audiodev;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>audio_stop：停止播放并清理空间</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void audio_stop(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status = 0;</span><br><span class="line">    I2S_Play_Stop();</span><br><span class="line">    play_initialized = false;</span><br><span class="line">    if (current_song)</span><br><span class="line">    &#123;</span><br><span class="line">        myfree(SRAMIN, current_song);</span><br><span class="line">        current_song = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (audiodev.file)</span><br><span class="line">    &#123;</span><br><span class="line">        f_close(audiodev.file);</span><br><span class="line">        myfree(SRAMIN, audiodev.file);</span><br><span class="line">        audiodev.file = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (wavindextbl)</span><br><span class="line">    &#123;</span><br><span class="line">        myfree(SRAMIN, wavindextbl);</span><br><span class="line">        wavindextbl = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">	strcpy(song_name, &quot;Unknown&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>清零status。关闭I2S。</li>
-<li>重置音乐播放标志位为false。</li>
-<li>释放申请的内存。</li>
-<li>将音乐界面的标签重置为”Unknown”。</li>
-</ul>
-</li>
-<li><p>audio_get_tnum：获取目录中的WAV文件总数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u16 audio_get_tnum(u8 *path)</span><br><span class="line">&#123;</span><br><span class="line">    u8 res;</span><br><span class="line">    u16 rval = 0;</span><br><span class="line">    DIR tdir;</span><br><span class="line">    FILINFO tfileinfo;</span><br><span class="line">    u8 *fn;</span><br><span class="line">    res = f_opendir(&amp;tdir, (const TCHAR*)path);</span><br><span class="line">    tfileinfo.lfsize = _MAX_LFN * 2 + 1;</span><br><span class="line">    tfileinfo.lfname = mymalloc(SRAMIN, tfileinfo.lfsize);</span><br><span class="line">    if (res == FR_OK &amp;&amp; tfileinfo.lfname != NULL)</span><br><span class="line">    &#123;</span><br><span class="line">        while (1)</span><br><span class="line">        &#123;</span><br><span class="line">            res = f_readdir(&amp;tdir, &amp;tfileinfo);</span><br><span class="line">            if (res != FR_OK || tfileinfo.fname[0] == 0) break;</span><br><span class="line">            fn = (u8*)(*tfileinfo.lfname ? tfileinfo.lfname : tfileinfo.fname);</span><br><span class="line">            res = f_typetell(fn);</span><br><span class="line">            if ((res &amp; 0XF0) == 0X40) rval++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMIN, tfileinfo.lfname);</span><br><span class="line">    return rval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>使用f_opendir打开目录。<ul>
-<li>f_opendir(DIR *dp, const TCHAR *path)<ul>
-<li>第一参数dp：指向DIR结构体的指针，用于存储目录信息。、</li>
-<li>返回值：FR—OK表示读取成功。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>动态分配文件名缓冲区（lfname）。<ul>
-<li>_MAX_LFN * 2 + 1<ul>
-<li>_MAX_LFN ：表示最大的文件名长度。</li>
-<li>乘2：再FATFS文件系统中LFN采用UTF-16，每个字符需要2个字节。</li>
-<li>+1：表示在字符的结尾加上字符串结束符“\0”。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>使用f_readdir依次读取目录中的文件。</li>
-<li>使用f_typetell 判断文件类型，0x40表示WAV文件。<ul>
-<li>f_typetell 用于判断文件类型。返回值res用于表示文件类型。</li>
-<li>低8位：大类（音频、视频、文档等）</li>
-<li>高8位：具体类型（MP3、WAV、TXT）</li>
-</ul>
-</li>
-<li>返回WAV文件总数rval。</li>
-</ul>
-</li>
-<li><p>audio_play_init：初始化播放器</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">u8 audio_play_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    // 配置 WM8978 音频编解码器</span><br><span class="line">    WM8978_ADDA_Cfg(1, 0);  // 使能 DAC，关闭 ADC</span><br><span class="line">    WM8978_Input_Cfg(0, 0, 0);  // 关闭输入路径</span><br><span class="line">    WM8978_Output_Cfg(1, 0);    // 使能 DAC 输出</span><br><span class="line"></span><br><span class="line">    // 打开音乐目录</span><br><span class="line">    while (f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;)) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    // 获取 WAV 文件总数</span><br><span class="line">    totwavnum = audio_get_tnum(&quot;0:/MUSIC&quot;);</span><br><span class="line">    if (totwavnum == 0) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    // 分配内存</span><br><span class="line">    wavfileinfo.lfsize = _MAX_LFN * 2 + 1;</span><br><span class="line">    wavfileinfo.lfname = mymalloc(SRAMIN, wavfileinfo.lfsize);</span><br><span class="line">    current_song = mymalloc(SRAMIN, wavfileinfo.lfsize);</span><br><span class="line">    wavindextbl = mymalloc(SRAMIN, 2 * totwavnum);</span><br><span class="line"></span><br><span class="line">    // 构建 WAV 文件索引表</span><br><span class="line">    res = f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;);</span><br><span class="line">    if (res == FR_OK)</span><br><span class="line">    &#123;</span><br><span class="line">        curindex = 0;</span><br><span class="line">        while (1)</span><br><span class="line">        &#123;</span><br><span class="line">            u16 temp = wavdir.index;</span><br><span class="line">            res = f_readdir(&amp;wavdir, &amp;wavfileinfo);</span><br><span class="line">            if (res != FR_OK || wavfileinfo.fname[0] == 0) break;</span><br><span class="line">            fn = (u8*)(*wavfileinfo.lfname ? wavfileinfo.lfname : wavfileinfo.fname);</span><br><span class="line">            res = f_typetell(fn);</span><br><span class="line">            if ((res &amp; 0XF0) == 0X40)</span><br><span class="line">            &#123;</span><br><span class="line">                wavindextbl[curindex] = temp;</span><br><span class="line">                curindex++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMIN, wavfileinfo.lfname);</span><br><span class="line">    curindex = 0; // 从第一首开始</span><br><span class="line">    return audio_play_next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>配置WM8978：启用DAC输出，关闭输入和ADC。</p>
-<ul>
-<li>使能DAC，即打开音频播放功能。</li>
-<li>关闭ADC，不使用音频录制。</li>
-<li>输入数据：关闭了ADC，音频数据不会从MIC或者LIN IN进入，而是通过I2S总线输入。</li>
-<li>使能DAC输出，时音频信号能够经过耳机或者喇叭输出。</li>
-</ul>
-</li>
-<li><p>打开0:&#x2F;MUSIC目录并统计WAV文件数。</p>
-</li>
-<li><p>分配内存：歌曲路径长文件名缓冲区和索引表</p>
-</li>
-<li><p>构建索引表：记录每个WAV文件的目录索引</p>
-<ul>
-<li><p>temp：存储这个当前遍历到的文件在目录中索引（从1开始计数）</p>
-</li>
-<li><p>例如：0:&#x2F;MUSIC目录下有四个文件，分别为one.wav、two.text、screen.wav、four.mp3。</p>
-</li>
-<li><table>
-<thead>
-<tr>
-<th><code>wavdir.index (temp)</code></th>
-<th>文件名</th>
-<th><code>res = f_typetell(fn)</code></th>
-<th><code>(res &amp; 0XF0) == 0X40</code></th>
-<th><code>wavindextbl[curindex]</code></th>
-<th><code>curindex</code></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>one.wav</td>
-<td>0x41</td>
-<td>✅（是 WAV）</td>
-<td><code>wavindextbl[0] = 1</code></td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>two.txt</td>
-<td>0x30</td>
-<td>❌（不是 WAV）</td>
-<td>不存入数组</td>
-<td>1</td>
-</tr>
-<tr>
-<td>3</td>
-<td>screen.wav</td>
-<td>0x41</td>
-<td>✅（是 WAV）</td>
-<td><code>wavindextbl[1] = 3</code></td>
-<td>2</td>
-</tr>
-<tr>
-<td>4</td>
-<td>four.mp3</td>
-<td>0x50</td>
-<td>❌（不是 WAV）</td>
-<td>不存入数组</td>
-<td>2</td>
-</tr>
-</tbody></table>
-</li>
-</ul>
-</li>
-<li><p>调用audio_play_next函数，播放第一首歌。</p>
-</li>
-</ul>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32F407</tag>
-        <tag>多媒体项目</tag>
       </tags>
   </entry>
 </search>

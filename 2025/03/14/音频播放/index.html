@@ -30,7 +30,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/123.png">
 <meta property="article:published_time" content="2025-03-14T01:44:29.000Z">
-<meta property="article:modified_time" content="2025-03-14T02:40:57.029Z">
+<meta property="article:modified_time" content="2025-03-16T03:49:55.997Z">
 <meta property="article:author" content="Dylan">
 <meta property="article:tag" content="stm32F407">
 <meta property="article:tag" content="多媒体项目">
@@ -222,10 +222,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2025-03-14 09:44:29 / 修改时间：10:40:57" itemprop="dateCreated datePublished" datetime="2025-03-14T09:44:29+08:00">2025-03-14</time>
+              <time title="创建时间：2025-03-14 09:44:29" itemprop="dateCreated datePublished" datetime="2025-03-14T09:44:29+08:00">2025-03-14</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-03-16 11:49:55" itemprop="dateModified" datetime="2025-03-16T11:49:55+08:00">2025-03-16</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -380,6 +386,124 @@
 </li>
 </ul>
 </li>
+<li><p>audio_play_next:播放下一首</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">u8 audio_play_next(void)</span><br><span class="line">&#123;</span><br><span class="line">    // 如果已有文件打开，先关闭</span><br><span class="line">    if (audiodev.file) &#123; f_close(audiodev.file); myfree(SRAMIN, audiodev.file); audiodev.file = NULL; &#125;</span><br><span class="line"></span><br><span class="line">    // 循环播放</span><br><span class="line">    if (curindex &gt;= totwavnum) curindex = 0;</span><br><span class="line"></span><br><span class="line">    // 获取下一首歌信息</span><br><span class="line">    res = f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;);</span><br><span class="line">    dir_sdi(&amp;wavdir, wavindextbl[curindex]);</span><br><span class="line">    res = f_readdir(&amp;wavdir, &amp;wavfileinfo);</span><br><span class="line">    </span><br><span class="line">    //构建完整的路径</span><br><span class="line">    strcpy((char*)current_song, &quot;0:/MUSIC/&quot;);</span><br><span class="line">    strcat((char*)current_song, (const char*)fn);</span><br><span class="line">    strncpy(song_name, (char*)fn, sizeof(song_name) - 1);</span><br><span class="line"></span><br><span class="line">    // 初始化 WAV 解码</span><br><span class="line">    res = wav_decode_init(current_song, &amp;wavctrl);</span><br><span class="line">    if (res == 0)</span><br><span class="line">    &#123;</span><br><span class="line">        // 配置 I2S 根据 WAV 参数</span><br><span class="line">        if (wavctrl.bps == 16) &#123; ... &#125;</span><br><span class="line">        else if (wavctrl.bps == 24) &#123; ... &#125;</span><br><span class="line">        I2S2_SampleRate_Set(wavctrl.samplerate);</span><br><span class="line">        I2S2_TX_DMA_Init(audiodev.i2sbuf1, audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE / 2);</span><br><span class="line">        i2s_tx_callback = wav_i2s_dma_tx_callback;</span><br><span class="line"></span><br><span class="line">        // 打开文件并填充缓冲区</span><br><span class="line">        audiodev.file = mymalloc(SRAMIN, sizeof(FIL));</span><br><span class="line">        res = f_open(audiodev.file, (TCHAR*)current_song, FA_READ);</span><br><span class="line">        f_lseek(audiodev.file, wavctrl.datastart);</span><br><span class="line">        last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">        last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">        play_initialized = true;</span><br><span class="line">        audio_start();</span><br><span class="line">        curindex++;</span><br><span class="line">    &#125;</span><br><span class="line">    return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>关闭当前文件</li>
+<li>检查索引，并实现循环播放。</li>
+<li>打开目录，定位到下一首歌，构建完整的路劲，并提取歌曲名称。<ul>
+<li>dir_sdi（）：用于设置目录读取索引，相当于告诉f_readdir（）从某个索引位置开始读取。这样就能<strong>直接跳到指定的 WAV 文件</strong>，而不是重新遍历整个目录。</li>
+<li>构建完整的路径：<ul>
+<li>strcpy((char*)current_song, “0:&#x2F;MUSIC&#x2F;“)：将字符串”0:&#x2F;MUSIC&#x2F;“复制到current_song。</li>
+<li>strcat((char*)current_song, (const char*)fn);：将fn凭借到current_song的末尾。</li>
+<li>strncpy(song_name, (char*)fn, sizeof(song_name) - 1);：将fn复制到song_name，去除\0。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>调用wav_decode_init 解析WAV头文件，获取参数（采样率、位深、通道数等）<ul>
+<li>i2s_tx_callback &#x3D; wav_i2s_dma_tx_callback;：当 I2S 通过 DMA 发送完一部分数据时，会触发 <code>wav_i2s_dma_tx_callback</code>。</li>
+</ul>
+</li>
+<li>配置I2S和DMA，根据WAV文件的位深设置格式。<ul>
+<li>f_lseek(audiodev.file, wavctrl.datastart);：<ul>
+<li><code>f_lseek()</code> <strong>用于移动文件指针</strong>，</li>
+<li><code>wavctrl.datastart</code> 代表<strong>WAV 音频数据起始地址</strong>，</li>
+</ul>
+</li>
+<li>last_fillnum &#x3D; wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);<br>  last_fillnum &#x3D; wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);<ul>
+<li><strong><code>wav_buffill()</code> 用于填充 I2S DMA 缓冲区</strong>，确保音频数据连续传输。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>更行curindex索引，为下一首歌做准备。</li>
+</ul>
+</li>
+<li><p>audio_play_prev：播放上一首歌</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">u8 audio_seek(u32 position)</span><br><span class="line">&#123;</span><br><span class="line">    if (!play_initialized || !audiodev.file) return 1;</span><br><span class="line"></span><br><span class="line">    // 计算目标文件位置</span><br><span class="line">    u32 file_pos = wavctrl.datastart + (position * (wavctrl.datasize / 100));</span><br><span class="line">    if (file_pos &gt; (wavctrl.datastart + wavctrl.datasize))</span><br><span class="line">        file_pos = wavctrl.datastart + wavctrl.datasize;</span><br><span class="line"></span><br><span class="line">    // 暂停播放</span><br><span class="line">    audio_pause();</span><br><span class="line"></span><br><span class="line">    // 调整文件指针</span><br><span class="line">    f_lseek(audiodev.file, file_pos);</span><br><span class="line">    wavctrl.cursec = (position * wavctrl.totsec) / 100;</span><br><span class="line"></span><br><span class="line">    // 重新填充缓冲区</span><br><span class="line">    last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">    last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line"></span><br><span class="line">    // 恢复播放</span><br><span class="line">    audio_resume();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 非阻塞播放任务</span><br><span class="line">void audio_play_task(void)</span><br><span class="line">&#123;</span><br><span class="line">    if (play_initialized &amp;&amp; (audiodev.status &amp; (1 &lt;&lt; 1))) // 检查是否在播放状态</span><br><span class="line">    &#123;</span><br><span class="line">        if (wavtransferend)</span><br><span class="line">        &#123;</span><br><span class="line">            wavtransferend = 0;</span><br><span class="line">            if (last_fillnum != WAV_I2S_TX_DMA_BUFSIZE)</span><br><span class="line">            &#123;</span><br><span class="line">                audio_pause(); // 先暂停当前播放</span><br><span class="line">                if (audio_play_next() != 0) // 切换到下一首</span><br><span class="line">                &#123;</span><br><span class="line">                    audio_stop();</span><br><span class="line">                    printf(&quot;Music list finished\n&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                if (wavwitchbuf)</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                else</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                wav_get_curtime(audiodev.file, &amp;wavctrl);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>与 audio_play_next() 类似，但将 curindex 减 1，并在边界时循环到最后一首。</li>
+</ul>
+</li>
+<li><p>audio_play_task：非阻塞播放任务</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">void audio_play_task(void)</span><br><span class="line">&#123;</span><br><span class="line">    if (play_initialized &amp;&amp; (audiodev.status &amp; (1 &lt;&lt; 1)))</span><br><span class="line">    &#123;</span><br><span class="line">        if (wavtransferend)</span><br><span class="line">        &#123;</span><br><span class="line">            wavtransferend = 0;</span><br><span class="line">            if (last_fillnum != WAV_I2S_TX_DMA_BUFSIZE)</span><br><span class="line">            &#123;</span><br><span class="line">                audio_pause();</span><br><span class="line">                if (audio_play_next() != 0) audio_stop();</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                if (wavwitchbuf)</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf2, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                else</span><br><span class="line">                    last_fillnum = wav_buffill(audiodev.i2sbuf1, WAV_I2S_TX_DMA_BUFSIZE, wavctrl.bps);</span><br><span class="line">                wav_get_curtime(audiodev.file, &amp;wavctrl);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>检查播放状态和DMA传输完成标志。<ul>
+<li>只有 <strong>播放初始化完成</strong> 且 <strong>当前处于播放状态</strong>，任务才会继续执行。</li>
+</ul>
+</li>
+<li>如果缓冲区未满，切换下一首。<ul>
+<li>last_fillnum !&#x3D; WAV_I2S_TX_DMA_BUFSIZE<ul>
+<li>如果上一次的缓冲区未满，则当前的肯定为0，则表示读取结束，开始下一首。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>否则，根据当前缓冲区填充数据，并更新播放时间。</li>
+</ul>
+</li>
+</ul>
+<h3 id="wavplay-c"><a href="#wavplay-c" class="headerlink" title="wavplay.c"></a>wavplay.c</h3><ul>
+<li><p>全局变量</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__wavctrl wavctrl;       // WAV 文件控制结构体</span><br><span class="line">vu8 wavtransferend = 0;  // I2S DMA 传输完成标志</span><br><span class="line">vu8 wavwitchbuf = 0;     // 当前处理的缓冲区指示（0 = i2sbuf1，1 = i2sbuf2）</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>wav_decode_init：初始化WAV文件解析</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">u8 wav_decode_init(u8* fname, __wavctrl* wavx)</span><br><span class="line">&#123;</span><br><span class="line">    FIL* ftemp;</span><br><span class="line">    u8 *buf;</span><br><span class="line">    u32 br = 0;</span><br><span class="line">    u8 res = 0;</span><br><span class="line"></span><br><span class="line">    ChunkRIFF *riff;</span><br><span class="line">    ChunkFMT *fmt;</span><br><span class="line">    ChunkFACT *fact;</span><br><span class="line">    ChunkDATA *data;</span><br><span class="line"></span><br><span class="line">    ftemp = (FIL*)mymalloc(SRAMIN, sizeof(FIL));</span><br><span class="line">    buf = mymalloc(SRAMIN, 512);</span><br><span class="line">    if (ftemp &amp;&amp; buf)  // 内存分配成功</span><br><span class="line">    &#123;</span><br><span class="line">        res = f_open(ftemp, (TCHAR*)fname, FA_READ);  // 打开文件</span><br><span class="line">        if (res == FR_OK)</span><br><span class="line">        &#123;</span><br><span class="line">            f_read(ftemp, buf, 512, &amp;br);  // 读取前 512 字节</span><br><span class="line">            riff = (ChunkRIFF *)buf;       // RIFF 块</span><br><span class="line">            if (riff-&gt;Format == 0X45564157)  // &quot;WAVE&quot; (WAV 文件标识)</span><br><span class="line">            &#123;</span><br><span class="line">                fmt = (ChunkFMT *)(buf + 12);  // FMT 块</span><br><span class="line">                fact = (ChunkFACT *)(buf + 12 + 8 + fmt-&gt;ChunkSize);  // FACT 块</span><br><span class="line">                if (fact-&gt;ChunkID == 0X74636166 || fact-&gt;ChunkID == 0X5453494C)  // &quot;fact&quot; 或 &quot;LIST&quot;</span><br><span class="line">                    wavx-&gt;datastart = 12 + 8 + fmt-&gt;ChunkSize + 8 + fact-&gt;ChunkSize;</span><br><span class="line">                else</span><br><span class="line">                    wavx-&gt;datastart = 12 + 8 + fmt-&gt;ChunkSize;  // 无 FACT/LIST 块</span><br><span class="line">                data = (ChunkDATA *)(buf + wavx-&gt;datastart);  // DATA 块</span><br><span class="line">                if (data-&gt;ChunkID == 0X61746164)  // &quot;data&quot;</span><br><span class="line">                &#123;</span><br><span class="line">                    // 提取 WAV 文件信息</span><br><span class="line">                    wavx-&gt;audioformat = fmt-&gt;AudioFormat;  // 音频格式 (1 = PCM)</span><br><span class="line">                    wavx-&gt;nchannels = fmt-&gt;NumOfChannels;  // 通道数</span><br><span class="line">                    wavx-&gt;samplerate = fmt-&gt;SampleRate;    // 采样率</span><br><span class="line">                    wavx-&gt;bitrate = fmt-&gt;ByteRate * 8;     // 位速 (bps)</span><br><span class="line">                    wavx-&gt;blockalign = fmt-&gt;BlockAlign;    // 块对齐</span><br><span class="line">                    wavx-&gt;bps = fmt-&gt;BitsPerSample;        // 位深 (16/24/32)</span><br><span class="line">                    wavx-&gt;datasize = data-&gt;ChunkSize;      // 数据大小</span><br><span class="line">                    wavx-&gt;datastart = wavx-&gt;datastart + 8; // 数据起始位置</span><br><span class="line"></span><br><span class="line">                    // 调试输出</span><br><span class="line">                    printf(&quot;wavx-&gt;audioformat:%d\r\n&quot;, wavx-&gt;audioformat);</span><br><span class="line">                    printf(&quot;wavx-&gt;nchannels:%d\r\n&quot;, wavx-&gt;nchannels);</span><br><span class="line">                    printf(&quot;wavx-&gt;samplerate:%d\r\n&quot;, wavx-&gt;samplerate);</span><br><span class="line">                    printf(&quot;wavx-&gt;bitrate:%d\r\n&quot;, wavx-&gt;bitrate);</span><br><span class="line">                    printf(&quot;wavx-&gt;blockalign:%d\r\n&quot;, wavx-&gt;blockalign);</span><br><span class="line">                    printf(&quot;wavx-&gt;bps:%d\r\n&quot;, wavx-&gt;bps);</span><br><span class="line">                    printf(&quot;wavx-&gt;datasize:%d\r\n&quot;, wavx-&gt;datasize);</span><br><span class="line">                    printf(&quot;wavx-&gt;datastart:%d\r\n&quot;, wavx-&gt;datastart);</span><br><span class="line">                &#125; else res = 3;  // 未找到 DATA 块</span><br><span class="line">            &#125; else res = 2;  // 非 WAV 文件</span><br><span class="line">        &#125; else res = 1;  // 打开文件失败</span><br><span class="line">    &#125;</span><br><span class="line">    f_close(ftemp);</span><br><span class="line">    myfree(SRAMIN, ftemp);</span><br><span class="line">    myfree(SRAMIN, buf);</span><br><span class="line">    return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分配内存：文件对象ftmp和缓冲区buf。</li>
+<li>打开文件并读取前512字节。</li>
+<li>检查RIFF块，确认文件格式为WAVE。</li>
+<li>解析FMT块，提取音乐格式、通道数、采样率等信息。</li>
+<li>检查是否FACT或者LIST块，并计算数据的起始位置datastart。</li>
+<li>解析DATA块，获取数据大小，并更新datastart。</li>
+</ul>
+</li>
+<li><p>wav_buffill：填充音频缓冲区</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">u32 wav_buffill(u8 *buf, u16 size, u8 bits)</span><br><span class="line">&#123;</span><br><span class="line">    u16 readlen = 0;</span><br><span class="line">    u32 bread;</span><br><span class="line">    u16 i;</span><br><span class="line">    u8 *p;</span><br><span class="line">    if (bits == 24)  // 24 位音频</span><br><span class="line">    &#123;</span><br><span class="line">        readlen = (size / 4) * 3;  // 计算读取字节数</span><br><span class="line">        f_read(audiodev.file, audiodev.tbuf, readlen, (UINT*)&amp;bread);</span><br><span class="line">        p = audiodev.tbuf;</span><br><span class="line">        for (i = 0; i &lt; size;)</span><br><span class="line">        &#123;</span><br><span class="line">            buf[i++] = p[1];  // 中间字节</span><br><span class="line">            buf[i] = p[2];    // 高字节</span><br><span class="line">            i += 2;</span><br><span class="line">            buf[i++] = p[0];  // 低字节</span><br><span class="line">            p += 3;</span><br><span class="line">        &#125;</span><br><span class="line">        bread = (bread * 4) / 3;  // 调整填充后的大小</span><br><span class="line">    &#125; else &#123;  // 16 位音频</span><br><span class="line">        f_read(audiodev.file, buf, size, (UINT*)&amp;bread);</span><br><span class="line">        if (bread &lt; size)  // 数据不足，补 0</span><br><span class="line">            for (i = bread; i &lt; size - bread; i++) buf[i] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">    return bread;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数<ul>
+<li>buf：目标缓冲区</li>
+<li>size：要填充的字节数</li>
+<li>bits：音频位深</li>
+</ul>
+</li>
+<li>24位：没三个字节数据拓展为4字节，调整字节顺序<ul>
+<li>在I2S传输时要么传输16位，要么传输32位数据。24位数据要补充一个字节的数据。</li>
+<li>不能补充在最低位，也不能补充在最高位。最低为决定了信号的精度、最高决定以了信号的振幅，也就是音量。所以补充在中间。</li>
+</ul>
+</li>
+<li>16位：直接读取数据，不足为0.</li>
+</ul>
+</li>
+<li><p>wav_i2s_dma_tx_callback：DMA回调和时间计算</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">void wav_i2s_dma_tx_callback(void)</span><br><span class="line">&#123;</span><br><span class="line">    u16 i;</span><br><span class="line">    if (DMA1_Stream4-&gt;CR &amp; (1 &lt;&lt; 19))  // DMA 传输 i2sbuf1</span><br><span class="line">    &#123;</span><br><span class="line">        wavwitchbuf = 0;</span><br><span class="line">        if ((audiodev.status &amp; 0X01) == 0)  // 暂停状态</span><br><span class="line">            for (i = 0; i &lt; WAV_I2S_TX_DMA_BUFSIZE; i++) audiodev.i2sbuf1[i] = 0;  // 填充 0</span><br><span class="line">    &#125; else &#123;  // DMA 传输 i2sbuf2</span><br><span class="line">        wavwitchbuf = 1;</span><br><span class="line">        if ((audiodev.status &amp; 0X01) == 0)  // 暂停状态</span><br><span class="line">            for (i = 0; i &lt; WAV_I2S_TX_DMA_BUFSIZE; i++) audiodev.i2sbuf2[i] = 0;  // 填充 0</span><br><span class="line">    &#125;</span><br><span class="line">    wavtransferend = 1;  // 标记传输完成</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>功能：I2S DMA 传输完成时的回调函数。</li>
+<li>检查DMA流状态，判断当前传输的是buf1还是buf2.</li>
+<li>更新wavwitchbuf 指示标志。</li>
+<li>如果处于暂停状态，填充缓冲区为0，静音。</li>
+<li>设置wavwitchbuf &#x3D; 1，通知传输完成。</li>
+</ul>
+</li>
+<li><p>wav_get_curtime：计算当前播放时间</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void wav_get_curtime(FIL* fx, __wavctrl *wavx)</span><br><span class="line">&#123;</span><br><span class="line">    long long fpos;</span><br><span class="line">    wavx-&gt;totsec = wavx-&gt;datasize / (wavx-&gt;bitrate / 8);  // 总时长 (秒)</span><br><span class="line">    fpos = fx-&gt;fptr - wavx-&gt;datastart;                    // 当前位置</span><br><span class="line">    wavx-&gt;cursec = fpos * wavx-&gt;totsec / wavx-&gt;datasize;  // 当前播放时间 (秒)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>计算：总时常 &#x3D; 数据大小 &#x2F; 字节速率。<ul>
+<li>字节速率bitrate &#x3D;  采样率 * 通道数 * 位深。单位（每秒初始多少位）。</li>
+<li>除8：转化为每秒传输多少字节。</li>
+</ul>
+</li>
+<li>当前时间 &#x3D; （当前偏移量 &#x2F; 数据大小） * 总时长。</li>
+</ul>
+</li>
 </ul>
 
     </div>
@@ -462,7 +586,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE"><span class="nav-number">1.</span> <span class="nav-text">音频播放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E5%85%B6%E5%87%86%E5%A4%87"><span class="nav-number">1.0.1.</span> <span class="nav-text">前其准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="nav-number">1.0.2.</span> <span class="nav-text">代码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#audioplay-c"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">audioplay.c</span></a></li></ol></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE"><span class="nav-number">1.</span> <span class="nav-text">音频播放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E5%85%B6%E5%87%86%E5%A4%87"><span class="nav-number">1.0.1.</span> <span class="nav-text">前其准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="nav-number">1.0.2.</span> <span class="nav-text">代码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#audioplay-c"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">audioplay.c</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wavplay-c"><span class="nav-number">1.0.3.</span> <span class="nav-text">wavplay.c</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
