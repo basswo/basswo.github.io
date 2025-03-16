@@ -33,8 +33,10 @@
 <meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S07.png">
 <meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S08.png">
 <meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S09.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S014.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S015.png">
 <meta property="article:published_time" content="2025-03-14T01:44:29.000Z">
-<meta property="article:modified_time" content="2025-03-16T04:48:23.475Z">
+<meta property="article:modified_time" content="2025-03-16T08:15:23.212Z">
 <meta property="article:author" content="Dylan">
 <meta property="article:tag" content="stm32F407">
 <meta property="article:tag" content="多媒体项目">
@@ -234,7 +236,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-03-16 12:48:23" itemprop="dateModified" datetime="2025-03-16T12:48:23+08:00">2025-03-16</time>
+                <time title="修改时间：2025-03-16 16:15:23" itemprop="dateModified" datetime="2025-03-16T16:15:23+08:00">2025-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -509,8 +511,10 @@
 </ul>
 </li>
 </ul>
-<h3 id="MP3解码"><a href="#MP3解码" class="headerlink" title="MP3解码"></a>MP3解码</h3><p>MP3格式音乐文件普遍存在我们的生活中，实际上MP3本身就是一种音频编码格式，全称为</p>
-<p>Moving Picture Experts Group Audio Layer III(MPEG Audio Layer 3)。MPEG音频文件时MPEG标准中声音部分，根据压缩质量和编码复杂程度划分为三层，即Layer-1、Layer2、Layer3，且分别对应MP1、MP2、MP3这三种声音文件，其中MP3压缩率为10：1至12：1，可以大大减少文件占用的存储空间大小。MPEG音频编码的层次越高，编码器越复杂，压缩率越高。Mp3时利用人耳对高频声音信号的不敏感的特性，将时域波形信号转化为频率信号，并划分为多个频段，对不同频段使用不同的压缩率，加大高频的压缩比，对低频使用小压缩比，保证信号不失真。这样一来相当于抛弃人儿基本听不到的高频声音，只保留能听到的低频部分，这样可得到很高的压缩率。</p>
+<h3 id="MP3解码"><a href="#MP3解码" class="headerlink" title="MP3解码"></a>MP3解码</h3><p>MP3格式音乐文件普遍存在我们的生活中，实际上MP3本身就是一种音频编码格式，全称为Moving Picture Experts Group Audio Layer III(MPEG Audio Layer 3)。</p>
+<p>MP3的主要目标是通过压缩音频数据，在尽量保持音质的情况下大幅减少文件大小，从而方便存储和传输。MPEG音频文件时MPEG标准中声音部分，根据压缩质量和编码复杂程度划分为三层，即Layer-1、Layer2、Layer3，且分别对应MP1、MP2、MP3这三种声音文件，其中MP3压缩率为10：1至12：1，可以大大减少文件占用的存储空间大小。MPEG音频编码的层次越高，编码器越复杂，压缩率越高。</p>
+<p>Mp3时利用人耳对高频声音信号的不敏感的特性，将时域波形信号转化为频率信号，并划分为多个频段，对不同频段使用不同的压缩率，加大高频的压缩比，对低频使用小压缩比，保证信号不失真。这样一来相当于抛弃人儿基本听不到的高频声音，只保留能听到的低频部分，这样可得到很高的压缩率。</p>
+<p>简单来说，MP3就像一个聪明的“音频裁缝”，它知道哪些部分可以“剪掉”而不影响你听歌的体验。</p>
 <h4 id="MP3文件结构"><a href="#MP3文件结构" class="headerlink" title="MP3文件结构"></a>MP3文件结构</h4><p>MP3文件大致分为3个部分：TAG-V2（ID3V2），音频数据，TAG-v1（ID3V1）.</p>
 <p>ID3时MP3文件中附加的关于MP3的歌手信息，标题、专辑名称、年代、风格等信息，有两个版本，ID3V2和ID3V1.</p>
 <p>ID3V1固定存放在MP3的尾部，固定字节长度为128字节，以TAG三个字符开头，后面跟上歌曲的信息。因为ID3V1长度有限，所以多添加了一个ID3V2，如果存在则在MP3的开头部分。它实际就是ID3V1的补充。</p>
@@ -520,14 +524,266 @@
 <p>其标签大小计算如下：</p>
 <p>Total_size&#x3D;(Size[0]&amp;0x7F)*0x200000+(Size[1]&amp;0x7F)*0x400+(Size[2]&amp;0x7F)*0x80+(Size[3]&amp;0x7F)</p>
 <p>每个标签帧都有一个10个字节的帧头和至少一个字节的不定长度内容，在文件中是连续存放的。标签帧头由三个部分组成，即Frame[4]、Size[4]和Flags[2]。 Frame是用四个字符表示帧内容含义，比如TIT2为标题、TPE1为作者、TALB为专辑、TRCK为音轨、TYER为年代等等信息。 Size用四个字节组成32bit数表示帧大小。Flags是标签帧的标志位，一般为0即可。</p>
+<ul>
+<li>位置：文件开头</li>
+<li>大小：可变化</li>
+<li>结构：<ul>
+<li>10字节头部：<ul>
+<li>3字节：ID3</li>
+<li>2字节：版本</li>
+<li>1字节：标志</li>
+<li>4字节：大小</li>
+</ul>
+</li>
+<li>多个帧：如标题、艺术家、封面图片。</li>
+</ul>
+</li>
+</ul>
 <h5 id="ID3V1"><a href="#ID3V1" class="headerlink" title="ID3V1"></a>ID3V1</h5><p>ID3V1是早期的版本，可以存放的信息有限，但是编程比ID3V2简单。ID3V1是固定在MP3文件末尾的128字节。</p>
 <p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S07.png" alt="ID3V1结构"></p>
 <p>其中，歌名是固定分配30个字节，如果歌名太短则以0填充完整，太长则被截断，其他信息存储类似。MP3的音乐类别总共147种，每一种对应着一个数组，比如0对应“Blues”、1对应“Classic Rock”、2对应“Country”等等。</p>
+<ul>
+<li>位置：文件末尾</li>
+<li>大小：固定128字节</li>
+<li>结构：<ul>
+<li>3字节标识：TAG</li>
+<li>30字节：标题</li>
+<li>30字节：作家</li>
+<li>30字节：专辑</li>
+<li>4字节：年份</li>
+<li>30字节：注释</li>
+<li>1字节：流派</li>
+</ul>
+</li>
+</ul>
 <h5 id="MP3数据帧"><a href="#MP3数据帧" class="headerlink" title="MP3数据帧"></a>MP3数据帧</h5><p>音频数据是MP3文件的主体部分，它由一系列数据帧组成，每个数据帧包含一段音频的压缩数据，通过解码库解码即可得到对应的PCM音频数据，就可以通过I2S发送给WM8978芯片播放音乐，按照顺序解码所有的数据帧就可得到整个MP3文件的音轨。</p>
-<p>每个数据帧由两个部分组成，帧头和数据实体，数据帧的长度可能不同，由位率决定。枕头记录着MP3数据帧的位率、采样率、版本等等信息。总共四个字节。</p>
+<p>每个数据帧由两个部分组成，帧头和数据实体，数据帧的长度可能不同，由位率决定。</p>
+<ul>
+<li><p>帧头记录着MP3数据帧的位率、采样率、版本等等信息。总共四个字节。</p>
+</li>
+<li><p>【可选】CRC：2字节，用于错误检测。</p>
+</li>
+<li><p>边信息：存储解码所需要的辅助信息。</p>
+</li>
+<li><p>主数据：压缩后的音频数据。</p>
+</li>
+</ul>
 <p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S08.png" alt="数据帧头结构"></p>
-<p>位率在不同的版本和层都有不同的定义，具体的参考表中的数据，单位kbps。</p>
+<p>位率在不同的版本和层都有不同的定义，具体的参考表中的数据，单位kbps。其中V1对应MPEG-1，V2对应MPEG-2和MPEG-2.5；L1对应Layer1， L2对应Layer2，L3对应Layer3，free表示位率可变，bad表示该定义不合法。</p>
 <p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S09.png" alt="位率选择"></p>
+<p>例如，当Version&#x3D;11，Layer&#x3D;01，Bitrate_incdex&#x3D;0101时，描述为MPEG-1 Layer3(MP3)位率为64kbps。</p>
+<p>数据帧长度取决于位率(Bitrate)和采样频率(Sampling_freq)，</p>
+<p>公式为：帧大小（字节） &#x3D; (样本数 × 比特率 ÷ 采样率 ÷ 8) + 填充字节</p>
+<p>具体计算如下：</p>
+<blockquote>
+<p>对于MPEG-1标准，Layer1时：</p>
+<blockquote>
+<p>Size&#x3D;(48000*Bitrate)&#x2F;Sampling_freq + Padding；</p>
+</blockquote>
+<p>Layer2或Layer3时：</p>
+<blockquote>
+<p>Size&#x3D;(144000*Bitrate)&#x2F;Sampling_freq + Padding；</p>
+</blockquote>
+<p>对于MPEG-2或MPEG-2.5标准，Layer1时：</p>
+<blockquote>
+<p>Size&#x3D;(24000*Bitrate)&#x2F;Sampling_freq + Padding；</p>
+</blockquote>
+<p>Layer2或Layer3时：</p>
+<blockquote>
+<p>Size&#x3D;(72000*Bitrate)&#x2F;Sampling_freq + Padding；</p>
+</blockquote>
+</blockquote>
+<p>如果有CRC校验，则存放在在帧头后两个字节。接下来就是帧主数据(MAIN_DATA)。一般来说一个MP3文件每个帧的Bitrate是固定不变的， 所以每个帧都有相同的长度，称为CBR，还有小部分MP3文件的Bitrate是可变，称之为VBR，它是XING公司推出的算法。</p>
+<p>MAIN_DATA保存的是经过压缩算法压缩后得到的数据，为得到大的压缩率会损失部分源声音，属于失真压缩。</p>
+<h4 id="MP3解码库"><a href="#MP3解码库" class="headerlink" title="MP3解码库"></a>MP3解码库</h4><p>MP3文件是经过压缩算法压缩而存在的，为得到PCM信号，需要对MP3文件进行解码，解码过程大致为：比特流分析、霍夫曼编码、逆量化处理、立体声处理、 频谱重排列、抗锯齿处理、IMDCT变换、子带合成、PCM输出。整个过程涉及很多算法计算，要自己编程实现不是一件现实的事情，还好有很多公司经过长期努力实现了解码库编程。</p>
+<p>现在合适在小型嵌入式控制器移植运行的有两个版本的开源MP3解码库，分别为Libmad解码库和Helix解码库，Libmad是一个高精度MPEG音频解码库， 支持MPEG-1、MPEG-2以及MPEG-2.5标准，它可以提供24bitPCM输出，完全是定点计算，更多信息可参考网站：<a target="_blank" rel="noopener" href="http://www.underbit.com/%E3%80%82">http://www.underbit.com/。</a></p>
+<p>Helix解码库支持浮点和定点计算实现，将该算法移植到STM32控制器运行使用定点计算实现，它支持MPEG-1、MPEG-2以及MPEG-2.5标准的Layer3解码。 Helix解码库支持可变位速率、恒定位速率，以及立体声和单声道音频格式。更多信息可参考网站：<a target="_blank" rel="noopener" href="https://datatype.helixcommunity.org/Mp3dec%E3%80%82">https://datatype.helixcommunity.org/Mp3dec。</a></p>
+<p>因为Helix解码库需要占用的资源比Libmad解码库更少，特别是RAM空间的使用，这对STM32控制器来说是比较重要的， 所以在实验工程中我们选择Helix解码库实现MP3文件解码。这两个解码库都是一帧为解码单位的，一次解码一帧，这在应用解码库时是需要着重注意的。</p>
+<p>Helix解码库涉及算法计算，整个界面过程复杂，有兴趣可以深入探究，这里我们着重讲解Helix移植和使用方法。</p>
+<p>Helix网站有提供解码库代码，经过整理，移植Helix解码库需要用到的的文件如图 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/I2S.html#helix">Helix解码库文件结构</a> 。有优化解码速度，部分解码过程使用汇编实现。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S014.png" alt="Helix解码库文件结构"></p>
+<h5 id="Helix解码库移植"><a href="#Helix解码库移植" class="headerlink" title="Helix解码库移植"></a>Helix解码库移植</h5><p>现在我们可以移植Helix解码库工程中，实现MP3文件解码，将解码输出的PCM数据通过I2S接口发送到WM8978芯片实现音乐播放。</p>
+<p>首先将需要用到的文件添加到工程中， 如图 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/I2S.html#id44">添加Helix解码库文件到工程</a> 。MP3文件夹下文件是Helix解码库源码，工程移植中是不需要修改文件夹下代码的， 我们只需直接调用相关解码函数即可。建议自己移植时直接使用例程中mp3文件夹内文件。 我们是在mp3Player.c文件中调用Helix解码库相关函数实现MP3文件解码的，该文件是我们自己创建的。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/I2S015.png" alt="添加Helix解码库文件到工程"></p>
+<p>功能实际上就是从SD卡内读取WAV格式文件数据，然后提取里边音频数据通过I2S传输到WM8978芯片内实现声音播放。 MP3播放器的功能也是类似的，只不过现在音频数据提取方法不同，MP3需要先经过解码库解码后才可得到“可直接”播放的音频数据。由此可以看到， MP3播放器只是添加了MP3解码库实现代码，在硬件设计上并没有任何改变，即这里直接使用“录音与回放实验”中硬件设计即可。</p>
+<p>解码过程可能用到的Helix解码库函数有：</p>
+<ul>
+<li>MP3InitDecoder：初始化解码器函数</li>
+<li>MP3FreeDecoder：关闭解码器函数</li>
+<li>MP3FindSyncWord：寻找帧同步函数</li>
+<li>MP3Decode：解码MP3帧函数</li>
+<li>MP3GetLastFrameInfo：获取帧信息函数</li>
+</ul>
+<p>MP3InitDecoder函数初始化解码器，它会申请分配一个存储空间用于存放解码器状态的一个数据结构并将其初始化，该数据结构由MP3DecInfo结构体定义， 它封装了解码器内部运算数据信息。MP3InitDecoder函数会返回指向该数据结构的指针。</p>
+<p>MP3FreeDecoder函数用于关闭解码器，释放由MP3InitDecoder函数申请的存储空间，所以一个MP3InitDecoder函数都需要有一个MP3FreeDecoder函数与之对应。 它有一个形参，一般由MP3InitDecoder函数的返回指针赋值。</p>
+<p>MP3FindSyncWord函数用于寻址数据帧同步信息，实际上就是寻址数据帧开始的11bit都为“1”的同步信息。它有两个形参，第一个为源数据缓冲区指针，第二个为缓冲区大小， 它会返回一个int类型变量，用于指示同步字较缓冲区起始地址的偏移量，如果在缓冲区中找不到同步字，则直接返回-1。</p>
+<p>MP3Decode函数用于解码数据帧，它有五个形参，第一个为解码器数据结构指针，一般由MP3InitDecoder函数返回值赋值；第二个参数为指向解码源数据缓冲区开始地址的一个指针， 注意这里是地址的指针，即是指针的指针；第三个参数是一个指向存放解码源数据缓冲区有效数据量的变量指针；第四个参数是解码后输出PCM数据的指针， 一般由我们定义的缓冲区地址赋值，对于双声道输出数据缓冲区以LRLRLR…顺序排列；第五个参数是数据格式选择，一般设置为0表示标准的MPEG格式。函数还有一个返回值， 用于返回解码错误，返回ERR_MP3_NONE说明解码正常。</p>
+<p>MP3GetLastFrameInfo函数用于获取数据帧信息，它有两个形参，第一个为解码器数据结构指针，一般由MP3InitDecoder函数返回值赋值； 第二个参数为数据帧信息结构体指针，该结构体定义见 <a target="_blank" rel="noopener" href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/I2S.html#i2s-25">代码清单:I2S-25</a> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _MP3FrameInfo &#123;</span><br><span class="line">    int bitrate;        //位率</span><br><span class="line">    int nChans;         //声道数</span><br><span class="line">    int samprate;       //采样率</span><br><span class="line">    int bitsPerSample;  //采样位数</span><br><span class="line">    int outputSamps;    //PCM数据数</span><br><span class="line">    int layer;          //层级</span><br><span class="line">    int version;        //版本</span><br><span class="line">&#125; MP3FrameInfo;</span><br></pre></td></tr></table></figure>
+
+<p>该结构体成员包括了该数据帧的位率、声道、采样频率等等信息，它实际上是从数据帧的帧头信息中提取的。</p>
+<h5 id="MP3示例"><a href="#MP3示例" class="headerlink" title="MP3示例"></a>MP3示例</h5><p>用Yesterday Once More这首歌为示例，来重新学习一下MP3文件结构。</p>
+<ul>
+<li><p>MP3文件主要由下面几个主要的组成部分组成</p>
+<ul>
+<li>ID3V2标签：存储歌曲的元数据</li>
+<li>音频帧序列：压缩后的音频数据、核心内容</li>
+<li>其他元数据：如 Xing 头（用于 VBR 文件）。</li>
+</ul>
+</li>
+<li><p>对于Yesterday Once More这首歌的MP3文件，文件结构大致如下</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ID3v2 标签] + [音频帧序列] + [ID3v1 标签]</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><strong>1、ID3V2标签（文件开头）</strong></p>
+<p>ID3V2标签通常位于文件开头，存储着歌曲的元数据，假设文件内容如下：</p>
+<ul>
+<li>标题：Yesterday Once More</li>
+<li>艺术家：The Carpenters</li>
+<li>专辑：Now &amp; Then</li>
+<li>年份：1973</li>
+</ul>
+<p>ID3V2结构由10个字节的帧头，和多个帧组成。</p>
+<ul>
+<li><p>10个字节的头部</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">49 44 33 03 00 00 00 00 07 D0</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>49 44 33：标识ID3</li>
+<li>03 00：版本号</li>
+<li>00：标志位</li>
+<li>00 00 07 D0 ：标签大小（7位编码，实际大小2000字节）</li>
+</ul>
+</li>
+<li><p>帧</p>
+<ul>
+<li><p>TIT2（标题）</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">54 49 54 32 00 00 00 15 00 00 01 59 65 73 74 65 72 64 61 79 20 4F 6E 63 65 20 4D 6F 72 65</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>54 49 54 32：帧ID（TIT2 &#x3D; 标题）</li>
+<li>00 00 00 15：大小（21字节）</li>
+<li>00 00 标志</li>
+<li>01 ：编码（UTF-16）</li>
+<li>剩下的：内容Yesterday Once More</li>
+</ul>
+</li>
+<li><p>TPE1（艺术家）</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">54 50 45 31 00 00 00 0F 00 00 00 54 68 65 20 43 61 72 70 65 6E 74 65 72 73</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>54 50 45 31：帧ID（TPE1 &#x3D; 艺术家）</li>
+<li>00 00 00 0F：大小15字节</li>
+<li>00 00 ：标志</li>
+<li>00 ： 编码（ISO-8859-1）</li>
+<li>54 68 65 …：内容The Carpenters</li>
+</ul>
+</li>
+<li><p>类似的还有 TALB（专辑）、TYER（年份）等帧。假设 ID3v2 总大小约为 2000 字节。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>音频帧序列（文件主体）</strong></p>
+<p>音频帧序列是 MP3 文件的核心，包含压缩后的音频数据。以 128 kbps、44.1 kHz、立体声为例，每帧的特性如下：</p>
+<ul>
+<li>帧时长：1152个样本 &#x2F; 44.1khz &#x3D; 26.12毫秒。</li>
+<li>帧大小：（1152 * 128000 &#x2F; 44100 &#x2F;8） &#x3D; 417字节</li>
+<li>总帧数：240 &#x2F; 0.02612秒&#x2F;帧 &#x3D; 9195帧</li>
+<li>音频数据大小：417字节 * 9195 &#x3D; 3。83MB</li>
+</ul>
+<p>单帧结构由以下部分组成：</p>
+<ul>
+<li><p>帧头：4字节</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FF FB 90 00</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>FF FB<ul>
+<li>11111111 1111（11个1）：同步字，用来辨别的</li>
+<li>10：MPEG-1.</li>
+<li>11：Layer-3</li>
+<li>1：无CRC</li>
+</ul>
+</li>
+<li>90<ul>
+<li>1001：比特率（128kbps）</li>
+<li>00 ：采样率索引（44.1khz）</li>
+<li>0：无填充</li>
+<li>0：私有位</li>
+</ul>
+</li>
+<li>00<ul>
+<li>00：立体声</li>
+<li>00：模式拓展</li>
+<li>0：无版权</li>
+<li>0：非原始</li>
+<li>00：误强调</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>CRC【可选】：2字节</p>
+</li>
+<li><p>边信息：32字节</p>
+<ul>
+<li>边信息存储解码参数，比如：<ul>
+<li>比特池指针：知识主数据位置</li>
+<li>量化表选择：用于反量化</li>
+<li>子带分配：比特分配给32个子带</li>
+</ul>
+</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">01 00 02 ... (32 字节)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>具体的由编码器生成，由解码时解析</li>
+</ul>
+</li>
+<li><p>主数据：压缩音频数据。（381字节）</p>
+<ul>
+<li><p>主数据时经过霍夫曼编码的频率系数，长度未：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">417 - 4（帧头） - 32（边信息） = 381 字节</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>内容可能是</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">4A 3B 12 ... (381 字节)</span><br></pre></td></tr></table></figure>
+
+<p>  这些数据表示Yesterday Once More开头部分的压缩音频。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>ID3V1标签（文件末尾）</strong></p>
+<p>ID3V1是固定的128字节，假设内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">54 41 47 59 65 73 74 65 72 64 61 79 20 4F 6E 63 65 20 4D 6F 72 65 00 ... [30 字节标题]</span><br><span class="line">54 68 65 20 43 61 72 70 65 6E 74 65 72 73 00 ... [30 字节艺术家]</span><br><span class="line">4E 6F 77 20 26 20 54 68 65 6E 00 ... [30 字节专辑]</span><br><span class="line">31 39 37 33 [4 字节年份]</span><br><span class="line">00 ... [30 字节注释]</span><br><span class="line">03 [1 字节流派，03 = Pop]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>54 41 47（TAG）：标识 ID3v1。</p>
+</li>
+<li><p>字段长度固定，填充 00（空字符）。</p>
+</li>
+</ul>
+<p><strong>文件整体布局</strong></p>
+<ul>
+<li><p>ID3v2：2000 字节（开头）。</p>
+</li>
+<li><p>音频帧：3,834,315 字节（9195 × 417）。</p>
+</li>
+<li><p>ID3v1：128 字节（结尾）。</p>
+</li>
+<li><p>总大小：2000 + 3,834,315 + 128 &#x3D; 3,836,443 字节（接近 3.84 MB，误差可能是文件系统对齐）。</p>
+</li>
+</ul>
+<p><strong>解码视角</strong></p>
+<p>播放器（比如用 Helix 解码库）读取文件时：</p>
+<ol>
+<li>跳过 ID3v2：识别 49 44 33，跳过 2000 字节。</li>
+<li>解析帧：<ul>
+<li>找到 FF FB，读取帧头。</li>
+<li>解析边信息，解码主数据为 PCM（1152 个样本，约 26 毫秒）。</li>
+<li>重复 9195 次，生成 240 秒音频。</li>
+</ul>
+</li>
+<li>读取 ID3v1：显示歌曲信息。</li>
+</ol>
 
     </div>
 
@@ -609,7 +865,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE"><span class="nav-number">1.</span> <span class="nav-text">音频播放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E5%85%B6%E5%87%86%E5%A4%87"><span class="nav-number">1.0.1.</span> <span class="nav-text">前其准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="nav-number">1.0.2.</span> <span class="nav-text">代码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#audioplay-c"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">audioplay.c</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wavplay-c"><span class="nav-number">1.0.3.</span> <span class="nav-text">wavplay.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MP3%E8%A7%A3%E7%A0%81"><span class="nav-number">1.0.4.</span> <span class="nav-text">MP3解码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MP3%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">1.0.4.1.</span> <span class="nav-text">MP3文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ID3V2"><span class="nav-number">1.0.4.1.1.</span> <span class="nav-text">ID3V2</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ID3V1"><span class="nav-number">1.0.4.1.2.</span> <span class="nav-text">ID3V1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MP3%E6%95%B0%E6%8D%AE%E5%B8%A7"><span class="nav-number">1.0.4.1.3.</span> <span class="nav-text">MP3数据帧</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE"><span class="nav-number">1.</span> <span class="nav-text">音频播放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E5%85%B6%E5%87%86%E5%A4%87"><span class="nav-number">1.0.1.</span> <span class="nav-text">前其准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="nav-number">1.0.2.</span> <span class="nav-text">代码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#audioplay-c"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">audioplay.c</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wavplay-c"><span class="nav-number">1.0.3.</span> <span class="nav-text">wavplay.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MP3%E8%A7%A3%E7%A0%81"><span class="nav-number">1.0.4.</span> <span class="nav-text">MP3解码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MP3%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">1.0.4.1.</span> <span class="nav-text">MP3文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ID3V2"><span class="nav-number">1.0.4.1.1.</span> <span class="nav-text">ID3V2</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ID3V1"><span class="nav-number">1.0.4.1.2.</span> <span class="nav-text">ID3V1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MP3%E6%95%B0%E6%8D%AE%E5%B8%A7"><span class="nav-number">1.0.4.1.3.</span> <span class="nav-text">MP3数据帧</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MP3%E8%A7%A3%E7%A0%81%E5%BA%93"><span class="nav-number">1.0.4.2.</span> <span class="nav-text">MP3解码库</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Helix%E8%A7%A3%E7%A0%81%E5%BA%93%E7%A7%BB%E6%A4%8D"><span class="nav-number">1.0.4.2.1.</span> <span class="nav-text">Helix解码库移植</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MP3%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.0.4.2.2.</span> <span class="nav-text">MP3示例</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
