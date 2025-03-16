@@ -1,67 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>ARM Cortex-M3 M4</title>
-    <url>/2025/01/20/ARM-Cortex-M3-M4/</url>
-    <content><![CDATA[<h1 id="ARM-Cortex-M3-M4"><a href="#ARM-Cortex-M3-M4" class="headerlink" title="ARM Cortex-M3 M4"></a>ARM Cortex-M3 M4</h1><p><strong>引言</strong> </p>
-<p>ARM Cortex-M3 M4是ARM公司推出的32RISC（精简指令集计算机）处理器内核，用于各种嵌入式系统中。</p>
-<span id="more"></span>
-
-<h4 id="第一章-ARM-Cortex-M-处理器简介"><a href="#第一章-ARM-Cortex-M-处理器简介" class="headerlink" title="第一章 ARM Cortex-M 处理器简介"></a>第一章 ARM Cortex-M 处理器简介</h4><h5 id="1-1-什么是ARM-Cortex-M处理器"><a href="#1-1-什么是ARM-Cortex-M处理器" class="headerlink" title="1.1 什么是ARM Cortex-M处理器"></a>1.1 什么是ARM Cortex-M处理器</h5><p>Cortex-M3和M4为cortex处理器中的第一个，M3和M4处理器使用32位架构，寄存器组中的内部寄存器、数据通路以及总线接口都是32位的，Cortex-M处理器使用指令集架构（ISA）为Thumb ISA，其基于Thumb-2技术并同时支持16位和32位指令。</p>
-<p><strong>指令集架构</strong> </p>
-<p>指令集架构定义了以下的内容：</p>
-<ul>
-<li>处理器可以之心那个的指令集合：例如加法、减法、乘法、除法、数据加载、数据存储、跳转等。每条指令都有特定的二进制编码。</li>
-<li>指令格式：指令由哪些部分组成，例如操作码、操作数等</li>
-<li>寄存器组织：处理器内部有哪些寄存器，每个寄存器的用途和大小。</li>
-<li>寻址方式：如何访问存储器中数据，例如立即数寻址、寄存器寻址、直接寻址、间接寻址等。（这是汇编的知识）</li>
-<li>铸锻和异常处理：如何响应外部中断和内部异常。</li>
-</ul>
-<p>ISA是软件和硬件之间的接口，程序员通过使用ISA定义的指令来编写程序，而硬件则根据ISA的定义来执行这些指令。不同的处理器有不同的ISA，例如X86、ARM、MIPS、RISC-V等</p>
-<p><strong>Thumb-2技术：</strong> 后来的ARM架构引入了Thumb-2技术，它扩展了Thumb指令集，增加了32位指令，使得Thumb指令集更加强大和灵活，几乎可以替代传统的ARM指令集，同时保持了较高的代码密度。Cortex-M系列处理器主要使用Thumb-2技术。</p>
-<p>共同点：</p>
-<ul>
-<li><p>哈佛总线架构，且具有统一的存储器空间：指令和地址总线使用相同的地址空间。<br>  地址空间是CPU可以访问的存储器地址的范围。例如，一个32位处理器的地址空间为2^32个字节（4GB）。</p>
-</li>
-<li><p>架构基础：cortex-M3和M4基于相同的架构（ARMv7-M）。</p>
-</li>
-<li><p>Thumb-2指令集：支持16位和32位的混合指令，兼顾代码密度和性能。</p>
-</li>
-<li><p>3级流水线：提高指令执行效率。</p>
-</li>
-<li><p>NVIC：高效的中断管理。</p>
-</li>
-<li><p>存储器保护单元（MPU）：提供内存保护，增强系统可靠性。</p>
-</li>
-<li><p>调试接口：支持JTAG和SWD调式。</p>
-</li>
-<li><p>指令兼容性：Cortex-M3编写的二进制指令无需修改就可用在Cortex-M4上执行。</p>
-</li>
-</ul>
-<p>主要区别：</p>
-<ul>
-<li>Cortex-M在Cortex-M3的基础上增加了DSP功能，是器更加适合处理信号处理的应用。</li>
-<li>DSP拓展指令集：Cortex-M4包含一系列优化的DSP指令。</li>
-<li>浮点单元（FPU）：Cortex-M4可以选择支撑单精度浮点运算单元，童工硬件浮点运算支持。</li>
-</ul>
-<h6 id="Cortex-M处理器家族"><a href="#Cortex-M处理器家族" class="headerlink" title="Cortex-M处理器家族"></a>Cortex-M处理器家族</h6><p><img src="/2025/01/20/ARM-Cortex-M3-M4/1150.png" alt="1150"></p>
-<p>Cortex-M3和M4处理器基于ARMv7-M架构，既有高性能且为微控制器应用设计的。</p>
-<h6 id="处理器和为控制器的区别"><a href="#处理器和为控制器的区别" class="headerlink" title="处理器和为控制器的区别"></a>处理器和为控制器的区别</h6><p>ARM公司不生产微控制器，ARM设计的处理器及多种部件都是芯片制造商所需要的，ARM会对包括微控制器供应商在内的各家芯片设备公司授权，也被称为IP授权。</p>
-<p>在一个典型的微控制器设计中，处理器只会占用芯片中的一小块区域。在其他部分则成为存储器、时钟生成和分配逻辑、系统总线、外设等。</p>
-<p><img src="/2025/01/20/ARM-Cortex-M3-M4/151510.png" alt="image-20250120151523458"></p>
-<p>许多微控制器供应商选择ARM Cortex-M处理器作为它们的CPU，但是存储器映射系统、存储器映射、外设及操作特性（时钟频率和电压）各不相同，就构成了微控制器产品的多样性。</p>
-<h5 id="1-2-C程序中的数据类型"><a href="#1-2-C程序中的数据类型" class="headerlink" title="1.2 C程序中的数据类型"></a>1.2 C程序中的数据类型</h5><p><img src="/2025/01/20/ARM-Cortex-M3-M4/154947.png" alt="image-20250120154950338"></p>
-]]></content>
-      <categories>
-        <category>stm32学习</category>
-      </categories>
-      <tags>
-        <tag>stm32学习</tag>
-        <tag>ARM Cortex-M3</tag>
-        <tag>ARM Cortex-M4</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>FSMC—扩展外部SRAM</title>
     <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
     <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>当stm32控制内部有一定大小的SRAM以及FLASH作为内存和程序的存储空间。但是当程序较大时，则需要再stm32芯片上额外的拓展外部存储器。</p>
@@ -134,6 +73,67 @@
       <tags>
         <tag>stm32F407</tag>
         <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ARM Cortex-M3 M4</title>
+    <url>/2025/01/20/ARM-Cortex-M3-M4/</url>
+    <content><![CDATA[<h1 id="ARM-Cortex-M3-M4"><a href="#ARM-Cortex-M3-M4" class="headerlink" title="ARM Cortex-M3 M4"></a>ARM Cortex-M3 M4</h1><p><strong>引言</strong> </p>
+<p>ARM Cortex-M3 M4是ARM公司推出的32RISC（精简指令集计算机）处理器内核，用于各种嵌入式系统中。</p>
+<span id="more"></span>
+
+<h4 id="第一章-ARM-Cortex-M-处理器简介"><a href="#第一章-ARM-Cortex-M-处理器简介" class="headerlink" title="第一章 ARM Cortex-M 处理器简介"></a>第一章 ARM Cortex-M 处理器简介</h4><h5 id="1-1-什么是ARM-Cortex-M处理器"><a href="#1-1-什么是ARM-Cortex-M处理器" class="headerlink" title="1.1 什么是ARM Cortex-M处理器"></a>1.1 什么是ARM Cortex-M处理器</h5><p>Cortex-M3和M4为cortex处理器中的第一个，M3和M4处理器使用32位架构，寄存器组中的内部寄存器、数据通路以及总线接口都是32位的，Cortex-M处理器使用指令集架构（ISA）为Thumb ISA，其基于Thumb-2技术并同时支持16位和32位指令。</p>
+<p><strong>指令集架构</strong> </p>
+<p>指令集架构定义了以下的内容：</p>
+<ul>
+<li>处理器可以之心那个的指令集合：例如加法、减法、乘法、除法、数据加载、数据存储、跳转等。每条指令都有特定的二进制编码。</li>
+<li>指令格式：指令由哪些部分组成，例如操作码、操作数等</li>
+<li>寄存器组织：处理器内部有哪些寄存器，每个寄存器的用途和大小。</li>
+<li>寻址方式：如何访问存储器中数据，例如立即数寻址、寄存器寻址、直接寻址、间接寻址等。（这是汇编的知识）</li>
+<li>铸锻和异常处理：如何响应外部中断和内部异常。</li>
+</ul>
+<p>ISA是软件和硬件之间的接口，程序员通过使用ISA定义的指令来编写程序，而硬件则根据ISA的定义来执行这些指令。不同的处理器有不同的ISA，例如X86、ARM、MIPS、RISC-V等</p>
+<p><strong>Thumb-2技术：</strong> 后来的ARM架构引入了Thumb-2技术，它扩展了Thumb指令集，增加了32位指令，使得Thumb指令集更加强大和灵活，几乎可以替代传统的ARM指令集，同时保持了较高的代码密度。Cortex-M系列处理器主要使用Thumb-2技术。</p>
+<p>共同点：</p>
+<ul>
+<li><p>哈佛总线架构，且具有统一的存储器空间：指令和地址总线使用相同的地址空间。<br>  地址空间是CPU可以访问的存储器地址的范围。例如，一个32位处理器的地址空间为2^32个字节（4GB）。</p>
+</li>
+<li><p>架构基础：cortex-M3和M4基于相同的架构（ARMv7-M）。</p>
+</li>
+<li><p>Thumb-2指令集：支持16位和32位的混合指令，兼顾代码密度和性能。</p>
+</li>
+<li><p>3级流水线：提高指令执行效率。</p>
+</li>
+<li><p>NVIC：高效的中断管理。</p>
+</li>
+<li><p>存储器保护单元（MPU）：提供内存保护，增强系统可靠性。</p>
+</li>
+<li><p>调试接口：支持JTAG和SWD调式。</p>
+</li>
+<li><p>指令兼容性：Cortex-M3编写的二进制指令无需修改就可用在Cortex-M4上执行。</p>
+</li>
+</ul>
+<p>主要区别：</p>
+<ul>
+<li>Cortex-M在Cortex-M3的基础上增加了DSP功能，是器更加适合处理信号处理的应用。</li>
+<li>DSP拓展指令集：Cortex-M4包含一系列优化的DSP指令。</li>
+<li>浮点单元（FPU）：Cortex-M4可以选择支撑单精度浮点运算单元，童工硬件浮点运算支持。</li>
+</ul>
+<h6 id="Cortex-M处理器家族"><a href="#Cortex-M处理器家族" class="headerlink" title="Cortex-M处理器家族"></a>Cortex-M处理器家族</h6><p><img src="/2025/01/20/ARM-Cortex-M3-M4/1150.png" alt="1150"></p>
+<p>Cortex-M3和M4处理器基于ARMv7-M架构，既有高性能且为微控制器应用设计的。</p>
+<h6 id="处理器和为控制器的区别"><a href="#处理器和为控制器的区别" class="headerlink" title="处理器和为控制器的区别"></a>处理器和为控制器的区别</h6><p>ARM公司不生产微控制器，ARM设计的处理器及多种部件都是芯片制造商所需要的，ARM会对包括微控制器供应商在内的各家芯片设备公司授权，也被称为IP授权。</p>
+<p>在一个典型的微控制器设计中，处理器只会占用芯片中的一小块区域。在其他部分则成为存储器、时钟生成和分配逻辑、系统总线、外设等。</p>
+<p><img src="/2025/01/20/ARM-Cortex-M3-M4/151510.png" alt="image-20250120151523458"></p>
+<p>许多微控制器供应商选择ARM Cortex-M处理器作为它们的CPU，但是存储器映射系统、存储器映射、外设及操作特性（时钟频率和电压）各不相同，就构成了微控制器产品的多样性。</p>
+<h5 id="1-2-C程序中的数据类型"><a href="#1-2-C程序中的数据类型" class="headerlink" title="1.2 C程序中的数据类型"></a>1.2 C程序中的数据类型</h5><p><img src="/2025/01/20/ARM-Cortex-M3-M4/154947.png" alt="image-20250120154950338"></p>
+]]></content>
+      <categories>
+        <category>stm32学习</category>
+      </categories>
+      <tags>
+        <tag>stm32学习</tag>
+        <tag>ARM Cortex-M3</tag>
+        <tag>ARM Cortex-M4</tag>
       </tags>
   </entry>
   <entry>
@@ -260,169 +260,6 @@
         <tag>stm32学习</tag>
         <tag>操作系统</tag>
         <tag>FreeRTOS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2025/01/21/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
-    <title>stm32F407HAL库学习-点亮LED灯</title>
-    <url>/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/</url>
-    <content><![CDATA[<h1 id="stm32F407HAL库学习-点亮LED灯"><a href="#stm32F407HAL库学习-点亮LED灯" class="headerlink" title="stm32F407HAL库学习-点亮LED灯"></a>stm32F407HAL库学习-点亮LED灯</h1><p>前期准备：</p>
-<ul>
-<li>stm32F407ZGT6开发板</li>
-<li>stm32cubeIDE软件</li>
-<li>STM32F4xxHAL库</li>
-</ul>
-<span id="more"></span>
-
-<h3 id="1、创建工程"><a href="#1、创建工程" class="headerlink" title="1、创建工程"></a>1、创建工程</h3><p>我从这开始想学习使用stm32CubIDE工具来写代码。所以这算一个新的教程。</p>
-<p>1、在双击stm32CubIDE工具进入到主界面中，点击左上角file-&gt;NEW-&gt;stm32_Prject.</p>
-<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/143658.png"></p>
-<p>然后计入到选择MCU的界面。</p>
-<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/144215.png"></p>
-<p>在这个中，有一个Part Number Search的一行，下面有个搜索的图标。在方框中输入型号。我这次使用的是stm32F407ZGT6.下面图片中不一样，是我截取网上的图片。</p>
-<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/144547.png"></p>
-<p>选中你的芯片型号只有，点击右下角的Next，然后进入到创建项目的界面，如下图。</p>
-<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/144655.png"></p>
-<p>在上面界面中 的Project Name这行输入名称，这个名称就是你项目的名称，这里我们输入LED_Project.完成后，点击下面的完成。</p>
-<p>然后进入了硬件配置的界面。</p>
-<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/145446.png"></p>
-<p>这里比较重要详细讲一下，分为三大块。</p>
-<ul>
-<li><p><strong>1、MCU外设资源的选择。</strong> </p>
-<p>  提供了三种方法找到外设。可以直接搜索或者通过字母顺序的查找。还可以在大的分类里面找。</p>
-</li>
-<li><p><strong>2、外设配置</strong> </p>
-<p>  选择好外设后，在这里构建好外设的功能。</p>
-</li>
-<li><p><strong>3、预览界面</strong> </p>
-<p>  这里分为引脚预览和系统预览。</p>
-</li>
-</ul>
-<h4 id="2、配置引脚"><a href="#2、配置引脚" class="headerlink" title="2、配置引脚"></a>2、配置引脚</h4><p>工程已经创建好了，下面开始配置GPIO引脚和一些必要的外设配置。</p>
-<h5 id="1、配置GPIO引脚用于LED"><a href="#1、配置GPIO引脚用于LED" class="headerlink" title="1、配置GPIO引脚用于LED"></a>1、配置GPIO引脚用于LED</h5><ul>
-<li><p>在 STM32CubeMX 界面中，点击左侧的 Pinout &amp; Configuration 标签，进入芯片引脚配置视图。</p>
-</li>
-<li><p>在芯片引脚图上找到PF9、pF10，点击它。</p>
-</li>
-<li><p>在弹出的选项中，选择 GPIO_Output，表示将该引脚配置为通用输出模式。</p>
-<p>  <img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/152227.png"></p>
-</li>
-<li><p>左侧会显示 GPIO 选项，点击它。</p>
-</li>
-<li><p>在 GPIO 配置窗口中，找到 PF9、PF10，可以设置以下参数：</p>
-<ul>
-<li>GPIO mode: Output Push Pull（推挽输出）</li>
-<li>GPIO Pull-up&#x2F;Pull-down: No pull-up and no pull-down（无上拉&#x2F;下拉）</li>
-<li>Maximum output speed: Low（低速即可，LED 不需要高速）</li>
-<li>User Label: 输入 LED（可选，方便代码中识别）。</li>
-</ul>
-</li>
-</ul>
-<h5 id="2、配置时钟"><a href="#2、配置时钟" class="headerlink" title="2、配置时钟"></a>2、配置时钟</h5><ul>
-<li><p>点击顶部的 Clock Configuration 选项卡。</p>
-</li>
-<li><p>如果你使用外部晶振（HSE，例如 8 MHz，常见于发现板），在 HSE 输入框中选择 Crystal&#x2F;Ceramic Resonator。</p>
-</li>
-<li><p>默认情况下，STM32CubeMX 会自动配置 PLL（锁相环）以达到较高频率（例如 168 MHz，这是 STM32F407 的最大主频）。</p>
-<p>  在 System Clock 输入框中，确认频率（比如 168 MHz），或者根据需要调整。</p>
-<p>  点击 Resolve Clock Issues 按钮（如果有提示），让工具自动优化时钟树。</p>
-</li>
-</ul>
-<h5 id="3、生成代码"><a href="#3、生成代码" class="headerlink" title="3、生成代码"></a>3、生成代码</h5><p>配置完成后按下ctrl + S ,保存，就会生成初始化代码。</p>
-<h4 id="3、编写代码"><a href="#3、编写代码" class="headerlink" title="3、编写代码"></a>3、编写代码</h4><ul>
-<li><p>在工程目录的 Core &gt; Src &gt; main.c 中打开 main.c。</p>
-</li>
-<li><p>在 main() 函数中，找到 while (1) 循环，这是主循环区域。</p>
-</li>
-<li><p>你会看到类似下面的代码框架：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int main(void) &#123;</span><br><span class="line">  /* 初始化代码已由 CubeMX 生成 */</span><br><span class="line">  HAL_Init();</span><br><span class="line">  SystemClock_Config();</span><br><span class="line">  MX_GPIO_Init();</span><br><span class="line">  </span><br><span class="line">  /* USER CODE BEGIN 2 */</span><br><span class="line">  /* USER CODE END 2 */</span><br><span class="line"></span><br><span class="line">  while (1) &#123;</span><br><span class="line">    /* USER CODE BEGIN 3 */</span><br><span class="line">    /* USER CODE END 3 */</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>添加 LED 闪烁代码：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/* USER CODE BEGIN 3 */</span><br><span class="line">HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); // 翻转 PD12 引脚状态</span><br><span class="line">HAL_Delay(500);                        // 延时 500 毫秒</span><br><span class="line">/* USER CODE END 3 */</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="4、编译并下载"><a href="#4、编译并下载" class="headerlink" title="4、编译并下载"></a>4、编译并下载</h4><ol>
-<li>编译代码：<ul>
-<li>点击 STM32CubeIDE 顶部工具栏的“锤子”图标（Build），或者按 Ctrl + B。</li>
-<li>检查输出窗口，确保没有错误。</li>
-</ul>
-</li>
-<li>连接硬件：<ul>
-<li>将 STM32F407ZGT6 开发板通过调试器（比如 ST-Link）连接到电脑。</li>
-</ul>
-</li>
-<li>下载程序：<ul>
-<li>点击“绿色播放”按钮（Run），或者选择菜单 Run &gt; Run。</li>
-<li>程序会下载到芯片并自动运行。</li>
-</ul>
-</li>
-</ol>
-<h3 id="复习一遍GPIO的八种模式"><a href="#复习一遍GPIO的八种模式" class="headerlink" title="复习一遍GPIO的八种模式"></a>复习一遍GPIO的八种模式</h3><h4 id="1、输入模式"><a href="#1、输入模式" class="headerlink" title="1、输入模式"></a>1、输入模式</h4><h5 id="1、输入浮空模式（Input-Floating）"><a href="#1、输入浮空模式（Input-Floating）" class="headerlink" title="1、输入浮空模式（Input Floating）"></a>1、输入浮空模式（Input Floating）</h5><ul>
-<li>原理：GPIO引脚不接受任何内部的上拉和下拉电阻，处于悬浮状态。它的电平状态完全由外部信号决定。</li>
-<li>用途：适用于外部电路已经提供了明确的高低电平信号。</li>
-<li>注意：如果外部不接任何东西，电平会不稳定，容易受到干扰。</li>
-</ul>
-<h5 id="2、输入上拉模式（Input-Pull-Up）"><a href="#2、输入上拉模式（Input-Pull-Up）" class="headerlink" title="2、输入上拉模式（Input Pull-Up）"></a>2、输入上拉模式（Input Pull-Up）</h5><ul>
-<li>原理：GPIO引脚内部连接一个上拉电阻，连接3.3v电源。如果外部没有信号，则默认处于高点平。</li>
-<li>用途：常用于检测低电平触发信号，比如按键按下时，引脚从高变为低。</li>
-<li>注意：上拉电阻通常比较弱，外部信号足够强的话可以拉低电平。</li>
-</ul>
-<h5 id="3、输入下拉模式（Input-Pull-Down）"><a href="#3、输入下拉模式（Input-Pull-Down）" class="headerlink" title="3、输入下拉模式（Input Pull-Down）"></a>3、输入下拉模式（Input Pull-Down）</h5><ul>
-<li>原理：GPIO引脚在内部连接一个下拉电阻，连接着地。如果外部没有信号，则默认处于低电平。</li>
-<li>用途：常用于检测一个高电平信号，当一个传感器输出高电平时触发。</li>
-<li>注意：和上拉电阻一样，电阻很弱，当外部信号足够强时可以改变其电平</li>
-</ul>
-<h5 id="4、模拟输入模式（Analog-Input）"><a href="#4、模拟输入模式（Analog-Input）" class="headerlink" title="4、模拟输入模式（Analog Input）"></a>4、模拟输入模式（Analog Input）</h5><ul>
-<li>原理：GPIO不在做数字信号处理，直接作为模拟信号输入，连接内部ADC。</li>
-<li>用途：测量连续变化的电压值，比如温度传感器</li>
-<li>注意：这种模式下，引脚不能用于输入输入输出，只能给模拟电路用。</li>
-</ul>
-<h4 id="2、输出模式"><a href="#2、输出模式" class="headerlink" title="2、输出模式"></a>2、输出模式</h4><h5 id="5、开漏输出模式（Open-Drain-Output）"><a href="#5、开漏输出模式（Open-Drain-Output）" class="headerlink" title="5、开漏输出模式（Open-Drain Output）"></a>5、开漏输出模式（Open-Drain Output）</h5><ul>
-<li>原理：GPIO引脚只能输出低电平，高电平处于开路状态，需要外部上拉电阻拉高。</li>
-<li>用途：常用于IIC、SMBus等通信协议。</li>
-<li>注意：必须外部连接上拉电阻，否则高电平无法实现。</li>
-</ul>
-<h5 id="6、推挽输出模式（Push-Pull-Output）"><a href="#6、推挽输出模式（Push-Pull-Output）" class="headerlink" title="6、推挽输出模式（Push-Pull Output）"></a>6、推挽输出模式（Push-Pull Output）</h5><ul>
-<li>原理：GPIO可以主动输出高电平和低电平，由内部电路直接驱动。</li>
-<li>用途：最常用的输出模式</li>
-<li>注意：驱动能力强，但是不能对各引脚直接并联输出。会短路。</li>
-</ul>
-<h5 id="7、复用功能模式（Alternate-Function）"><a href="#7、复用功能模式（Alternate-Function）" class="headerlink" title="7、复用功能模式（Alternate Function）"></a>7、复用功能模式（Alternate Function）</h5><ul>
-<li>原理：GPIO引脚配置为硬件外设功能，比如USART的TX、RX等。</li>
-<li>用途：用于特定的外设功能。例如串口通信</li>
-<li>注意：配置时需要指定其具体的功能。</li>
-</ul>
-<h5 id="8、复用开漏、推挽模式（Alternate-Function-Open-Drain-Push-Pull）"><a href="#8、复用开漏、推挽模式（Alternate-Function-Open-Drain-Push-Pull）" class="headerlink" title="8、复用开漏、推挽模式（Alternate Function Open-Drain&#x2F;Push-Pull）"></a>8、复用开漏、推挽模式（Alternate Function Open-Drain&#x2F;Push-Pull）</h5><ul>
-<li>原理：结合复用功能和开漏、推挽输出。例如IIC用开漏，PWM用推挽。</li>
-<li>用途：根据外设需求选择输出类型，比如I2C需要开漏，PWM需要推挽。</li>
-<li>注意：具体模式取决于外设协议要求。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32</tag>
-        <tag>stm32cubide</tag>
-        <tag>HAL</tag>
       </tags>
   </entry>
   <entry>
@@ -576,6 +413,26 @@
       </tags>
   </entry>
   <entry>
+    <title>Hello World</title>
+    <url>/2025/01/21/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
     <title>stm32F407HAL库学习-USART串口</title>
     <url>/2025/02/28/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-USART%E4%B8%B2%E5%8F%A3/</url>
     <content><![CDATA[<h1 id="stm32F407HAL库学习-USART串口"><a href="#stm32F407HAL库学习-USART串口" class="headerlink" title="stm32F407HAL库学习-USART串口"></a>stm32F407HAL库学习-USART串口</h1><p>前期准备：</p>
@@ -701,29 +558,146 @@
       </tags>
   </entry>
   <entry>
-    <title>内存管理</title>
-    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
-    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
-<p>下面是对内存的动态管理。</p>
+    <title>stm32F407HAL库学习-点亮LED灯</title>
+    <url>/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/</url>
+    <content><![CDATA[<h1 id="stm32F407HAL库学习-点亮LED灯"><a href="#stm32F407HAL库学习-点亮LED灯" class="headerlink" title="stm32F407HAL库学习-点亮LED灯"></a>stm32F407HAL库学习-点亮LED灯</h1><p>前期准备：</p>
+<ul>
+<li>stm32F407ZGT6开发板</li>
+<li>stm32cubeIDE软件</li>
+<li>STM32F4xxHAL库</li>
+</ul>
 <span id="more"></span>
 
-<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
-<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
-<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
-<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
-<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
-<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
-<p><strong>分配原理</strong> </p>
-<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
-<p><strong>释放原理</strong> </p>
-<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+<h3 id="1、创建工程"><a href="#1、创建工程" class="headerlink" title="1、创建工程"></a>1、创建工程</h3><p>我从这开始想学习使用stm32CubIDE工具来写代码。所以这算一个新的教程。</p>
+<p>1、在双击stm32CubIDE工具进入到主界面中，点击左上角file-&gt;NEW-&gt;stm32_Prject.</p>
+<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/143658.png"></p>
+<p>然后计入到选择MCU的界面。</p>
+<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/144215.png"></p>
+<p>在这个中，有一个Part Number Search的一行，下面有个搜索的图标。在方框中输入型号。我这次使用的是stm32F407ZGT6.下面图片中不一样，是我截取网上的图片。</p>
+<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/144547.png"></p>
+<p>选中你的芯片型号只有，点击右下角的Next，然后进入到创建项目的界面，如下图。</p>
+<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/144655.png"></p>
+<p>在上面界面中 的Project Name这行输入名称，这个名称就是你项目的名称，这里我们输入LED_Project.完成后，点击下面的完成。</p>
+<p>然后进入了硬件配置的界面。</p>
+<p><img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/145446.png"></p>
+<p>这里比较重要详细讲一下，分为三大块。</p>
+<ul>
+<li><p><strong>1、MCU外设资源的选择。</strong> </p>
+<p>  提供了三种方法找到外设。可以直接搜索或者通过字母顺序的查找。还可以在大的分类里面找。</p>
+</li>
+<li><p><strong>2、外设配置</strong> </p>
+<p>  选择好外设后，在这里构建好外设的功能。</p>
+</li>
+<li><p><strong>3、预览界面</strong> </p>
+<p>  这里分为引脚预览和系统预览。</p>
+</li>
+</ul>
+<h4 id="2、配置引脚"><a href="#2、配置引脚" class="headerlink" title="2、配置引脚"></a>2、配置引脚</h4><p>工程已经创建好了，下面开始配置GPIO引脚和一些必要的外设配置。</p>
+<h5 id="1、配置GPIO引脚用于LED"><a href="#1、配置GPIO引脚用于LED" class="headerlink" title="1、配置GPIO引脚用于LED"></a>1、配置GPIO引脚用于LED</h5><ul>
+<li><p>在 STM32CubeMX 界面中，点击左侧的 Pinout &amp; Configuration 标签，进入芯片引脚配置视图。</p>
+</li>
+<li><p>在芯片引脚图上找到PF9、pF10，点击它。</p>
+</li>
+<li><p>在弹出的选项中，选择 GPIO_Output，表示将该引脚配置为通用输出模式。</p>
+<p>  <img src="/2025/02/27/stm32F407HAL%E5%BA%93%E5%AD%A6%E4%B9%A0-%E7%82%B9%E4%BA%AELED%E7%81%AF/152227.png"></p>
+</li>
+<li><p>左侧会显示 GPIO 选项，点击它。</p>
+</li>
+<li><p>在 GPIO 配置窗口中，找到 PF9、PF10，可以设置以下参数：</p>
+<ul>
+<li>GPIO mode: Output Push Pull（推挽输出）</li>
+<li>GPIO Pull-up&#x2F;Pull-down: No pull-up and no pull-down（无上拉&#x2F;下拉）</li>
+<li>Maximum output speed: Low（低速即可，LED 不需要高速）</li>
+<li>User Label: 输入 LED（可选，方便代码中识别）。</li>
+</ul>
+</li>
+</ul>
+<h5 id="2、配置时钟"><a href="#2、配置时钟" class="headerlink" title="2、配置时钟"></a>2、配置时钟</h5><ul>
+<li><p>点击顶部的 Clock Configuration 选项卡。</p>
+</li>
+<li><p>如果你使用外部晶振（HSE，例如 8 MHz，常见于发现板），在 HSE 输入框中选择 Crystal&#x2F;Ceramic Resonator。</p>
+</li>
+<li><p>默认情况下，STM32CubeMX 会自动配置 PLL（锁相环）以达到较高频率（例如 168 MHz，这是 STM32F407 的最大主频）。</p>
+<p>  在 System Clock 输入框中，确认频率（比如 168 MHz），或者根据需要调整。</p>
+<p>  点击 Resolve Clock Issues 按钮（如果有提示），让工具自动优化时钟树。</p>
+</li>
+</ul>
+<h5 id="3、生成代码"><a href="#3、生成代码" class="headerlink" title="3、生成代码"></a>3、生成代码</h5><p>配置完成后按下ctrl + S ,保存，就会生成初始化代码。</p>
+<h4 id="3、编写代码"><a href="#3、编写代码" class="headerlink" title="3、编写代码"></a>3、编写代码</h4><ul>
+<li><p>在工程目录的 Core &gt; Src &gt; main.c 中打开 main.c。</p>
+</li>
+<li><p>在 main() 函数中，找到 while (1) 循环，这是主循环区域。</p>
+</li>
+<li><p>你会看到类似下面的代码框架：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int main(void) &#123;</span><br><span class="line">  /* 初始化代码已由 CubeMX 生成 */</span><br><span class="line">  HAL_Init();</span><br><span class="line">  SystemClock_Config();</span><br><span class="line">  MX_GPIO_Init();</span><br><span class="line">  </span><br><span class="line">  /* USER CODE BEGIN 2 */</span><br><span class="line">  /* USER CODE END 2 */</span><br><span class="line"></span><br><span class="line">  while (1) &#123;</span><br><span class="line">    /* USER CODE BEGIN 3 */</span><br><span class="line">    /* USER CODE END 3 */</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>添加 LED 闪烁代码：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/* USER CODE BEGIN 3 */</span><br><span class="line">HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); // 翻转 PD12 引脚状态</span><br><span class="line">HAL_Delay(500);                        // 延时 500 毫秒</span><br><span class="line">/* USER CODE END 3 */</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="4、编译并下载"><a href="#4、编译并下载" class="headerlink" title="4、编译并下载"></a>4、编译并下载</h4><ol>
+<li>编译代码：<ul>
+<li>点击 STM32CubeIDE 顶部工具栏的“锤子”图标（Build），或者按 Ctrl + B。</li>
+<li>检查输出窗口，确保没有错误。</li>
+</ul>
+</li>
+<li>连接硬件：<ul>
+<li>将 STM32F407ZGT6 开发板通过调试器（比如 ST-Link）连接到电脑。</li>
+</ul>
+</li>
+<li>下载程序：<ul>
+<li>点击“绿色播放”按钮（Run），或者选择菜单 Run &gt; Run。</li>
+<li>程序会下载到芯片并自动运行。</li>
+</ul>
+</li>
+</ol>
+<h3 id="复习一遍GPIO的八种模式"><a href="#复习一遍GPIO的八种模式" class="headerlink" title="复习一遍GPIO的八种模式"></a>复习一遍GPIO的八种模式</h3><h4 id="1、输入模式"><a href="#1、输入模式" class="headerlink" title="1、输入模式"></a>1、输入模式</h4><h5 id="1、输入浮空模式（Input-Floating）"><a href="#1、输入浮空模式（Input-Floating）" class="headerlink" title="1、输入浮空模式（Input Floating）"></a>1、输入浮空模式（Input Floating）</h5><ul>
+<li>原理：GPIO引脚不接受任何内部的上拉和下拉电阻，处于悬浮状态。它的电平状态完全由外部信号决定。</li>
+<li>用途：适用于外部电路已经提供了明确的高低电平信号。</li>
+<li>注意：如果外部不接任何东西，电平会不稳定，容易受到干扰。</li>
+</ul>
+<h5 id="2、输入上拉模式（Input-Pull-Up）"><a href="#2、输入上拉模式（Input-Pull-Up）" class="headerlink" title="2、输入上拉模式（Input Pull-Up）"></a>2、输入上拉模式（Input Pull-Up）</h5><ul>
+<li>原理：GPIO引脚内部连接一个上拉电阻，连接3.3v电源。如果外部没有信号，则默认处于高点平。</li>
+<li>用途：常用于检测低电平触发信号，比如按键按下时，引脚从高变为低。</li>
+<li>注意：上拉电阻通常比较弱，外部信号足够强的话可以拉低电平。</li>
+</ul>
+<h5 id="3、输入下拉模式（Input-Pull-Down）"><a href="#3、输入下拉模式（Input-Pull-Down）" class="headerlink" title="3、输入下拉模式（Input Pull-Down）"></a>3、输入下拉模式（Input Pull-Down）</h5><ul>
+<li>原理：GPIO引脚在内部连接一个下拉电阻，连接着地。如果外部没有信号，则默认处于低电平。</li>
+<li>用途：常用于检测一个高电平信号，当一个传感器输出高电平时触发。</li>
+<li>注意：和上拉电阻一样，电阻很弱，当外部信号足够强时可以改变其电平</li>
+</ul>
+<h5 id="4、模拟输入模式（Analog-Input）"><a href="#4、模拟输入模式（Analog-Input）" class="headerlink" title="4、模拟输入模式（Analog Input）"></a>4、模拟输入模式（Analog Input）</h5><ul>
+<li>原理：GPIO不在做数字信号处理，直接作为模拟信号输入，连接内部ADC。</li>
+<li>用途：测量连续变化的电压值，比如温度传感器</li>
+<li>注意：这种模式下，引脚不能用于输入输入输出，只能给模拟电路用。</li>
+</ul>
+<h4 id="2、输出模式"><a href="#2、输出模式" class="headerlink" title="2、输出模式"></a>2、输出模式</h4><h5 id="5、开漏输出模式（Open-Drain-Output）"><a href="#5、开漏输出模式（Open-Drain-Output）" class="headerlink" title="5、开漏输出模式（Open-Drain Output）"></a>5、开漏输出模式（Open-Drain Output）</h5><ul>
+<li>原理：GPIO引脚只能输出低电平，高电平处于开路状态，需要外部上拉电阻拉高。</li>
+<li>用途：常用于IIC、SMBus等通信协议。</li>
+<li>注意：必须外部连接上拉电阻，否则高电平无法实现。</li>
+</ul>
+<h5 id="6、推挽输出模式（Push-Pull-Output）"><a href="#6、推挽输出模式（Push-Pull-Output）" class="headerlink" title="6、推挽输出模式（Push-Pull Output）"></a>6、推挽输出模式（Push-Pull Output）</h5><ul>
+<li>原理：GPIO可以主动输出高电平和低电平，由内部电路直接驱动。</li>
+<li>用途：最常用的输出模式</li>
+<li>注意：驱动能力强，但是不能对各引脚直接并联输出。会短路。</li>
+</ul>
+<h5 id="7、复用功能模式（Alternate-Function）"><a href="#7、复用功能模式（Alternate-Function）" class="headerlink" title="7、复用功能模式（Alternate Function）"></a>7、复用功能模式（Alternate Function）</h5><ul>
+<li>原理：GPIO引脚配置为硬件外设功能，比如USART的TX、RX等。</li>
+<li>用途：用于特定的外设功能。例如串口通信</li>
+<li>注意：配置时需要指定其具体的功能。</li>
+</ul>
+<h5 id="8、复用开漏、推挽模式（Alternate-Function-Open-Drain-Push-Pull）"><a href="#8、复用开漏、推挽模式（Alternate-Function-Open-Drain-Push-Pull）" class="headerlink" title="8、复用开漏、推挽模式（Alternate Function Open-Drain&#x2F;Push-Pull）"></a>8、复用开漏、推挽模式（Alternate Function Open-Drain&#x2F;Push-Pull）</h5><ul>
+<li>原理：结合复用功能和开漏、推挽输出。例如IIC用开漏，PWM用推挽。</li>
+<li>用途：根据外设需求选择输出类型，比如I2C需要开漏，PWM需要推挽。</li>
+<li>注意：具体模式取决于外设协议要求。</li>
+</ul>
 ]]></content>
       <categories>
         <category>stm32F407</category>
       </categories>
       <tags>
-        <tag>多媒体项目</tag>
         <tag>stm32</tag>
+        <tag>stm32cubide</tag>
+        <tag>HAL</tag>
       </tags>
   </entry>
   <entry>
@@ -1015,6 +989,292 @@
       <tags>
         <tag>stm32F407</tag>
         <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>内存管理</title>
+    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
+    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
+<p>下面是对内存的动态管理。</p>
+<span id="more"></span>
+
+<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
+<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
+<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
+<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
+<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
+<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
+<p><strong>分配原理</strong> </p>
+<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
+<p><strong>释放原理</strong> </p>
+<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>多媒体项目</tag>
+        <tag>stm32</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
+    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
+    <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图片显示</title>
+    <url>/2025/03/16/%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA/</url>
+    <content><![CDATA[<h1 id="图片显示"><a href="#图片显示" class="headerlink" title="图片显示"></a>图片显示</h1><span id="more"></span>
+
+<h3 id="BMP格式解码"><a href="#BMP格式解码" class="headerlink" title="BMP格式解码"></a>BMP格式解码</h3><p>BMP是一种常见的图片文件格式，广泛的用于存储像素数据。</p>
+<h4 id="1、BMP文件的基本构成"><a href="#1、BMP文件的基本构成" class="headerlink" title="1、BMP文件的基本构成"></a>1、BMP文件的基本构成</h4><p>BMP文件主要由以下部分组成：</p>
+<ul>
+<li>头文件：描述文件的基本信息，例如文件大小和数据偏移量</li>
+<li>信息头：描述图像的详细信息，例如宽度、高度、颜色等。</li>
+<li>调色板【可选】：对于地位深度的图像，会包含调色板，用于将索引映射带具体的RGB颜色。</li>
+<li>像素数据：实际的图像数据，存储方式却决于颜色深度和压缩格式。</li>
+</ul>
+<h4 id="2、解码步骤"><a href="#2、解码步骤" class="headerlink" title="2、解码步骤"></a>2、解码步骤</h4><ul>
+<li><p>读取文件头（14字节）</p>
+<ul>
+<li>2字节：文件标识符，通常BM（0x424D），表示这是BMP文件。</li>
+<li>4字节：文件总大小，字节为单位。</li>
+<li>4字节：保留字段，通常为0，无意义。</li>
+<li>4字节：像素数据起始偏移量，告诉我们从文件开头到像素数据的距离。</li>
+</ul>
+</li>
+<li><p>读取信息头（通常为40字节）</p>
+<ul>
+<li><p>4字节：信息头大小。</p>
+</li>
+<li><p>4字节：图像宽度。</p>
+</li>
+<li><p>4字节：图像高度。</p>
+</li>
+<li><p>2字节：颜色平面数，通产为1</p>
+</li>
+<li><p>2字节：每像素位数，常见的1、4、8、16、24、32.</p>
+</li>
+<li><p>4字节：压缩方式，0：无压缩、1：PLE8位；2、RLE 4位。</p>
+</li>
+<li><p>偏移 34-37（4字节）：像素数据大小（字节），若无压缩可忽略。</p>
+<p>  偏移 38-41（4字节）：水平分辨率（像素&#x2F;米），可忽略。</p>
+<p>  偏移 42-45（4字节）：垂直分辨率（像素&#x2F;米），可忽略。</p>
+<p>  偏移 46-49（4字节）：调色板颜色数，0表示默认值（2^n，n为颜色深度）。</p>
+<p>  偏移 50-53（4字节）：重要颜色数，通常为0。</p>
+</li>
+</ul>
+</li>
+<li><p>读取调色板（如果存在）</p>
+<ul>
+<li><p>如果颜色深度≤8（如1位、4位、8位），会有调色板。</p>
+<p>  每个颜色占用4字节，按BGR顺序存储（蓝、绿、红、保留字节，通常为0）。</p>
+<p>  调色板大小 &#x3D; 颜色数 × 4字节，颜色数由信息头中的字段或默认值（2^颜色深度）确定。</p>
+<p>  24位及以上颜色深度通常没有调色板，直接使用RGB值。</p>
+</li>
+</ul>
+</li>
+<li><p>读取像素数据</p>
+<ul>
+<li>像素数据的存储方式取决于颜色深度和压缩格式。</li>
+<li>对于无压缩的BMP：<ul>
+<li>行字节数：根据宽度和颜色深度计算。每行字节数必须是4的倍数，若不足则填充0</li>
+<li>存储顺序：通常从图像底部开始，自左向右逐行向上（若高度为正值）。</li>
+<li>颜色格式：<ul>
+<li>24位：每个像素3字节，按BGR顺序（蓝、绿、红）。</li>
+<li>32位：每个像素4字节，按BGRA顺序（蓝、绿、红、透明度）。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><p>1、全局变量定义</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">char bmp_files[MAX_BMP_FILES][MAX_PATH_LEN];</span><br><span class="line">uint8_t bmp_file_count = 0;</span><br><span class="line">int8_t current_bmp_index = -1;</span><br><span class="line">FIL img_file;</span><br><span class="line">uint8_t *img_buffer = NULL;</span><br><span class="line">lv_img_dsc_t img_dsc;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>bmp_files：二维字符数组，用于存储 BMP 文件的完整路径（如 “0:&#x2F;PICTURE&#x2F;image.bmp”）。MAX_BMP_FILES 和 MAX_PATH_LEN 在头文件中定义。</p>
+<p>  bmp_file_count：记录扫描到的 BMP 文件数，初始为 0。</p>
+<p>  current_bmp_index：当前显示的 BMP 文件索引，初始为 -1（未选择）。</p>
+<p>  img_file：FATFS 的文件对象，用于操作 SD 卡上的文件。</p>
+<p>  img_buffer：指向动态分配的内存，用于存储 BMP 像素数据，初始为 NULL。</p>
+<p>  img_dsc：LVGL 的图像描述符，定义图像的宽度、高度、颜色格式等。</p>
+</li>
+</ul>
+<p>2、stricmp 函数：不区分大小写的字符串比较</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int stricmp(const char *s1, const char *s2) &#123;</span><br><span class="line">    while (*s1 &amp;&amp; *s2) &#123;</span><br><span class="line">        char c1 = (*s1 &gt;= &#x27;A&#x27; &amp;&amp; *s1 &lt;= &#x27;Z&#x27;) ? *s1 + 32 : *s1;</span><br><span class="line">        char c2 = (*s2 &gt;= &#x27;A&#x27; &amp;&amp; *s2 &lt;= &#x27;Z&#x27;) ? *s2 + 32 : *s2;</span><br><span class="line">        if (c1 != c2) return c1 - c2;</span><br><span class="line">        s1++;</span><br><span class="line">        s2++;</span><br><span class="line">    &#125;</span><br><span class="line">    return *s1 - *s2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果字符是大写字母A到Z，则通过+32转换为小写。</li>
+<li>如果字符不相同，返回插值。</li>
+</ul>
+<p>3、scan_bmp_files 函数：扫描BMP文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void scan_bmp_files(void) &#123;</span><br><span class="line">    DIR dir;</span><br><span class="line">    FILINFO fno;</span><br><span class="line">    FRESULT res;</span><br><span class="line"></span><br><span class="line">    bmp_file_count = 0;</span><br><span class="line">    memset(bmp_files, 0, sizeof(bmp_files));</span><br><span class="line"></span><br><span class="line">    res = f_opendir(&amp;dir, &quot;0:/PICTURE&quot;);</span><br><span class="line">    if (res != FR_OK) &#123;</span><br><span class="line">        printf(&quot;打开目录 &#x27;PICTURE&#x27; 失败，错误码: %d\r\n&quot;, res);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    while (bmp_file_count &lt; MAX_BMP_FILES) &#123;</span><br><span class="line">        res = f_readdir(&amp;dir, &amp;fno);</span><br><span class="line">        if (res != FR_OK || fno.fname[0] == 0) break;</span><br><span class="line"></span><br><span class="line">        char *ext = strrchr(fno.fname, &#x27;.&#x27;);</span><br><span class="line">        if (ext &amp;&amp; stricmp(ext, &quot;.bmp&quot;) == 0) &#123;</span><br><span class="line">            snprintf(bmp_files[bmp_file_count], MAX_PATH_LEN, &quot;0:/PICTURE/%s&quot;, fno.fname);</span><br><span class="line">            printf(&quot;添加 BMP 文件 [%d]: %s\r\n&quot;, bmp_file_count, bmp_files[bmp_file_count]);</span><br><span class="line">            bmp_file_count++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    f_closedir(&amp;dir);</span><br><span class="line">    printf(&quot;共找到 %d 个 BMP 文件\r\n&quot;, bmp_file_count);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>打开图片目录。</li>
+<li>读取目录项：使用f_readdir 逐个读取目录中文件的信息，存储在fno中。</li>
+<li>使用strrchr找文件名中.后面的名字，提取字符串。</li>
+<li>输出打印找到的每个BMP文件路劲和总数。</li>
+</ul>
+<p>4、load_image_from_sd 函数：加载并显示BMP图像</p>
+<ul>
+<li><p>参数检查</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (index &lt; 0 || index &gt;= bmp_file_count) &#123;</span><br><span class="line">    printf(&quot;无效的 BMP 索引: %d\r\n&quot;, index);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>释放就缓冲区</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (img_buffer != NULL) &#123;</span><br><span class="line">    myfree(SRAMEX, img_buffer);</span><br><span class="line">    img_buffer = NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>打开找到的BMP文件</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">res = f_open(&amp;img_file, bmp_files[index], FA_READ);</span><br><span class="line">if (res != FR_OK) &#123;</span><br><span class="line">    printf(&quot;打开文件失败: %s，错误码: %d\r\n&quot;, bmp_files[index], res);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检查文件大小</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">uint32_t file_size = f_size(&amp;img_file);</span><br><span class="line">if (file_size &gt; MAX_BMP_SIZE) &#123;</span><br><span class="line">    printf(&quot;BMP 文件过大: %s，大小: %lu 字节\r\n&quot;, bmp_files[index], file_size);</span><br><span class="line">    f_close(&amp;img_file);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读取BMP文件头</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">res = f_read(&amp;img_file, header_buf, sizeof(header_buf), &amp;br);</span><br><span class="line">if (res != FR_OK || br != sizeof(header_buf)) &#123;</span><br><span class="line">    printf(&quot;读取 BMP 文件头失败\r\n&quot;);</span><br><span class="line">    f_close(&amp;img_file);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>读取前 54 字节（文件头 14 字节 + 信息头 40 字节），存储到 header_buf 中。</li>
+</ul>
+</li>
+<li><p>解析BMP信息</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bmp_header = (BITMAPINFOHEADER *)(header_buf + 14);</span><br><span class="line">width = bmp_header-&gt;biWidth;</span><br><span class="line">height = bmp_header-&gt;biHeight;</span><br><span class="line">bpp = bmp_header-&gt;biBitCount;</span><br><span class="line">data_offset = *(uint32_t *)(header_buf + 10);</span><br><span class="line">img_size = width * height * (bpp / 8);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>从头信息中提取高度、宽度、位深度、像素偏移量</li>
+<li>计算像素数据大小。</li>
+</ul>
+</li>
+<li><p>检查位深度</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (bpp != 16 &amp;&amp; bpp != 24 &amp;&amp; bpp != 32) &#123;</span><br><span class="line">    printf(&quot;不支持的 BMP 格式，位深度: %d\r\n&quot;, bpp);</span><br><span class="line">    f_close(&amp;img_file);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>分配缓冲区，并读取像素数据</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">img_buffer = mymalloc(SRAMEX, img_size);</span><br><span class="line">f_lseek(&amp;img_file, data_offset);</span><br><span class="line">res = f_read(&amp;img_file, img_buffer, img_size, &amp;br);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>转换为RGB565格式</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (bpp == 32) &#123;</span><br><span class="line">    uint8_t *src = img_buffer;</span><br><span class="line">    uint16_t *dst = (uint16_t *)mymalloc(SRAMEX, width * height * 2);</span><br><span class="line">    for (uint32_t i = 0; i &lt; width * height; i++) &#123;</span><br><span class="line">        uint8_t b = src[i * 4 + 0] &gt;&gt; 3;</span><br><span class="line">        uint8_t g = src[i * 4 + 1] &gt;&gt; 2;</span><br><span class="line">        uint8_t r = src[i * 4 + 2] &gt;&gt; 3;</span><br><span class="line">        uint8_t a = src[i * 4 + 3];</span><br><span class="line">        dst[i] = (a &lt; 128) ? 0x0000 : (r &lt;&lt; 11) | (g &lt;&lt; 5) | b;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMEX, img_buffer);</span><br><span class="line">    img_buffer = (uint8_t *)dst;</span><br><span class="line">    img_size = width * height * 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>将 BGRA（蓝绿红透明）转换为 RGB565（5位红、6位绿、5位蓝）。</p>
+</li>
+<li><p>如果透明度（a）&lt; 128，则像素设为透明（0x0000）。</p>
+</li>
+<li><p>RGB565是一种16位的颜色编码格式：</p>
+<ul>
+<li><p>R：5位</p>
+</li>
+<li><p>G：6位</p>
+</li>
+<li><p>B：5位</p>
+</li>
+<li><p>在内存中表示如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RRRRRGGG GGGBBBBB</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>32位代表着R&#x3D;8位、G&#x3D;8位、B&#x3D;8位、透明色&#x3D;8位。</p>
+</li>
+<li><p>8位颜色代表着颜色的每个颜色，就像8位的红色右2^8&#x3D;256种颜色细分。</p>
+</li>
+<li><p>5 位颜色：用 5 位表示，只能表示 0 到 31 的值（2⁵ &#x3D; 32 种可能）。</p>
+</li>
+<li><p>6 位颜色：用 6 位表示，能表示 0 到 63 的值（2⁶ &#x3D; 64 种可能）。</p>
+</li>
+</ul>
+</li>
+<li><p>BMP文件种假设使用32位的，而屏幕使用是RGB565.则需要从8位转化为5位或者6位。需要一一对应起来。</p>
+<ul>
+<li>从8位转换为5位：相当于256种颜色转换为32种颜色。所以要比例是：256&#x2F;32&#x3D;8.</li>
+<li>在二进制种8可以用右移3位来表示。</li>
+</ul>
+</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">else if (bpp == 24) &#123;</span><br><span class="line">    uint8_t *src = img_buffer;</span><br><span class="line">    uint16_t *dst = (uint16_t *)img_buffer;</span><br><span class="line">    for (uint32_t i = 0; i &lt; width * height; i++) &#123;</span><br><span class="line">        uint8_t b = src[i * 3 + 0] &gt;&gt; 3;</span><br><span class="line">        uint8_t g = src[i * 3 + 1] &gt;&gt; 2;</span><br><span class="line">        uint8_t r = src[i * 3 + 2] &gt;&gt; 3;</span><br><span class="line">        dst[i] = (r &lt;&lt; 11) | (g &lt;&lt; 5) | b;</span><br><span class="line">    &#125;</span><br><span class="line">    img_size = width * height * 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>将 BGR 转换为 RGB565，直接覆盖原缓冲区。</li>
+</ul>
+</li>
+<li><p>垂直翻转图像</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">uint16_t *buf = (uint16_t *)img_buffer;</span><br><span class="line">for (uint16_t y = 0; y &lt; height / 2; y++) &#123;</span><br><span class="line">    for (uint16_t x = 0; x &lt; width; x++) &#123;</span><br><span class="line">        uint16_t temp = buf[y * width + x];</span><br><span class="line">        buf[y * width + x] = buf[(height - 1 - y) * width + x];</span><br><span class="line">        buf[(height - 1 - y) * width + x] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>BMP 文件存储顺序：BMP 文件的像素数据通常从图像的底部开始，按行顺序存储到顶部（如果信息头中的高度字段 biHeight 为正值）。</li>
+</ul>
+</li>
+<li><p>配置LVGL并显示</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">img_dsc.header.w = width;</span><br><span class="line">img_dsc.header.h = height;</span><br><span class="line">img_dsc.header.cf = LV_IMG_CF_TRUE_COLOR;</span><br><span class="line">img_dsc.data_size = img_size;</span><br><span class="line">img_dsc.data = img_buffer;</span><br><span class="line"></span><br><span class="line">lv_img_set_src(img_obj, &amp;img_dsc);</span><br><span class="line">lv_img_set_zoom(img_obj, 128);  // 50% 缩放</span><br><span class="line">lv_obj_set_pos(img_obj, 100, 100);</span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32F407</tag>
+        <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>杂项设备</title>
+    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
+    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
+<li><p>概念：</p>
+<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
+</li>
+<li><p>特点：</p>
+<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
+<p>  结构简单</p>
+<p>  提供基本的读写操作接口</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​	2、定义文件操作结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	3、定义杂项设备结构体</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​	参数：</p>
+<pre><code>	* minor：次设备号。
+	* name：设备节点名称。
+	* fops：文件操作结构体指针。
+	* 其他的用到的不多，用到可以在搜。
+</code></pre>
+<p>​	4、注册杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	5、注销杂项设备</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
+<li><p>创建设备节点：</p>
+<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
+</li>
+<li><p>应用程序访问：</p>
+<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>杂项设备</tag>
+        <tag>平台总线</tag>
       </tags>
   </entry>
   <entry>
@@ -1410,522 +1670,6 @@
         <tag>stm32学习</tag>
         <tag>面试</tag>
         <tag>C语言</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</title>
-    <url>/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/</url>
-    <content><![CDATA[<p><a href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>测试文章</title>
-    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
-    <content><![CDATA[<p>这是以个测试</p>
-<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
-]]></content>
-      <tags>
-        <tag>测试</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>杂项设备</title>
-    <url>/2025/01/14/%E6%9D%82%E9%A1%B9%E8%AE%BE%E5%A4%87/</url>
-    <content><![CDATA[<h1 id="杂项设备的使用流程"><a href="#杂项设备的使用流程" class="headerlink" title="杂项设备的使用流程"></a>杂项设备的使用流程</h1><h5 id="1、杂项设备（misc-device）"><a href="#1、杂项设备（misc-device）" class="headerlink" title="1、杂项设备（misc device）"></a>1、杂项设备（misc device）</h5><ul>
-<li><p>概念：</p>
-<p> 杂项设备是linux内核提供的一种字符设备驱动矿建，用于管理那些功能比较简单、数量较少的设备。</p>
-</li>
-<li><p>特点：</p>
-<p>  主设备号固定为10，通过次设备号来区分不同的杂项设备。</p>
-<p>  结构简单</p>
-<p>  提供基本的读写操作接口</p>
-</li>
-</ul>
-<span id="more"></span>
-
-<h5 id="2、驱动开发流程及其讲解"><a href="#2、驱动开发流程及其讲解" class="headerlink" title="2、驱动开发流程及其讲解"></a>2、驱动开发流程及其讲解</h5><p>​	1、包含头文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;linux/module.h&gt;</span><br><span class="line">#include &lt;linux/fs.h&gt;</span><br><span class="line">#include &lt;linux/miscdevice.h&gt;</span><br></pre></td></tr></table></figure>
-
-<p>​	2、定义文件操作结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	3、定义杂项设备结构体</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct miscdevice misc;</span><br><span class="line"></span><br><span class="line">struct miscdevice  &#123;</span><br><span class="line">	int minor;</span><br><span class="line">	const char *name;</span><br><span class="line">	const struct file_operations *fops;</span><br><span class="line">	struct list_head list;</span><br><span class="line">	struct device *parent;</span><br><span class="line">	struct device *this_device;</span><br><span class="line">	const struct attribute_group **groups;</span><br><span class="line">	const char *nodename;</span><br><span class="line">	umode_t mode;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>​	参数：</p>
-<pre><code>	* minor：次设备号。
-	* name：设备节点名称。
-	* fops：文件操作结构体指针。
-	* 其他的用到的不多，用到可以在搜。
-</code></pre>
-<p>​	4、注册杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">    if (ret) &#123;</span><br><span class="line">        printk(&quot;misc register failed\n&quot;);</span><br><span class="line">        goto err_kfree;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">int misc_register(struct miscdevice *misc)</span><br><span class="line">&#123;</span><br><span class="line">	dev_t dev;</span><br><span class="line">	int err = 0;</span><br><span class="line">	bool is_dynamic = (misc-&gt;minor == MISC_DYNAMIC_MINOR);</span><br><span class="line"></span><br><span class="line">	INIT_LIST_HEAD(&amp;misc-&gt;list);</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;misc_mtx);</span><br><span class="line"></span><br><span class="line">	if (is_dynamic) &#123;</span><br><span class="line">		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);</span><br><span class="line"></span><br><span class="line">		if (i &gt;= DYNAMIC_MINORS) &#123;</span><br><span class="line">			err = -EBUSY;</span><br><span class="line">			goto out;</span><br><span class="line">		&#125;</span><br><span class="line">		misc-&gt;minor = DYNAMIC_MINORS - i - 1;</span><br><span class="line">		set_bit(i, misc_minors);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		struct miscdevice *c;</span><br><span class="line"></span><br><span class="line">		list_for_each_entry(c, &amp;misc_list, list) &#123;</span><br><span class="line">			if (c-&gt;minor == misc-&gt;minor) &#123;</span><br><span class="line">				err = -EBUSY;</span><br><span class="line">				goto out;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	dev = MKDEV(MISC_MAJOR, misc-&gt;minor);</span><br><span class="line"></span><br><span class="line">	misc-&gt;this_device =</span><br><span class="line">		device_create_with_groups(misc_class, misc-&gt;parent, dev,</span><br><span class="line">					  misc, misc-&gt;groups, &quot;%s&quot;, misc-&gt;name);</span><br><span class="line">	if (IS_ERR(misc-&gt;this_device)) &#123;</span><br><span class="line">		if (is_dynamic) &#123;</span><br><span class="line">			int i = DYNAMIC_MINORS - misc-&gt;minor - 1;</span><br><span class="line"></span><br><span class="line">			if (i &lt; DYNAMIC_MINORS &amp;&amp; i &gt;= 0)</span><br><span class="line">				clear_bit(i, misc_minors);</span><br><span class="line">			misc-&gt;minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">		&#125;</span><br><span class="line">		err = PTR_ERR(misc-&gt;this_device);</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	/*</span><br><span class="line">	 * Add it to the front, so that later devices can &quot;override&quot;</span><br><span class="line">	 * earlier defaults</span><br><span class="line">	 */</span><br><span class="line">	list_add(&amp;misc-&gt;list, &amp;misc_list);</span><br><span class="line"> out:</span><br><span class="line">	mutex_unlock(&amp;misc_mtx);</span><br><span class="line">	return err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​	5、注销杂项设备</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br></pre></td></tr></table></figure>
-
-
-
-<h5 id="3、杂项设备的使用"><a href="#3、杂项设备的使用" class="headerlink" title="3、杂项设备的使用"></a>3、杂项设备的使用</h5><ul>
-<li><p>创建设备节点：</p>
-<p> 注册杂项设备后，在系统的&#x2F;dev&#x2F;目录下会自动创建一个设备节点。</p>
-</li>
-<li><p>应用程序访问：</p>
-<p>  应用程序可以通过系统调用（如open、write、read）来访问该设备节点，从而与驱动进行交互。</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>杂项设备</tag>
-        <tag>平台总线</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>设备树</title>
-    <url>/2025/01/07/%E8%AE%BE%E5%A4%87%E6%A0%91/</url>
-    <content><![CDATA[<h1 id="设备树"><a href="#设备树" class="headerlink" title="设备树"></a>设备树</h1><p>linux3.0以后版本才引进了设备树，在此之前的linux内核代码中描述硬件平台信息的代码散乱的分布在arch&#x2F;arm&#x2F;plat-XXX 和 arch&#x2F;arm&#x2F;mach-XXX等目录中。所以为了改善这一情况，设备树孕育于出，它将这些硬件描述信息从内核代码中剥离出来，使用一种树形结构来描述硬件平台的组成和配置信息。</p>
-<p>具体关于设备树的介绍可以参考：<a href="https://www.devicetree.org/">https://www.devicetree.org/</a></p>
-<span id="more"></span>
-
-<h2 id="1、设备树简介"><a href="#1、设备树简介" class="headerlink" title="1、设备树简介"></a>1、设备树简介</h2><h5 id="1、什么是设备树？（Device-Tree）"><a href="#1、什么是设备树？（Device-Tree）" class="headerlink" title="1、什么是设备树？（Device Tree）"></a>1、什么是设备树？（Device Tree）</h5><p>​	在linux内核早期，平台硬件的信息（例如内存地址、外设配置等）是直接编码在内核代码中的。这意味着一旦硬件平台发生改变，就要重新编写代码。这种方式难以维护和移植。</p>
-<p>​	为了解决这一问题，linux内核在3.X版本之后开时引用了设备树机制。<strong>简单的来说，设备树就是一个描述硬件平台的信息的文本文件，内核通过解析这个文件来了解硬件平台的配置。</strong></p>
-<h5 id="2、设备树的作用"><a href="#2、设备树的作用" class="headerlink" title="2、设备树的作用"></a>2、设备树的作用</h5><p>​	设备的主要作用：</p>
-<ul>
-<li>描述硬件的拓扑结构：使用树形结构可以清晰的描述硬件平台上的各种设备以及相互的关系。例如哪个USART链接着哪些GOIO控制器，哪个中断控制器控制着那个外设的中断。</li>
-<li>传递硬件配置信息：将硬件设备的地址、中断号、时钟频率等配置信息传递给内核。</li>
-<li>实现硬件描述与驱动代码的分离：使得驱动程序更见通用，时许更具设备树中的信息进行适当的调整，而无需修改驱动代码。</li>
-</ul>
-<h5 id="3、设备树的基本概念"><a href="#3、设备树的基本概念" class="headerlink" title="3、设备树的基本概念"></a>3、设备树的基本概念</h5><p>​	设备树有节点（node）和属性（property）组成，形成一个树状结构。</p>
-<ul>
-<li><p>节点（node）：代表硬件设备，例如内存、外设（USART、SPI、IIC等）。每个节点都有唯一的名称。并且包含多个属性。节点之间存在着父子关系。根节点可以用‘&#x2F;’表示。</p>
-</li>
-<li><p>属性（property）：描述节点的特性，例如设备的地址（reg）、中断号（interrupts）、时钟频率（clock-frequency）等。属性有键值成对组成，键是属性的名称，值属性的数据。</p>
-</li>
-<li><p>举一个简单的例子：</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ &#123;  // 根节点</span><br><span class="line">    compatible = &quot;my-company,my-platform&quot;; // 兼容性字符串，用于驱动匹配</span><br><span class="line">    model = &quot;My Platform v1.0&quot;; // 平台型号</span><br><span class="line"></span><br><span class="line">    memory &#123; // 内存节点</span><br><span class="line">        reg = &lt;0x40000000 0x10000000&gt;; // 内存起始地址和大小</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    uart0: uart@1000 &#123; // UART 节点，命名为 uart0，地址为 0x1000</span><br><span class="line">        compatible = &quot;ns16550a&quot;; // UART 控制器类型</span><br><span class="line">        reg = &lt;0x1000 0x100&gt;; // UART 寄存器地址和大小</span><br><span class="line">        interrupts = ; // UART 中断号</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h5 id="4、设备树的表示形式：DTS、DTB、DTC"><a href="#4、设备树的表示形式：DTS、DTB、DTC" class="headerlink" title="4、设备树的表示形式：DTS、DTB、DTC"></a>4、设备树的表示形式：DTS、DTB、DTC</h5><ul>
-<li><p>DTS（Device Tree Source）：设备树的源文件，以.dts为结尾的文件。在使用时可以像C语言中引用头文件一样使用<code>#include</code>指令。</p>
-</li>
-<li><p>DTC（Device Tree Compiler）：设备树的编译器。是一个工具程序，类似于gcc，可以将DTS文件编一个二进制的DTB文件。</p>
-</li>
-<li><p>DTB（Device Tree Blob）：编译后的二进制文件，内核在启动时会加载DTB文件，从其中获取硬件信息。</p>
-<p> 使用dtc命令可以将DTS文件编译成DTB文件。</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dtc -I dts -O dtb -o my_device.dtb my_device.dts</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>dtc：命令</li>
-<li>-I dts：指定输入文件格式为DTS</li>
-<li>-O dtb：指定输出文件格式为DTB</li>
-<li>-o my_device.dtb：指定输出DTB的名称</li>
-<li>my_device.dts：指定输入的DTS的名称</li>
-</ul>
-</li>
-</ul>
-<h2 id="2、设备树的框架"><a href="#2、设备树的框架" class="headerlink" title="2、设备树的框架"></a>2、设备树的框架</h2><h5 id="1、设备的组织结构：树形结构"><a href="#1、设备的组织结构：树形结构" class="headerlink" title="1、设备的组织结构：树形结构"></a>1、设备的组织结构：树形结构</h5><p>​	设备树采用树形结构来描述硬件平台的组成和连接关系。</p>
-<ul>
-<li><p>根节点（root node）：用<code>/</code>表示，是设备树的顶层节点，描述着整个硬件平台的基本信息。</p>
-</li>
-<li><p>子节点（child node）：根节点下的节点，描述平台生的各个设备，例如CPU、内存、总线、外设等。子节点也可以有自己的子节点。</p>
-</li>
-<li><p>父节点（parent node）和子节点（child node）：节点之间通过父子关系链接起来，表示设备之间的层次关系和链接关系。</p>
-<p> 示例：</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ &#123; // 根节点</span><br><span class="line">    compatible = &quot;my-company,my-platform&quot;;</span><br><span class="line">    model = &quot;My Platform v1.0&quot;;</span><br><span class="line"></span><br><span class="line">    cpus &#123; // CPU 节点</span><br><span class="line">        cpu@0 &#123; // 第一个 CPU 节点</span><br><span class="line">            compatible = &quot;arm,cortex-a9&quot;;</span><br><span class="line">            reg = &lt;0x0&gt;;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    memory &#123; // 内存节点</span><br><span class="line">        reg = &lt;0x40000000 0x10000000&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    uart0: uart@1000 &#123; // UART 节点</span><br><span class="line">        compatible = &quot;ns16550a&quot;;</span><br><span class="line">        reg = &lt;0x1000 0x100&gt;;</span><br><span class="line">        interrupts = ;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    i2c0: i2c@2000 &#123; // I2C 控制器节点</span><br><span class="line">        compatible = &quot;i2c-designware&quot;;</span><br><span class="line">        reg = &lt;0x2000 0x100&gt;;</span><br><span class="line"></span><br><span class="line">        eeprom@50 &#123; // 连接在 i2c0 上的 EEPROM 芯片节点</span><br><span class="line">            compatible = &quot;atmel,24c32&quot;;</span><br><span class="line">            reg = &lt;0x50&gt;;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h5 id="2、设备树的语法规则"><a href="#2、设备树的语法规则" class="headerlink" title="2、设备树的语法规则"></a>2、设备树的语法规则</h5><p>​	设备树使用Device Tree Source（DTS）的文本格式进行描述，类似于C语言的结构体。</p>
-<ul>
-<li><p>节点定义：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[label:] node-name@unit-address &#123;</span><br><span class="line">    properties;</span><br><span class="line">    child-nodes;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>label：节点标签，用于在其他地方使用该节点时，可选。例如uart0、i2c0</li>
-<li>node-name：节点名称，描述设备的类型。例如CPU、memory、uart。</li>
-<li>unit-address：节点地址，用于区分同一类型的设备，可选。例如@0200.</li>
-<li>properties：节点属性，描述设备的具体属性。</li>
-<li>child-nodes：节点的子节点。</li>
-</ul>
-</li>
-<li><p>属性定义：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">property-name = value;</span><br></pre></td></tr></table></figure>
-
-<pre><code>  * property-name：属性名称，是一个字符串。例如compatible、reg、interrups。
-  * value：属性的值。
-</code></pre>
-</li>
-<li><p>包含头文件</p>
-<ul>
-<li>使用<code>#include</code>指令可以包含其他的DTS文件或者DTSI文件。</li>
-</ul>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;header.dtsi&quot;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h5 id="3、设备树的重要概念"><a href="#3、设备树的重要概念" class="headerlink" title="3、设备树的重要概念"></a>3、设备树的重要概念</h5><ul>
-<li><p>compatible 属性：它时设备树中最重要的属性之一，它表示一个字符串列表，用于驱动程序和设备进行匹配。驱动程序会查找设备树中compatible属性包含其支持的字符串节点，如果匹配成功，则驱动程序就负责管理该设备。</p>
-<p> 例如：</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">compatible = &quot;ns16550a&quot;, &quot;uart16550&quot;;</span><br></pre></td></tr></table></figure>
-
-<p> 表示该设备兼容ns16550a和uart16550两种类型的驱动程序。</p>
-</li>
-<li><p>model属性：用于指定设备的制造商和型号。</p>
-<p>  例如：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">model = &quot;EmbedFire LubanCat2 HDMI+MIPI&quot;;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>status属性：用于指示设备的操作状态，通过status去禁止设备或者启用设备。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/* External sound card */</span><br><span class="line">sound: sound &#123;</span><br><span class="line">    status = &quot;disabled&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>  | 状态值   | 描述                                  |</p>
-</li>
-</ul>
-<p>| ——– | ————————————- |<br>    | okay     | 使能设备                              |<br>    | disabled | 禁用设备                              |<br>    | fail     | 表示设备不可运行，                    |<br>    | fail-sss | 表示设备不可运行，sss与具体的设备相关 |</p>
-<ul>
-<li><p>reg属性：用于描述地址空间资源，通常包含设备的起始地址和大小。</p>
-<p>  例如：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">reg = &lt;0x1000 0x100&gt;;</span><br></pre></td></tr></table></figure>
-
-<p>  表示的意思是设备的其实地址是0x1000，大小为0x100字节。</p>
-</li>
-<li><p>interrupt属性：用于描述设备的中断资源，通产包含中断号和中断触发方式。</p>
-</li>
-<li><p>追加&#x2F;修改节点内容</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&amp;cpu0 &#123;</span><br><span class="line">    cpu-supply = &lt;&amp;vdd_cpu&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>  这些代码并不包含在根节点下，他们不是一个新的节点，而是像原有的节点追加内容。在上面的例子中，&amp;cpu0表示像节点标签cpu0的节点追加数据，这个节点可能定义在泵文件也可以定义在迸溅所包含的设备树文件中。</p>
-</li>
-<li><p>特殊节点</p>
-<ul>
-<li><p>aliases子节点</p>
-<p>  aliases子节点的作用就是为其他节点起一个别名，示例：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    aliases &#123;</span><br><span class="line">            csi2dphy0 = &amp;csi2_dphy0;</span><br><span class="line">            csi2dphy1 = &amp;csi2_dphy1;</span><br><span class="line">            csi2dphy2 = &amp;csi2_dphy2;</span><br><span class="line">    /*----------- 省略------------*/</span><br><span class="line">            mmc0 = &amp;sdhci;</span><br><span class="line">            mmc1 = &amp;sdmmc0;</span><br><span class="line">            mmc2 = &amp;sdmmc1;</span><br><span class="line">            mmc3 = &amp;sdmmc2;</span><br><span class="line">            serial0 = &amp;uart0;</span><br><span class="line">            serial1 = &amp;uart1;</span><br><span class="line">            serial2 = &amp;uart2;</span><br><span class="line">    /*----------- 以下省略------------*/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>  以serual0 &#x3D; &amp;uart0为例，serial0是一个节点的名字，设置别名后我门可以使用serial0来指代uart0节点。</p>
-</li>
-<li><p>chsen子节点</p>
-<p>  chosen子节点位于根节点下，示例：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chosen &#123;</span><br><span class="line">          bootargs = &quot;earlycon=uart8250,mmio32,0xfe660000 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rw rootwait&quot;;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
-
-<p>  chosen子节点不代表实际硬件，它主要用于内核传递参数。此外这个节点还可以用作uboot像linux内核传递配置参数的通道，我梦在uboot设置好参数，就是通过这个节点向内核中传递的。</p>
-</li>
-</ul>
-</li>
-</ul>
-<h5 id="3、如何获取设备树节点信息"><a href="#3、如何获取设备树节点信息" class="headerlink" title="3、如何获取设备树节点信息"></a>3、如何获取设备树节点信息</h5><p>​	在设备树中‘’节点‘’对应着实际硬件中的设备，我梦在设备树中田间一个led节点，正常情况下我们可以从这个节点获取编写led驱动所用的所有信息。</p>
-<p>​	在内核中提供了一组函数用于从设备节点中获取资源的函数，这些函数以of_开头，称为OF操作。</p>
-<p>1、查找节点函数</p>
-<ul>
-<li><p>根据节点路径寻找节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_node_by_path(const char *path)</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<pre><code>  * path：指定节点在设备树中的路径
-</code></pre>
-<p>  返回值：</p>
-<ul>
-<li><p>device_node：结构体指针，失败返回为NULL；成功返回一个指针，该指针中保存着设备节点的信息。</p>
-</li>
-<li><p>device_node结构体如下，它定义在 <code>&lt;linux/of.h&gt;</code> 头文件中：</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node &#123;</span><br><span class="line">    const char *name;           // 节点的名称，例如 &quot;uart@1000&quot;</span><br><span class="line">    phandle phandle;          // 节点的句柄，用于在设备树中唯一标识一个节点</span><br><span class="line">    const char *full_name;      // 节点的完整路径名，例如 &quot;/soc/uart@1000&quot;</span><br><span class="line">    struct fwnode_handle fwnode; // 用于统一访问不同类型的固件节点，如设备树、ACPI等</span><br><span class="line"></span><br><span class="line">    struct property *properties; // 指向节点属性链表的指针</span><br><span class="line">    struct property *deadprops;  // 指向已删除属性链表的指针（用于调试）</span><br><span class="line">    struct device_node *parent;  // 指向父节点的指针</span><br><span class="line">    struct device_node *child;   // 指向第一个子节点的指针</span><br><span class="line">    struct device_node *sibling; // 指向下一个兄弟节点的指针</span><br><span class="line"></span><br><span class="line">#if defined(CONFIG_OF_KOBJ)</span><br><span class="line">    struct kobject kobj;         // 用于将设备节点注册到 sysfs 文件系统中</span><br><span class="line">#endif</span><br><span class="line">    unsigned long _flags;        // 节点标志</span><br><span class="line">    void *data;                 // 用于存储驱动程序特定的数据</span><br><span class="line">#if defined(CONFIG_SPARC)</span><br><span class="line">    unsigned int unique_id;     // SPARC 平台特有的唯一 ID</span><br><span class="line">    struct of_irq_controller *irq_trans; // SPARC 平台特有的中断转换</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>name：节点中属性为name的值</p>
-</li>
-<li><p>phandle：节点中为device-type的值</p>
-</li>
-<li><p>full-name：节点的名字，在device_node结构体后面放一个字符串，full-name指向它</p>
-</li>
-<li><p>properties：链表，连接该节点的所有属性</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">    char *name;         // 属性的名称，例如 &quot;compatible&quot;、&quot;reg&quot;</span><br><span class="line">    int length;         // 属性值的长度（以字节为单位）</span><br><span class="line">    void *value;        // 指向属性值的指针</span><br><span class="line">    struct property *next; // 指向下一个属性的指针，构成链表</span><br><span class="line">    unsigned long _flags;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>parent：指向父节点</p>
-</li>
-<li><p>child：指向子节点</p>
-</li>
-<li><p>sibling：指向兄弟节点</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>根据系欸但名字寻找节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_node_by_name(struct device_node *from,const char *name);</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>from：致电给从哪个节点开始查找，它本身不在查找行列中，之查找它之后的节点。</li>
-<li>name：要寻找的节点名。</li>
-</ul>
-<p>  返回值：</p>
-<pre><code>  * device—node：节点结构体指针，上面的一样。
-</code></pre>
-</li>
-<li><p>根据节点类型寻找节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_node_by_type(struct device_node *from,const char *type)</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>from：指定从哪个节点开始找。</li>
-<li>type：要寻找的节点的类型。</li>
-</ul>
-<p>  返回值：</p>
-<ul>
-<li><strong>device_node：</strong> device_node类型的结构体指针。</li>
-</ul>
-</li>
-<li><p>根据节点类型和compeatible属性寻找节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_compatible_node(struct device_node *from,const char *type, const char *compatible)</span><br></pre></td></tr></table></figure>
-
-<p>  相对于of_find_node_by_name，多了一个compatible（属性）的参数。</p>
-<p>  compatible：要寻找的节点的兼容性属性。</p>
-</li>
-<li><p>根据匹配表寻找节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static inline struct device_node *of_find_matching_node_and_match(struct device_node *from, const struct of_device_id *matches, const struct of_device_id **match)</span><br></pre></td></tr></table></figure>
-
-<p>  相对于前面的几种，多了matches、match参数。</p>
-<p>  matches：指向一个of_device_id数组的指针。这个数组包含了要匹配的设备ID列表。</p>
-<p>  match：指向of_device_id指针的指针。如果找到匹配的节点，则将匹配的结构体的地址存储在这个指针指向的位置。</p>
-<p>  struct of_device_id结构体：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*</span><br><span class="line"> * Struct used for matching a device</span><br><span class="line"> */</span><br><span class="line">struct of_device_id &#123;</span><br><span class="line">	char	name[32];</span><br><span class="line">	char	type[32];</span><br><span class="line">	char	compatible[128];</span><br><span class="line">	const void *data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>name：设备的名称。</li>
-<li>type：设备的类型。</li>
-<li>compatible：设备的兼容性字符串。用于驱动和设备的匹配。</li>
-<li>data：指向驱动私有数据的指针。</li>
-</ul>
-</li>
-<li><p>寻找父节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_get_parent(const struct device_node *node)</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>node：指定要查找父节点的节点。</li>
-</ul>
-<p>  返回值：</p>
-<ul>
-<li>node：是一个指向device_node类型的结构体指针。</li>
-</ul>
-</li>
-<li><p>寻找子节点函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_get_next_child(const struct device_node *node, struct device_node *prev)</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>node：指定谁要查找它的子节点。</li>
-<li>prev：前一个子节点。这是一个迭代的过程。就像找孙子，你要先把哪个儿子的节点找到，才能找到该儿子下的孙子节点。如果为NULL，则直接找儿子节点。</li>
-</ul>
-</li>
-</ul>
-<p>这里介绍的七个寻找节点函数，共同点是返回值类型都相同。只要找到节点就可以返回节点对应的device-node结构体，通过这个结构体就可以获取到设备节点中的属性信息、父子节点等。</p>
-<p>第一个函数of_find_node_by_path与其他六个不同，它是通过节点路径来寻找节点的，节点路径是从设备树源文件（.dts）中找到的。中间四个函数根据节点属性在某一节点之后查找相符合的要求的设备节点。最后两个根据父子系节点进行查找。</p>
-<p>2、提取属性值的of函数</p>
-<p>上面我们看了七个查找节点的函数，他们都是找到一个设备节点然后返回相对应的结构体指针device-node。下面我们讲解从结构体中获取我们想要的设备节点属性信息。</p>
-<ul>
-<li><p>查找节点属性函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct property *of_find_property(const struct device_node *np,const char *name,int *lenp)</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>np：指定要获取的设备节点的属性信息。</li>
-<li>name：属性名</li>
-<li>lenp：获取等到的属性值的大小。这个指针作为输出参数，这个参数带回的值是实际获取得到的属性大小</li>
-</ul>
-<p>  返回值：</p>
-<ul>
-<li><p>property：获取的属性。而struct property *，我们称为系欸但属性结构体。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">	char	*name;</span><br><span class="line">	int	length;</span><br><span class="line">	void	*value;</span><br><span class="line">	struct property *next;</span><br><span class="line">#if defined(CONFIG_OF_DYNAMIC) || defined(CONFIG_SPARC)</span><br><span class="line">	unsigned long _flags;</span><br><span class="line">#endif</span><br><span class="line">#if defined(CONFIG_OF_PROMTREE)</span><br><span class="line">	unsigned int unique_id;</span><br><span class="line">#endif</span><br><span class="line">#if defined(CONFIG_OF_KOBJ)</span><br><span class="line">	struct bin_attribute attr;</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>name：属性名</li>
-<li>length：属性长度</li>
-<li>value：属性值</li>
-<li>next：下个属性</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>读取整形属性函数</p>
-<p>  读取属性函数是一组函数，分别为8、16、32、64位数据。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//8位整数读取函数</span><br><span class="line">int of_property_read_u8_array(const struct device_node *np, const char *propname, u8 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//16位整数读取函数</span><br><span class="line">int of_property_read_u16_array(const struct device_node *np, const char *propname, u16 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//32位整数读取函数</span><br><span class="line">int of_property_read_u32_array(const struct device_node *np, const char *propname, u32 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//64位整数读取函数</span><br><span class="line">int of_property_read_u64_array(const struct device_node *np, const char *propname, u64 *out_values, size_t sz)</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>np：指定要读取那个设备节点结构体。</li>
-<li>propname：指定要获取设备几点的那个属性</li>
-<li>out-value：这是一个输出参数，是函数的返回值，保存读取等到的数据</li>
-<li>sz：这是一个输入参数，用于设置读取的长度。</li>
-</ul>
-<p>  返回值：</p>
-<ul>
-<li>成功返回0，错误返回错误状态吗。-EINVAL（属性不存在）、-ENODATA（没有要读取的数据）、-EOVERFLOW（属性值列表太小）。</li>
-</ul>
-</li>
-<li><p>读取字符串属性函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int of_property_read_string(const struct device_node *np,const char *propname,const char **out_string)</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>np：要读取那个设备节点的属性</li>
-<li>propname：属性名</li>
-<li>out-string：获取等待字符串的指针。</li>
-</ul>
-<p>  返回值：</p>
-<ul>
-<li>成功返回0，失败返回错误状态吗</li>
-</ul>
-<p>  推荐使用下面的这个函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int of_property_read_string_index(const struct device_node *np,const char *propname, int index,const char **out_string)</span><br></pre></td></tr></table></figure>
-
-<p>  相对于前面增加了index，用于指定读取属性值中的第几个字符串，index从零开始计数。</p>
-</li>
-<li><p>读取布尔型属性函数</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static inline bool of_property_read_bool(const struct device_node *np, const char *propname);</span><br></pre></td></tr></table></figure>
-
-<p>  参数：</p>
-<ul>
-<li>np：要读取的那个设备节点的属性信息</li>
-<li>propname：属性名</li>
-</ul>
-<p>  返回值：</p>
-<ul>
-<li>这个函数不是读取某个布尔型属性的值，仅仅读取这个属性存在或者不存在，如果想要获取值，还是建议使用“全能”函数查找节点of_find_property。</li>
-</ul>
-</li>
-</ul>
-<p>3、内存映射相关的of函数</p>
-<p>在设备树的节点中大多包含一些捏村想过的属性，比如常用的reg属性。通常情况下，等到寄存器地址之后我们还要通过ioremap函数将物理地址转化为虚拟地址。现在内核提供了一些of函数，自动完成物理地址到虚拟地址的转换。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void __iomem *of_iomap(struct device_node *np, int index)</span><br></pre></td></tr></table></figure>
-
-<p>参数：</p>
-<ul>
-<li>np：要获取的那个设备节点的属性信息</li>
-<li>index：通常情况下reg属性包含多段，index用于指定映射哪一段，从零开始</li>
-</ul>
-<p>返回值：</p>
-<ul>
-<li>成功返回转换的地址。失败返回NULL。</li>
-</ul>
-<p>内核也提供看常规获取地址的of函数，这些函数得到的值就是我们在设备树中设置的地址值，</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int of_address_to_resource(struct device_node *dev, int index, struct resource *r)</span><br></pre></td></tr></table></figure>
-
-<p>参数：</p>
-<ul>
-<li>dev：指定要获取的那个设备节点的属性信息</li>
-<li>index：通常情况下reg包含多端。</li>
-<li>r：这是要给resource结构体，是输出桉树用于返回得到的地址信息。</li>
-</ul>
-<p>返回值：</p>
-<ul>
-<li>成功返回0，失败返回错误状态吗</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct resource &#123;</span><br><span class="line">    resource_size_t start;</span><br><span class="line">    resource_size_t end;</span><br><span class="line">    const char *name;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">    unsigned long desc;</span><br><span class="line">    struct resource *parent, *sibling, *child;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>start：起始地址</li>
-<li>end：结束地址</li>
-<li>name：属性的名称</li>
-</ul>
-<h5 id="4、使用设备树驱动led示例"><a href="#4、使用设备树驱动led示例" class="headerlink" title="4、使用设备树驱动led示例"></a>4、使用设备树驱动led示例</h5><p>1、像设备树中添加节点：</p>
-<ul>
-<li><p>在linux内核源码中找到设备树文件。（&#x2F;home&#x2F;h&#x2F;h&#x2F;linux-5.4.31&#x2F;arch&#x2F;arm&#x2F;boot&#x2F;dts）</p>
-</li>
-<li><p>打开设备树文件，在其中添加led节点。（stm32mp157a-fsmpla.dts）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> led_test@0x54004000&#123;</span><br><span class="line">      compatible = &quot;h,led1&quot;;</span><br><span class="line">      reg = &lt;0x54004000 0x400&gt;;</span><br><span class="line">      led_name = &quot;led01&quot;;</span><br><span class="line">      led_minor = &lt;11&gt;;</span><br><span class="line">      moder_clear = &lt;0x3f&gt;;</span><br><span class="line">      moder_data = &lt;0x15&gt;;</span><br><span class="line">      odr = &lt;0x7&gt;;</span><br><span class="line">      shift = &lt;5&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>参数：</p>
-<pre><code>* led_test：设备节点名称。
-* @0x54004000：设备的起始地址。当属性中有reg时，可以在这里添加0x54004000，当然有没有并没有什么影响。
-* compatible：用于匹配驱动程序。
-* reg：设备的寄存器空间地址。包括其实地址和空间大小。
-* （下面就是自定义属性）
-* led_name：设备名称。
-* moder_clear：清理GPIO引脚的输入输出端口。
-* moder_data：配置GPIO引脚。
-* odr：输出数据寄存器的值。决定了led的初始状态。
-* shift：寄存器的位移量。
-</code></pre>
-</li>
-<li><p>添加好设备节点后，保存退出。</p>
-</li>
-<li><p>进入linux内核目录下进行编译，重新传入板子中。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ source /opt/stm32_sdk/environment-setup-cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi </span><br><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ make -j4 ARCH=arm dtbs LOADADDR=0xC2000040</span><br><span class="line">cp arch/arm/boot/dts/stm32mp157a-fsmpla.dtb /tftpboot/</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>重新启动单片机，linux内核就会重新加载我们新写好的设备树文件。</p>
-</li>
-</ul>
-<p>2、编写驱动代码（led_pdrv.c）</p>
-<ul>
-<li><p>编写驱动框架</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static int __init led_pdev_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">    // 2、注册platform-driver对象</span><br><span class="line">    return platform_driver_register(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void __exit led_pdrv_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">    platform_driver_unregister(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(led_pdev_init);</span><br><span class="line">module_exit(led_pdrv_exit);</span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>创建platform-driver对象，并且通过led_match_table中的compatible与驱动进行匹配。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 与pdev中的name匹配</span><br><span class="line">const struct platform_device_id led_id_table[] = &#123;</span><br><span class="line">    &#123; &quot;mp157_led&quot;, 0xa &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// 与设备树中的compatible匹配</span><br><span class="line">const struct of_device_id led_match_table[] = &#123;</span><br><span class="line">    &#123; .compatible = &quot;h,led1&quot; &#125;,</span><br><span class="line">    &#123; /* sentinel */ &#125;</span><br><span class="line">&#125;;</span><br><span class="line">struct platform_driver led_pdrv = &#123;</span><br><span class="line">    .probe  = led_pdrv_probe,</span><br><span class="line">    .remove = led_pdrv_remove,</span><br><span class="line">    .driver = &#123;</span><br><span class="line">        .name = &quot;fsmp1_led&quot;,</span><br><span class="line">        .of_match_table = led_match_table,</span><br><span class="line">    &#125;,</span><br><span class="line">    .id_table = led_id_table,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>编写led_pdrv_probe、led_pdrv_remove函数，如果驱动匹配成功后，会调用led_pdrv_probe函数执行，在卸载时调用led_pdrv_remove函数。</p>
-<ul>
-<li><p>int led_pdrv_probe(struct platform_device *<em>pdev</em>)</p>
-<ul>
-<li><p>分配全局设备对象空间</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 设计led的结构体</span><br><span class="line">struct mp157_led_t &#123;</span><br><span class="line">    struct miscdevice misc;</span><br><span class="line">    unsigned int *moder;</span><br><span class="line">    unsigned int *odr;</span><br><span class="line"></span><br><span class="line">    int m_clear;</span><br><span class="line">    int m_data;</span><br><span class="line">    int o_data;</span><br><span class="line">    int shift;</span><br><span class="line">&#125;;</span><br><span class="line">    // 1、分配全局设备对象空间</span><br><span class="line">    led_dev = kzalloc(sizeof(*led_dev), GFP_KERNEL);</span><br><span class="line">    if (!led_dev) &#123;</span><br><span class="line">        printk(&quot;kzalloc failed\n&quot;);</span><br><span class="line">        return -ENOMEM;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>获取设备节点和数据</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 获取设备树节点对象</span><br><span class="line">np = pdev-&gt;dev.of_node;	//这里的np是直接获取pdev的设备树节点，并不是寻找到设备树节点</span><br><span class="line">of_property_read_string(np, &quot;led_name&quot;, (const char **)&amp;name);</span><br><span class="line">of_property_read_u32(np, &quot;led_minor&quot;, &amp;minor);</span><br><span class="line">of_property_read_u32(np, &quot;led_clear&quot;, &amp;led_dev-&gt;m_clear);</span><br><span class="line">of_property_read_u32(np, &quot;moder_data&quot;, &amp;led_dev-&gt;o_data);</span><br><span class="line">of_property_read_u32(np, &quot;odr&quot;, &amp;led_dev-&gt;o_data);  // 修正：读取odr属性，赋值给o_data</span><br><span class="line">of_property_read_u32(np, &quot;shift&quot;, &amp;led_dev-&gt;shift);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>初始化杂项设备</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">led_dev-&gt;misc.name = name;</span><br><span class="line">led_dev-&gt;misc.minor = minor;</span><br><span class="line">led_dev-&gt;misc.fops = &amp;led_fops;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>注册杂项设备</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">if (ret) &#123;</span><br><span class="line">    printk(&quot;misc register failed\n&quot;);</span><br><span class="line">    goto err_kfree;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>硬件初始化</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">led_dev-&gt;moder = ioremap(res1-&gt;start, res1-&gt;end - res1-&gt;start + 1);</span><br><span class="line">if (!led_dev-&gt;moder) &#123;</span><br><span class="line">    printk(&quot;ioremap failed\n&quot;);</span><br><span class="line">    ret = -EINVAL;</span><br><span class="line">    goto err_misc_deregister;</span><br><span class="line">&#125;</span><br><span class="line">led_dev-&gt;odr = led_dev-&gt;moder + 5;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>int led_pdrv_remove(struct platform_device *<em>pdev</em>)</p>
-<ul>
-<li><p>平台资源的释放和注销（先注册后释放）</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">iounmap(led_dev-&gt;moder);</span><br><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br><span class="line">kfree(led_dev);</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>编写文件操作函数open、write、release。</p>
-<ul>
-<li><p>首先定义结构体</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>int led_pdrv_open(struct inode *<em>inode</em>, struct file *<em>filp</em>)</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 将GPIOZ——5、6、7设置成输出模式</span><br><span class="line">*led_dev-&gt;moder &amp;= ~(led_dev-&gt;m_clear &lt;&lt; (led_dev-&gt;shift * 2));</span><br><span class="line">*led_dev-&gt;moder |= led_dev-&gt;m_data  &lt;&lt; (led_dev-&gt;shift * 2);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>ssize_t led_pdrv_write(struct file *<em>filp</em>, const char __user *<em>buf</em>, size_t <em>size</em>, <em>loff_t</em> *<em>flags</em>)</p>
-<ul>
-<li><p>将应用数据转换为内核数据</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ret = copy_from_user(&amp;value, buf, size);</span><br><span class="line">if (ret) &#123;</span><br><span class="line">    printk(&quot;copy from user error\n&quot;);</span><br><span class="line">    return -EAGAIN;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>根据传输的值进行开关灯</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (value) &#123;   // 开灯</span><br><span class="line">    *led_dev-&gt;odr |= led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift;</span><br><span class="line">&#125; else &#123;  // 关灯</span><br><span class="line">    *led_dev-&gt;odr &amp;= ~(led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>int led_pdrv_close(struct inode *<em>inode</em>, struct file *<em>filp</em>)</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">*led_dev-&gt;odr &amp;= ~(led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift);</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>平台总线</tag>
-        <tag>设备树</tag>
-        <tag>DTS</tag>
       </tags>
   </entry>
   <entry>
@@ -2463,6 +2207,454 @@
       <tags>
         <tag>stm32F407</tag>
         <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>测试文章</title>
+    <url>/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <content><![CDATA[<p>这是以个测试</p>
+<p><img src="/2025/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/20241108123904.jpg" alt="微信图片_20241108123904"></p>
+]]></content>
+      <tags>
+        <tag>测试</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>设备树</title>
+    <url>/2025/01/07/%E8%AE%BE%E5%A4%87%E6%A0%91/</url>
+    <content><![CDATA[<h1 id="设备树"><a href="#设备树" class="headerlink" title="设备树"></a>设备树</h1><p>linux3.0以后版本才引进了设备树，在此之前的linux内核代码中描述硬件平台信息的代码散乱的分布在arch&#x2F;arm&#x2F;plat-XXX 和 arch&#x2F;arm&#x2F;mach-XXX等目录中。所以为了改善这一情况，设备树孕育于出，它将这些硬件描述信息从内核代码中剥离出来，使用一种树形结构来描述硬件平台的组成和配置信息。</p>
+<p>具体关于设备树的介绍可以参考：<a href="https://www.devicetree.org/">https://www.devicetree.org/</a></p>
+<span id="more"></span>
+
+<h2 id="1、设备树简介"><a href="#1、设备树简介" class="headerlink" title="1、设备树简介"></a>1、设备树简介</h2><h5 id="1、什么是设备树？（Device-Tree）"><a href="#1、什么是设备树？（Device-Tree）" class="headerlink" title="1、什么是设备树？（Device Tree）"></a>1、什么是设备树？（Device Tree）</h5><p>​	在linux内核早期，平台硬件的信息（例如内存地址、外设配置等）是直接编码在内核代码中的。这意味着一旦硬件平台发生改变，就要重新编写代码。这种方式难以维护和移植。</p>
+<p>​	为了解决这一问题，linux内核在3.X版本之后开时引用了设备树机制。<strong>简单的来说，设备树就是一个描述硬件平台的信息的文本文件，内核通过解析这个文件来了解硬件平台的配置。</strong></p>
+<h5 id="2、设备树的作用"><a href="#2、设备树的作用" class="headerlink" title="2、设备树的作用"></a>2、设备树的作用</h5><p>​	设备的主要作用：</p>
+<ul>
+<li>描述硬件的拓扑结构：使用树形结构可以清晰的描述硬件平台上的各种设备以及相互的关系。例如哪个USART链接着哪些GOIO控制器，哪个中断控制器控制着那个外设的中断。</li>
+<li>传递硬件配置信息：将硬件设备的地址、中断号、时钟频率等配置信息传递给内核。</li>
+<li>实现硬件描述与驱动代码的分离：使得驱动程序更见通用，时许更具设备树中的信息进行适当的调整，而无需修改驱动代码。</li>
+</ul>
+<h5 id="3、设备树的基本概念"><a href="#3、设备树的基本概念" class="headerlink" title="3、设备树的基本概念"></a>3、设备树的基本概念</h5><p>​	设备树有节点（node）和属性（property）组成，形成一个树状结构。</p>
+<ul>
+<li><p>节点（node）：代表硬件设备，例如内存、外设（USART、SPI、IIC等）。每个节点都有唯一的名称。并且包含多个属性。节点之间存在着父子关系。根节点可以用‘&#x2F;’表示。</p>
+</li>
+<li><p>属性（property）：描述节点的特性，例如设备的地址（reg）、中断号（interrupts）、时钟频率（clock-frequency）等。属性有键值成对组成，键是属性的名称，值属性的数据。</p>
+</li>
+<li><p>举一个简单的例子：</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ &#123;  // 根节点</span><br><span class="line">    compatible = &quot;my-company,my-platform&quot;; // 兼容性字符串，用于驱动匹配</span><br><span class="line">    model = &quot;My Platform v1.0&quot;; // 平台型号</span><br><span class="line"></span><br><span class="line">    memory &#123; // 内存节点</span><br><span class="line">        reg = &lt;0x40000000 0x10000000&gt;; // 内存起始地址和大小</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    uart0: uart@1000 &#123; // UART 节点，命名为 uart0，地址为 0x1000</span><br><span class="line">        compatible = &quot;ns16550a&quot;; // UART 控制器类型</span><br><span class="line">        reg = &lt;0x1000 0x100&gt;; // UART 寄存器地址和大小</span><br><span class="line">        interrupts = ; // UART 中断号</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="4、设备树的表示形式：DTS、DTB、DTC"><a href="#4、设备树的表示形式：DTS、DTB、DTC" class="headerlink" title="4、设备树的表示形式：DTS、DTB、DTC"></a>4、设备树的表示形式：DTS、DTB、DTC</h5><ul>
+<li><p>DTS（Device Tree Source）：设备树的源文件，以.dts为结尾的文件。在使用时可以像C语言中引用头文件一样使用<code>#include</code>指令。</p>
+</li>
+<li><p>DTC（Device Tree Compiler）：设备树的编译器。是一个工具程序，类似于gcc，可以将DTS文件编一个二进制的DTB文件。</p>
+</li>
+<li><p>DTB（Device Tree Blob）：编译后的二进制文件，内核在启动时会加载DTB文件，从其中获取硬件信息。</p>
+<p> 使用dtc命令可以将DTS文件编译成DTB文件。</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dtc -I dts -O dtb -o my_device.dtb my_device.dts</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>dtc：命令</li>
+<li>-I dts：指定输入文件格式为DTS</li>
+<li>-O dtb：指定输出文件格式为DTB</li>
+<li>-o my_device.dtb：指定输出DTB的名称</li>
+<li>my_device.dts：指定输入的DTS的名称</li>
+</ul>
+</li>
+</ul>
+<h2 id="2、设备树的框架"><a href="#2、设备树的框架" class="headerlink" title="2、设备树的框架"></a>2、设备树的框架</h2><h5 id="1、设备的组织结构：树形结构"><a href="#1、设备的组织结构：树形结构" class="headerlink" title="1、设备的组织结构：树形结构"></a>1、设备的组织结构：树形结构</h5><p>​	设备树采用树形结构来描述硬件平台的组成和连接关系。</p>
+<ul>
+<li><p>根节点（root node）：用<code>/</code>表示，是设备树的顶层节点，描述着整个硬件平台的基本信息。</p>
+</li>
+<li><p>子节点（child node）：根节点下的节点，描述平台生的各个设备，例如CPU、内存、总线、外设等。子节点也可以有自己的子节点。</p>
+</li>
+<li><p>父节点（parent node）和子节点（child node）：节点之间通过父子关系链接起来，表示设备之间的层次关系和链接关系。</p>
+<p> 示例：</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ &#123; // 根节点</span><br><span class="line">    compatible = &quot;my-company,my-platform&quot;;</span><br><span class="line">    model = &quot;My Platform v1.0&quot;;</span><br><span class="line"></span><br><span class="line">    cpus &#123; // CPU 节点</span><br><span class="line">        cpu@0 &#123; // 第一个 CPU 节点</span><br><span class="line">            compatible = &quot;arm,cortex-a9&quot;;</span><br><span class="line">            reg = &lt;0x0&gt;;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    memory &#123; // 内存节点</span><br><span class="line">        reg = &lt;0x40000000 0x10000000&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    uart0: uart@1000 &#123; // UART 节点</span><br><span class="line">        compatible = &quot;ns16550a&quot;;</span><br><span class="line">        reg = &lt;0x1000 0x100&gt;;</span><br><span class="line">        interrupts = ;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    i2c0: i2c@2000 &#123; // I2C 控制器节点</span><br><span class="line">        compatible = &quot;i2c-designware&quot;;</span><br><span class="line">        reg = &lt;0x2000 0x100&gt;;</span><br><span class="line"></span><br><span class="line">        eeprom@50 &#123; // 连接在 i2c0 上的 EEPROM 芯片节点</span><br><span class="line">            compatible = &quot;atmel,24c32&quot;;</span><br><span class="line">            reg = &lt;0x50&gt;;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="2、设备树的语法规则"><a href="#2、设备树的语法规则" class="headerlink" title="2、设备树的语法规则"></a>2、设备树的语法规则</h5><p>​	设备树使用Device Tree Source（DTS）的文本格式进行描述，类似于C语言的结构体。</p>
+<ul>
+<li><p>节点定义：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[label:] node-name@unit-address &#123;</span><br><span class="line">    properties;</span><br><span class="line">    child-nodes;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>label：节点标签，用于在其他地方使用该节点时，可选。例如uart0、i2c0</li>
+<li>node-name：节点名称，描述设备的类型。例如CPU、memory、uart。</li>
+<li>unit-address：节点地址，用于区分同一类型的设备，可选。例如@0200.</li>
+<li>properties：节点属性，描述设备的具体属性。</li>
+<li>child-nodes：节点的子节点。</li>
+</ul>
+</li>
+<li><p>属性定义：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">property-name = value;</span><br></pre></td></tr></table></figure>
+
+<pre><code>  * property-name：属性名称，是一个字符串。例如compatible、reg、interrups。
+  * value：属性的值。
+</code></pre>
+</li>
+<li><p>包含头文件</p>
+<ul>
+<li>使用<code>#include</code>指令可以包含其他的DTS文件或者DTSI文件。</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;header.dtsi&quot;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="3、设备树的重要概念"><a href="#3、设备树的重要概念" class="headerlink" title="3、设备树的重要概念"></a>3、设备树的重要概念</h5><ul>
+<li><p>compatible 属性：它时设备树中最重要的属性之一，它表示一个字符串列表，用于驱动程序和设备进行匹配。驱动程序会查找设备树中compatible属性包含其支持的字符串节点，如果匹配成功，则驱动程序就负责管理该设备。</p>
+<p> 例如：</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">compatible = &quot;ns16550a&quot;, &quot;uart16550&quot;;</span><br></pre></td></tr></table></figure>
+
+<p> 表示该设备兼容ns16550a和uart16550两种类型的驱动程序。</p>
+</li>
+<li><p>model属性：用于指定设备的制造商和型号。</p>
+<p>  例如：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">model = &quot;EmbedFire LubanCat2 HDMI+MIPI&quot;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>status属性：用于指示设备的操作状态，通过status去禁止设备或者启用设备。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/* External sound card */</span><br><span class="line">sound: sound &#123;</span><br><span class="line">    status = &quot;disabled&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>  | 状态值   | 描述                                  |</p>
+</li>
+</ul>
+<p>| ——– | ————————————- |<br>    | okay     | 使能设备                              |<br>    | disabled | 禁用设备                              |<br>    | fail     | 表示设备不可运行，                    |<br>    | fail-sss | 表示设备不可运行，sss与具体的设备相关 |</p>
+<ul>
+<li><p>reg属性：用于描述地址空间资源，通常包含设备的起始地址和大小。</p>
+<p>  例如：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">reg = &lt;0x1000 0x100&gt;;</span><br></pre></td></tr></table></figure>
+
+<p>  表示的意思是设备的其实地址是0x1000，大小为0x100字节。</p>
+</li>
+<li><p>interrupt属性：用于描述设备的中断资源，通产包含中断号和中断触发方式。</p>
+</li>
+<li><p>追加&#x2F;修改节点内容</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&amp;cpu0 &#123;</span><br><span class="line">    cpu-supply = &lt;&amp;vdd_cpu&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>  这些代码并不包含在根节点下，他们不是一个新的节点，而是像原有的节点追加内容。在上面的例子中，&amp;cpu0表示像节点标签cpu0的节点追加数据，这个节点可能定义在泵文件也可以定义在迸溅所包含的设备树文件中。</p>
+</li>
+<li><p>特殊节点</p>
+<ul>
+<li><p>aliases子节点</p>
+<p>  aliases子节点的作用就是为其他节点起一个别名，示例：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    aliases &#123;</span><br><span class="line">            csi2dphy0 = &amp;csi2_dphy0;</span><br><span class="line">            csi2dphy1 = &amp;csi2_dphy1;</span><br><span class="line">            csi2dphy2 = &amp;csi2_dphy2;</span><br><span class="line">    /*----------- 省略------------*/</span><br><span class="line">            mmc0 = &amp;sdhci;</span><br><span class="line">            mmc1 = &amp;sdmmc0;</span><br><span class="line">            mmc2 = &amp;sdmmc1;</span><br><span class="line">            mmc3 = &amp;sdmmc2;</span><br><span class="line">            serial0 = &amp;uart0;</span><br><span class="line">            serial1 = &amp;uart1;</span><br><span class="line">            serial2 = &amp;uart2;</span><br><span class="line">    /*----------- 以下省略------------*/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  以serual0 &#x3D; &amp;uart0为例，serial0是一个节点的名字，设置别名后我门可以使用serial0来指代uart0节点。</p>
+</li>
+<li><p>chsen子节点</p>
+<p>  chosen子节点位于根节点下，示例：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chosen &#123;</span><br><span class="line">          bootargs = &quot;earlycon=uart8250,mmio32,0xfe660000 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rw rootwait&quot;;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>  chosen子节点不代表实际硬件，它主要用于内核传递参数。此外这个节点还可以用作uboot像linux内核传递配置参数的通道，我梦在uboot设置好参数，就是通过这个节点向内核中传递的。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="3、如何获取设备树节点信息"><a href="#3、如何获取设备树节点信息" class="headerlink" title="3、如何获取设备树节点信息"></a>3、如何获取设备树节点信息</h5><p>​	在设备树中‘’节点‘’对应着实际硬件中的设备，我梦在设备树中田间一个led节点，正常情况下我们可以从这个节点获取编写led驱动所用的所有信息。</p>
+<p>​	在内核中提供了一组函数用于从设备节点中获取资源的函数，这些函数以of_开头，称为OF操作。</p>
+<p>1、查找节点函数</p>
+<ul>
+<li><p>根据节点路径寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_node_by_path(const char *path)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<pre><code>  * path：指定节点在设备树中的路径
+</code></pre>
+<p>  返回值：</p>
+<ul>
+<li><p>device_node：结构体指针，失败返回为NULL；成功返回一个指针，该指针中保存着设备节点的信息。</p>
+</li>
+<li><p>device_node结构体如下，它定义在 <code>&lt;linux/of.h&gt;</code> 头文件中：</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node &#123;</span><br><span class="line">    const char *name;           // 节点的名称，例如 &quot;uart@1000&quot;</span><br><span class="line">    phandle phandle;          // 节点的句柄，用于在设备树中唯一标识一个节点</span><br><span class="line">    const char *full_name;      // 节点的完整路径名，例如 &quot;/soc/uart@1000&quot;</span><br><span class="line">    struct fwnode_handle fwnode; // 用于统一访问不同类型的固件节点，如设备树、ACPI等</span><br><span class="line"></span><br><span class="line">    struct property *properties; // 指向节点属性链表的指针</span><br><span class="line">    struct property *deadprops;  // 指向已删除属性链表的指针（用于调试）</span><br><span class="line">    struct device_node *parent;  // 指向父节点的指针</span><br><span class="line">    struct device_node *child;   // 指向第一个子节点的指针</span><br><span class="line">    struct device_node *sibling; // 指向下一个兄弟节点的指针</span><br><span class="line"></span><br><span class="line">#if defined(CONFIG_OF_KOBJ)</span><br><span class="line">    struct kobject kobj;         // 用于将设备节点注册到 sysfs 文件系统中</span><br><span class="line">#endif</span><br><span class="line">    unsigned long _flags;        // 节点标志</span><br><span class="line">    void *data;                 // 用于存储驱动程序特定的数据</span><br><span class="line">#if defined(CONFIG_SPARC)</span><br><span class="line">    unsigned int unique_id;     // SPARC 平台特有的唯一 ID</span><br><span class="line">    struct of_irq_controller *irq_trans; // SPARC 平台特有的中断转换</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>name：节点中属性为name的值</p>
+</li>
+<li><p>phandle：节点中为device-type的值</p>
+</li>
+<li><p>full-name：节点的名字，在device_node结构体后面放一个字符串，full-name指向它</p>
+</li>
+<li><p>properties：链表，连接该节点的所有属性</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">    char *name;         // 属性的名称，例如 &quot;compatible&quot;、&quot;reg&quot;</span><br><span class="line">    int length;         // 属性值的长度（以字节为单位）</span><br><span class="line">    void *value;        // 指向属性值的指针</span><br><span class="line">    struct property *next; // 指向下一个属性的指针，构成链表</span><br><span class="line">    unsigned long _flags;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>parent：指向父节点</p>
+</li>
+<li><p>child：指向子节点</p>
+</li>
+<li><p>sibling：指向兄弟节点</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>根据系欸但名字寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_node_by_name(struct device_node *from,const char *name);</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>from：致电给从哪个节点开始查找，它本身不在查找行列中，之查找它之后的节点。</li>
+<li>name：要寻找的节点名。</li>
+</ul>
+<p>  返回值：</p>
+<pre><code>  * device—node：节点结构体指针，上面的一样。
+</code></pre>
+</li>
+<li><p>根据节点类型寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_node_by_type(struct device_node *from,const char *type)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>from：指定从哪个节点开始找。</li>
+<li>type：要寻找的节点的类型。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li><strong>device_node：</strong> device_node类型的结构体指针。</li>
+</ul>
+</li>
+<li><p>根据节点类型和compeatible属性寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_find_compatible_node(struct device_node *from,const char *type, const char *compatible)</span><br></pre></td></tr></table></figure>
+
+<p>  相对于of_find_node_by_name，多了一个compatible（属性）的参数。</p>
+<p>  compatible：要寻找的节点的兼容性属性。</p>
+</li>
+<li><p>根据匹配表寻找节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static inline struct device_node *of_find_matching_node_and_match(struct device_node *from, const struct of_device_id *matches, const struct of_device_id **match)</span><br></pre></td></tr></table></figure>
+
+<p>  相对于前面的几种，多了matches、match参数。</p>
+<p>  matches：指向一个of_device_id数组的指针。这个数组包含了要匹配的设备ID列表。</p>
+<p>  match：指向of_device_id指针的指针。如果找到匹配的节点，则将匹配的结构体的地址存储在这个指针指向的位置。</p>
+<p>  struct of_device_id结构体：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*</span><br><span class="line"> * Struct used for matching a device</span><br><span class="line"> */</span><br><span class="line">struct of_device_id &#123;</span><br><span class="line">	char	name[32];</span><br><span class="line">	char	type[32];</span><br><span class="line">	char	compatible[128];</span><br><span class="line">	const void *data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>name：设备的名称。</li>
+<li>type：设备的类型。</li>
+<li>compatible：设备的兼容性字符串。用于驱动和设备的匹配。</li>
+<li>data：指向驱动私有数据的指针。</li>
+</ul>
+</li>
+<li><p>寻找父节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_get_parent(const struct device_node *node)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>node：指定要查找父节点的节点。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>node：是一个指向device_node类型的结构体指针。</li>
+</ul>
+</li>
+<li><p>寻找子节点函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct device_node *of_get_next_child(const struct device_node *node, struct device_node *prev)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>node：指定谁要查找它的子节点。</li>
+<li>prev：前一个子节点。这是一个迭代的过程。就像找孙子，你要先把哪个儿子的节点找到，才能找到该儿子下的孙子节点。如果为NULL，则直接找儿子节点。</li>
+</ul>
+</li>
+</ul>
+<p>这里介绍的七个寻找节点函数，共同点是返回值类型都相同。只要找到节点就可以返回节点对应的device-node结构体，通过这个结构体就可以获取到设备节点中的属性信息、父子节点等。</p>
+<p>第一个函数of_find_node_by_path与其他六个不同，它是通过节点路径来寻找节点的，节点路径是从设备树源文件（.dts）中找到的。中间四个函数根据节点属性在某一节点之后查找相符合的要求的设备节点。最后两个根据父子系节点进行查找。</p>
+<p>2、提取属性值的of函数</p>
+<p>上面我们看了七个查找节点的函数，他们都是找到一个设备节点然后返回相对应的结构体指针device-node。下面我们讲解从结构体中获取我们想要的设备节点属性信息。</p>
+<ul>
+<li><p>查找节点属性函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct property *of_find_property(const struct device_node *np,const char *name,int *lenp)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：指定要获取的设备节点的属性信息。</li>
+<li>name：属性名</li>
+<li>lenp：获取等到的属性值的大小。这个指针作为输出参数，这个参数带回的值是实际获取得到的属性大小</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li><p>property：获取的属性。而struct property *，我们称为系欸但属性结构体。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct property &#123;</span><br><span class="line">	char	*name;</span><br><span class="line">	int	length;</span><br><span class="line">	void	*value;</span><br><span class="line">	struct property *next;</span><br><span class="line">#if defined(CONFIG_OF_DYNAMIC) || defined(CONFIG_SPARC)</span><br><span class="line">	unsigned long _flags;</span><br><span class="line">#endif</span><br><span class="line">#if defined(CONFIG_OF_PROMTREE)</span><br><span class="line">	unsigned int unique_id;</span><br><span class="line">#endif</span><br><span class="line">#if defined(CONFIG_OF_KOBJ)</span><br><span class="line">	struct bin_attribute attr;</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>name：属性名</li>
+<li>length：属性长度</li>
+<li>value：属性值</li>
+<li>next：下个属性</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>读取整形属性函数</p>
+<p>  读取属性函数是一组函数，分别为8、16、32、64位数据。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//8位整数读取函数</span><br><span class="line">int of_property_read_u8_array(const struct device_node *np, const char *propname, u8 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//16位整数读取函数</span><br><span class="line">int of_property_read_u16_array(const struct device_node *np, const char *propname, u16 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//32位整数读取函数</span><br><span class="line">int of_property_read_u32_array(const struct device_node *np, const char *propname, u32 *out_values, size_t sz)</span><br><span class="line"></span><br><span class="line">//64位整数读取函数</span><br><span class="line">int of_property_read_u64_array(const struct device_node *np, const char *propname, u64 *out_values, size_t sz)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：指定要读取那个设备节点结构体。</li>
+<li>propname：指定要获取设备几点的那个属性</li>
+<li>out-value：这是一个输出参数，是函数的返回值，保存读取等到的数据</li>
+<li>sz：这是一个输入参数，用于设置读取的长度。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>成功返回0，错误返回错误状态吗。-EINVAL（属性不存在）、-ENODATA（没有要读取的数据）、-EOVERFLOW（属性值列表太小）。</li>
+</ul>
+</li>
+<li><p>读取字符串属性函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int of_property_read_string(const struct device_node *np,const char *propname,const char **out_string)</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：要读取那个设备节点的属性</li>
+<li>propname：属性名</li>
+<li>out-string：获取等待字符串的指针。</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>成功返回0，失败返回错误状态吗</li>
+</ul>
+<p>  推荐使用下面的这个函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int of_property_read_string_index(const struct device_node *np,const char *propname, int index,const char **out_string)</span><br></pre></td></tr></table></figure>
+
+<p>  相对于前面增加了index，用于指定读取属性值中的第几个字符串，index从零开始计数。</p>
+</li>
+<li><p>读取布尔型属性函数</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static inline bool of_property_read_bool(const struct device_node *np, const char *propname);</span><br></pre></td></tr></table></figure>
+
+<p>  参数：</p>
+<ul>
+<li>np：要读取的那个设备节点的属性信息</li>
+<li>propname：属性名</li>
+</ul>
+<p>  返回值：</p>
+<ul>
+<li>这个函数不是读取某个布尔型属性的值，仅仅读取这个属性存在或者不存在，如果想要获取值，还是建议使用“全能”函数查找节点of_find_property。</li>
+</ul>
+</li>
+</ul>
+<p>3、内存映射相关的of函数</p>
+<p>在设备树的节点中大多包含一些捏村想过的属性，比如常用的reg属性。通常情况下，等到寄存器地址之后我们还要通过ioremap函数将物理地址转化为虚拟地址。现在内核提供了一些of函数，自动完成物理地址到虚拟地址的转换。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void __iomem *of_iomap(struct device_node *np, int index)</span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<ul>
+<li>np：要获取的那个设备节点的属性信息</li>
+<li>index：通常情况下reg属性包含多段，index用于指定映射哪一段，从零开始</li>
+</ul>
+<p>返回值：</p>
+<ul>
+<li>成功返回转换的地址。失败返回NULL。</li>
+</ul>
+<p>内核也提供看常规获取地址的of函数，这些函数得到的值就是我们在设备树中设置的地址值，</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int of_address_to_resource(struct device_node *dev, int index, struct resource *r)</span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<ul>
+<li>dev：指定要获取的那个设备节点的属性信息</li>
+<li>index：通常情况下reg包含多端。</li>
+<li>r：这是要给resource结构体，是输出桉树用于返回得到的地址信息。</li>
+</ul>
+<p>返回值：</p>
+<ul>
+<li>成功返回0，失败返回错误状态吗</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct resource &#123;</span><br><span class="line">    resource_size_t start;</span><br><span class="line">    resource_size_t end;</span><br><span class="line">    const char *name;</span><br><span class="line">    unsigned long flags;</span><br><span class="line">    unsigned long desc;</span><br><span class="line">    struct resource *parent, *sibling, *child;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>start：起始地址</li>
+<li>end：结束地址</li>
+<li>name：属性的名称</li>
+</ul>
+<h5 id="4、使用设备树驱动led示例"><a href="#4、使用设备树驱动led示例" class="headerlink" title="4、使用设备树驱动led示例"></a>4、使用设备树驱动led示例</h5><p>1、像设备树中添加节点：</p>
+<ul>
+<li><p>在linux内核源码中找到设备树文件。（&#x2F;home&#x2F;h&#x2F;h&#x2F;linux-5.4.31&#x2F;arch&#x2F;arm&#x2F;boot&#x2F;dts）</p>
+</li>
+<li><p>打开设备树文件，在其中添加led节点。（stm32mp157a-fsmpla.dts）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> led_test@0x54004000&#123;</span><br><span class="line">      compatible = &quot;h,led1&quot;;</span><br><span class="line">      reg = &lt;0x54004000 0x400&gt;;</span><br><span class="line">      led_name = &quot;led01&quot;;</span><br><span class="line">      led_minor = &lt;11&gt;;</span><br><span class="line">      moder_clear = &lt;0x3f&gt;;</span><br><span class="line">      moder_data = &lt;0x15&gt;;</span><br><span class="line">      odr = &lt;0x7&gt;;</span><br><span class="line">      shift = &lt;5&gt;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<pre><code>* led_test：设备节点名称。
+* @0x54004000：设备的起始地址。当属性中有reg时，可以在这里添加0x54004000，当然有没有并没有什么影响。
+* compatible：用于匹配驱动程序。
+* reg：设备的寄存器空间地址。包括其实地址和空间大小。
+* （下面就是自定义属性）
+* led_name：设备名称。
+* moder_clear：清理GPIO引脚的输入输出端口。
+* moder_data：配置GPIO引脚。
+* odr：输出数据寄存器的值。决定了led的初始状态。
+* shift：寄存器的位移量。
+</code></pre>
+</li>
+<li><p>添加好设备节点后，保存退出。</p>
+</li>
+<li><p>进入linux内核目录下进行编译，重新传入板子中。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ source /opt/stm32_sdk/environment-setup-cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi </span><br><span class="line">h@h-virtual-machine:~/h/linux-5.4.31$ make -j4 ARCH=arm dtbs LOADADDR=0xC2000040</span><br><span class="line">cp arch/arm/boot/dts/stm32mp157a-fsmpla.dtb /tftpboot/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新启动单片机，linux内核就会重新加载我们新写好的设备树文件。</p>
+</li>
+</ul>
+<p>2、编写驱动代码（led_pdrv.c）</p>
+<ul>
+<li><p>编写驱动框架</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static int __init led_pdev_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">    // 2、注册platform-driver对象</span><br><span class="line">    return platform_driver_register(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void __exit led_pdrv_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">    printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">    platform_driver_unregister(&amp;led_pdrv);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(led_pdev_init);</span><br><span class="line">module_exit(led_pdrv_exit);</span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建platform-driver对象，并且通过led_match_table中的compatible与驱动进行匹配。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 与pdev中的name匹配</span><br><span class="line">const struct platform_device_id led_id_table[] = &#123;</span><br><span class="line">    &#123; &quot;mp157_led&quot;, 0xa &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// 与设备树中的compatible匹配</span><br><span class="line">const struct of_device_id led_match_table[] = &#123;</span><br><span class="line">    &#123; .compatible = &quot;h,led1&quot; &#125;,</span><br><span class="line">    &#123; /* sentinel */ &#125;</span><br><span class="line">&#125;;</span><br><span class="line">struct platform_driver led_pdrv = &#123;</span><br><span class="line">    .probe  = led_pdrv_probe,</span><br><span class="line">    .remove = led_pdrv_remove,</span><br><span class="line">    .driver = &#123;</span><br><span class="line">        .name = &quot;fsmp1_led&quot;,</span><br><span class="line">        .of_match_table = led_match_table,</span><br><span class="line">    &#125;,</span><br><span class="line">    .id_table = led_id_table,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编写led_pdrv_probe、led_pdrv_remove函数，如果驱动匹配成功后，会调用led_pdrv_probe函数执行，在卸载时调用led_pdrv_remove函数。</p>
+<ul>
+<li><p>int led_pdrv_probe(struct platform_device *<em>pdev</em>)</p>
+<ul>
+<li><p>分配全局设备对象空间</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 设计led的结构体</span><br><span class="line">struct mp157_led_t &#123;</span><br><span class="line">    struct miscdevice misc;</span><br><span class="line">    unsigned int *moder;</span><br><span class="line">    unsigned int *odr;</span><br><span class="line"></span><br><span class="line">    int m_clear;</span><br><span class="line">    int m_data;</span><br><span class="line">    int o_data;</span><br><span class="line">    int shift;</span><br><span class="line">&#125;;</span><br><span class="line">    // 1、分配全局设备对象空间</span><br><span class="line">    led_dev = kzalloc(sizeof(*led_dev), GFP_KERNEL);</span><br><span class="line">    if (!led_dev) &#123;</span><br><span class="line">        printk(&quot;kzalloc failed\n&quot;);</span><br><span class="line">        return -ENOMEM;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>获取设备节点和数据</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 获取设备树节点对象</span><br><span class="line">np = pdev-&gt;dev.of_node;	//这里的np是直接获取pdev的设备树节点，并不是寻找到设备树节点</span><br><span class="line">of_property_read_string(np, &quot;led_name&quot;, (const char **)&amp;name);</span><br><span class="line">of_property_read_u32(np, &quot;led_minor&quot;, &amp;minor);</span><br><span class="line">of_property_read_u32(np, &quot;led_clear&quot;, &amp;led_dev-&gt;m_clear);</span><br><span class="line">of_property_read_u32(np, &quot;moder_data&quot;, &amp;led_dev-&gt;o_data);</span><br><span class="line">of_property_read_u32(np, &quot;odr&quot;, &amp;led_dev-&gt;o_data);  // 修正：读取odr属性，赋值给o_data</span><br><span class="line">of_property_read_u32(np, &quot;shift&quot;, &amp;led_dev-&gt;shift);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>初始化杂项设备</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">led_dev-&gt;misc.name = name;</span><br><span class="line">led_dev-&gt;misc.minor = minor;</span><br><span class="line">led_dev-&gt;misc.fops = &amp;led_fops;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注册杂项设备</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ret = misc_register(&amp;led_dev-&gt;misc);</span><br><span class="line">if (ret) &#123;</span><br><span class="line">    printk(&quot;misc register failed\n&quot;);</span><br><span class="line">    goto err_kfree;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>硬件初始化</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">led_dev-&gt;moder = ioremap(res1-&gt;start, res1-&gt;end - res1-&gt;start + 1);</span><br><span class="line">if (!led_dev-&gt;moder) &#123;</span><br><span class="line">    printk(&quot;ioremap failed\n&quot;);</span><br><span class="line">    ret = -EINVAL;</span><br><span class="line">    goto err_misc_deregister;</span><br><span class="line">&#125;</span><br><span class="line">led_dev-&gt;odr = led_dev-&gt;moder + 5;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>int led_pdrv_remove(struct platform_device *<em>pdev</em>)</p>
+<ul>
+<li><p>平台资源的释放和注销（先注册后释放）</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">printk(&quot;--------- %s ---------\n&quot;, __FUNCTION__);</span><br><span class="line">iounmap(led_dev-&gt;moder);</span><br><span class="line">misc_deregister(&amp;led_dev-&gt;misc);</span><br><span class="line">kfree(led_dev);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>编写文件操作函数open、write、release。</p>
+<ul>
+<li><p>首先定义结构体</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const struct file_operations led_fops = &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .open   = led_pdrv_open,</span><br><span class="line">    .write  = led_pdrv_write,</span><br><span class="line">    .release  = led_pdrv_close,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>int led_pdrv_open(struct inode *<em>inode</em>, struct file *<em>filp</em>)</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 将GPIOZ——5、6、7设置成输出模式</span><br><span class="line">*led_dev-&gt;moder &amp;= ~(led_dev-&gt;m_clear &lt;&lt; (led_dev-&gt;shift * 2));</span><br><span class="line">*led_dev-&gt;moder |= led_dev-&gt;m_data  &lt;&lt; (led_dev-&gt;shift * 2);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ssize_t led_pdrv_write(struct file *<em>filp</em>, const char __user *<em>buf</em>, size_t <em>size</em>, <em>loff_t</em> *<em>flags</em>)</p>
+<ul>
+<li><p>将应用数据转换为内核数据</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ret = copy_from_user(&amp;value, buf, size);</span><br><span class="line">if (ret) &#123;</span><br><span class="line">    printk(&quot;copy from user error\n&quot;);</span><br><span class="line">    return -EAGAIN;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>根据传输的值进行开关灯</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if (value) &#123;   // 开灯</span><br><span class="line">    *led_dev-&gt;odr |= led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift;</span><br><span class="line">&#125; else &#123;  // 关灯</span><br><span class="line">    *led_dev-&gt;odr &amp;= ~(led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>int led_pdrv_close(struct inode *<em>inode</em>, struct file *<em>filp</em>)</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">*led_dev-&gt;odr &amp;= ~(led_dev-&gt;o_data &lt;&lt; led_dev-&gt;shift);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>平台总线</tag>
+        <tag>设备树</tag>
+        <tag>DTS</tag>
       </tags>
   </entry>
   <entry>

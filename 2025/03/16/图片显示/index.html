@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="图片显示">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图片显示">
+<meta property="og:url" content="http://basswo.github.io/2025/03/16/%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="图片显示">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-03-16T08:56:02.000Z">
+<meta property="article:modified_time" content="2025-03-16T10:10:28.343Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="stm32F407">
+<meta property="article:tag" content="多媒体项目">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://basswo.github.io/2025/03/16/%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>图片显示 | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">哈哈哈哈哈</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/16/%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          图片显示
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2025-03-16 16:56:02 / 修改时间：18:10:28" itemprop="dateCreated datePublished" datetime="2025-03-16T16:56:02+08:00">2025-03-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32F407/" itemprop="url" rel="index"><span itemprop="name">stm32F407</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="图片显示"><a href="#图片显示" class="headerlink" title="图片显示"></a>图片显示</h1><span id="more"></span>
+
+<h3 id="BMP格式解码"><a href="#BMP格式解码" class="headerlink" title="BMP格式解码"></a>BMP格式解码</h3><p>BMP是一种常见的图片文件格式，广泛的用于存储像素数据。</p>
+<h4 id="1、BMP文件的基本构成"><a href="#1、BMP文件的基本构成" class="headerlink" title="1、BMP文件的基本构成"></a>1、BMP文件的基本构成</h4><p>BMP文件主要由以下部分组成：</p>
+<ul>
+<li>头文件：描述文件的基本信息，例如文件大小和数据偏移量</li>
+<li>信息头：描述图像的详细信息，例如宽度、高度、颜色等。</li>
+<li>调色板【可选】：对于地位深度的图像，会包含调色板，用于将索引映射带具体的RGB颜色。</li>
+<li>像素数据：实际的图像数据，存储方式却决于颜色深度和压缩格式。</li>
+</ul>
+<h4 id="2、解码步骤"><a href="#2、解码步骤" class="headerlink" title="2、解码步骤"></a>2、解码步骤</h4><ul>
+<li><p>读取文件头（14字节）</p>
+<ul>
+<li>2字节：文件标识符，通常BM（0x424D），表示这是BMP文件。</li>
+<li>4字节：文件总大小，字节为单位。</li>
+<li>4字节：保留字段，通常为0，无意义。</li>
+<li>4字节：像素数据起始偏移量，告诉我们从文件开头到像素数据的距离。</li>
+</ul>
+</li>
+<li><p>读取信息头（通常为40字节）</p>
+<ul>
+<li><p>4字节：信息头大小。</p>
+</li>
+<li><p>4字节：图像宽度。</p>
+</li>
+<li><p>4字节：图像高度。</p>
+</li>
+<li><p>2字节：颜色平面数，通产为1</p>
+</li>
+<li><p>2字节：每像素位数，常见的1、4、8、16、24、32.</p>
+</li>
+<li><p>4字节：压缩方式，0：无压缩、1：PLE8位；2、RLE 4位。</p>
+</li>
+<li><p>偏移 34-37（4字节）：像素数据大小（字节），若无压缩可忽略。</p>
+<p>  偏移 38-41（4字节）：水平分辨率（像素&#x2F;米），可忽略。</p>
+<p>  偏移 42-45（4字节）：垂直分辨率（像素&#x2F;米），可忽略。</p>
+<p>  偏移 46-49（4字节）：调色板颜色数，0表示默认值（2^n，n为颜色深度）。</p>
+<p>  偏移 50-53（4字节）：重要颜色数，通常为0。</p>
+</li>
+</ul>
+</li>
+<li><p>读取调色板（如果存在）</p>
+<ul>
+<li><p>如果颜色深度≤8（如1位、4位、8位），会有调色板。</p>
+<p>  每个颜色占用4字节，按BGR顺序存储（蓝、绿、红、保留字节，通常为0）。</p>
+<p>  调色板大小 &#x3D; 颜色数 × 4字节，颜色数由信息头中的字段或默认值（2^颜色深度）确定。</p>
+<p>  24位及以上颜色深度通常没有调色板，直接使用RGB值。</p>
+</li>
+</ul>
+</li>
+<li><p>读取像素数据</p>
+<ul>
+<li>像素数据的存储方式取决于颜色深度和压缩格式。</li>
+<li>对于无压缩的BMP：<ul>
+<li>行字节数：根据宽度和颜色深度计算。每行字节数必须是4的倍数，若不足则填充0</li>
+<li>存储顺序：通常从图像底部开始，自左向右逐行向上（若高度为正值）。</li>
+<li>颜色格式：<ul>
+<li>24位：每个像素3字节，按BGR顺序（蓝、绿、红）。</li>
+<li>32位：每个像素4字节，按BGRA顺序（蓝、绿、红、透明度）。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><p>1、全局变量定义</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">char bmp_files[MAX_BMP_FILES][MAX_PATH_LEN];</span><br><span class="line">uint8_t bmp_file_count = 0;</span><br><span class="line">int8_t current_bmp_index = -1;</span><br><span class="line">FIL img_file;</span><br><span class="line">uint8_t *img_buffer = NULL;</span><br><span class="line">lv_img_dsc_t img_dsc;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>bmp_files：二维字符数组，用于存储 BMP 文件的完整路径（如 “0:&#x2F;PICTURE&#x2F;image.bmp”）。MAX_BMP_FILES 和 MAX_PATH_LEN 在头文件中定义。</p>
+<p>  bmp_file_count：记录扫描到的 BMP 文件数，初始为 0。</p>
+<p>  current_bmp_index：当前显示的 BMP 文件索引，初始为 -1（未选择）。</p>
+<p>  img_file：FATFS 的文件对象，用于操作 SD 卡上的文件。</p>
+<p>  img_buffer：指向动态分配的内存，用于存储 BMP 像素数据，初始为 NULL。</p>
+<p>  img_dsc：LVGL 的图像描述符，定义图像的宽度、高度、颜色格式等。</p>
+</li>
+</ul>
+<p>2、stricmp 函数：不区分大小写的字符串比较</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">int stricmp(const char *s1, const char *s2) &#123;</span><br><span class="line">    while (*s1 &amp;&amp; *s2) &#123;</span><br><span class="line">        char c1 = (*s1 &gt;= &#x27;A&#x27; &amp;&amp; *s1 &lt;= &#x27;Z&#x27;) ? *s1 + 32 : *s1;</span><br><span class="line">        char c2 = (*s2 &gt;= &#x27;A&#x27; &amp;&amp; *s2 &lt;= &#x27;Z&#x27;) ? *s2 + 32 : *s2;</span><br><span class="line">        if (c1 != c2) return c1 - c2;</span><br><span class="line">        s1++;</span><br><span class="line">        s2++;</span><br><span class="line">    &#125;</span><br><span class="line">    return *s1 - *s2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果字符是大写字母A到Z，则通过+32转换为小写。</li>
+<li>如果字符不相同，返回插值。</li>
+</ul>
+<p>3、scan_bmp_files 函数：扫描BMP文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">void scan_bmp_files(void) &#123;</span><br><span class="line">    DIR dir;</span><br><span class="line">    FILINFO fno;</span><br><span class="line">    FRESULT res;</span><br><span class="line"></span><br><span class="line">    bmp_file_count = 0;</span><br><span class="line">    memset(bmp_files, 0, sizeof(bmp_files));</span><br><span class="line"></span><br><span class="line">    res = f_opendir(&amp;dir, &quot;0:/PICTURE&quot;);</span><br><span class="line">    if (res != FR_OK) &#123;</span><br><span class="line">        printf(&quot;打开目录 &#x27;PICTURE&#x27; 失败，错误码: %d\r\n&quot;, res);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    while (bmp_file_count &lt; MAX_BMP_FILES) &#123;</span><br><span class="line">        res = f_readdir(&amp;dir, &amp;fno);</span><br><span class="line">        if (res != FR_OK || fno.fname[0] == 0) break;</span><br><span class="line"></span><br><span class="line">        char *ext = strrchr(fno.fname, &#x27;.&#x27;);</span><br><span class="line">        if (ext &amp;&amp; stricmp(ext, &quot;.bmp&quot;) == 0) &#123;</span><br><span class="line">            snprintf(bmp_files[bmp_file_count], MAX_PATH_LEN, &quot;0:/PICTURE/%s&quot;, fno.fname);</span><br><span class="line">            printf(&quot;添加 BMP 文件 [%d]: %s\r\n&quot;, bmp_file_count, bmp_files[bmp_file_count]);</span><br><span class="line">            bmp_file_count++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    f_closedir(&amp;dir);</span><br><span class="line">    printf(&quot;共找到 %d 个 BMP 文件\r\n&quot;, bmp_file_count);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>打开图片目录。</li>
+<li>读取目录项：使用f_readdir 逐个读取目录中文件的信息，存储在fno中。</li>
+<li>使用strrchr找文件名中.后面的名字，提取字符串。</li>
+<li>输出打印找到的每个BMP文件路劲和总数。</li>
+</ul>
+<p>4、load_image_from_sd 函数：加载并显示BMP图像</p>
+<ul>
+<li><p>参数检查</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (index &lt; 0 || index &gt;= bmp_file_count) &#123;</span><br><span class="line">    printf(&quot;无效的 BMP 索引: %d\r\n&quot;, index);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>释放就缓冲区</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (img_buffer != NULL) &#123;</span><br><span class="line">    myfree(SRAMEX, img_buffer);</span><br><span class="line">    img_buffer = NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>打开找到的BMP文件</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">res = f_open(&amp;img_file, bmp_files[index], FA_READ);</span><br><span class="line">if (res != FR_OK) &#123;</span><br><span class="line">    printf(&quot;打开文件失败: %s，错误码: %d\r\n&quot;, bmp_files[index], res);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检查文件大小</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint32_t file_size = f_size(&amp;img_file);</span><br><span class="line">if (file_size &gt; MAX_BMP_SIZE) &#123;</span><br><span class="line">    printf(&quot;BMP 文件过大: %s，大小: %lu 字节\r\n&quot;, bmp_files[index], file_size);</span><br><span class="line">    f_close(&amp;img_file);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读取BMP文件头</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">res = f_read(&amp;img_file, header_buf, sizeof(header_buf), &amp;br);</span><br><span class="line">if (res != FR_OK || br != sizeof(header_buf)) &#123;</span><br><span class="line">    printf(&quot;读取 BMP 文件头失败\r\n&quot;);</span><br><span class="line">    f_close(&amp;img_file);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>读取前 54 字节（文件头 14 字节 + 信息头 40 字节），存储到 header_buf 中。</li>
+</ul>
+</li>
+<li><p>解析BMP信息</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bmp_header = (BITMAPINFOHEADER *)(header_buf + 14);</span><br><span class="line">width = bmp_header-&gt;biWidth;</span><br><span class="line">height = bmp_header-&gt;biHeight;</span><br><span class="line">bpp = bmp_header-&gt;biBitCount;</span><br><span class="line">data_offset = *(uint32_t *)(header_buf + 10);</span><br><span class="line">img_size = width * height * (bpp / 8);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>从头信息中提取高度、宽度、位深度、像素偏移量</li>
+<li>计算像素数据大小。</li>
+</ul>
+</li>
+<li><p>检查位深度</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (bpp != 16 &amp;&amp; bpp != 24 &amp;&amp; bpp != 32) &#123;</span><br><span class="line">    printf(&quot;不支持的 BMP 格式，位深度: %d\r\n&quot;, bpp);</span><br><span class="line">    f_close(&amp;img_file);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>分配缓冲区，并读取像素数据</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">img_buffer = mymalloc(SRAMEX, img_size);</span><br><span class="line">f_lseek(&amp;img_file, data_offset);</span><br><span class="line">res = f_read(&amp;img_file, img_buffer, img_size, &amp;br);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>转换为RGB565格式</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if (bpp == 32) &#123;</span><br><span class="line">    uint8_t *src = img_buffer;</span><br><span class="line">    uint16_t *dst = (uint16_t *)mymalloc(SRAMEX, width * height * 2);</span><br><span class="line">    for (uint32_t i = 0; i &lt; width * height; i++) &#123;</span><br><span class="line">        uint8_t b = src[i * 4 + 0] &gt;&gt; 3;</span><br><span class="line">        uint8_t g = src[i * 4 + 1] &gt;&gt; 2;</span><br><span class="line">        uint8_t r = src[i * 4 + 2] &gt;&gt; 3;</span><br><span class="line">        uint8_t a = src[i * 4 + 3];</span><br><span class="line">        dst[i] = (a &lt; 128) ? 0x0000 : (r &lt;&lt; 11) | (g &lt;&lt; 5) | b;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMEX, img_buffer);</span><br><span class="line">    img_buffer = (uint8_t *)dst;</span><br><span class="line">    img_size = width * height * 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>将 BGRA（蓝绿红透明）转换为 RGB565（5位红、6位绿、5位蓝）。</p>
+</li>
+<li><p>如果透明度（a）&lt; 128，则像素设为透明（0x0000）。</p>
+</li>
+<li><p>RGB565是一种16位的颜色编码格式：</p>
+<ul>
+<li><p>R：5位</p>
+</li>
+<li><p>G：6位</p>
+</li>
+<li><p>B：5位</p>
+</li>
+<li><p>在内存中表示如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RRRRRGGG GGGBBBBB</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>32位代表着R&#x3D;8位、G&#x3D;8位、B&#x3D;8位、透明色&#x3D;8位。</p>
+</li>
+<li><p>8位颜色代表着颜色的每个颜色，就像8位的红色右2^8&#x3D;256种颜色细分。</p>
+</li>
+<li><p>5 位颜色：用 5 位表示，只能表示 0 到 31 的值（2⁵ &#x3D; 32 种可能）。</p>
+</li>
+<li><p>6 位颜色：用 6 位表示，能表示 0 到 63 的值（2⁶ &#x3D; 64 种可能）。</p>
+</li>
+</ul>
+</li>
+<li><p>BMP文件种假设使用32位的，而屏幕使用是RGB565.则需要从8位转化为5位或者6位。需要一一对应起来。</p>
+<ul>
+<li>从8位转换为5位：相当于256种颜色转换为32种颜色。所以要比例是：256&#x2F;32&#x3D;8.</li>
+<li>在二进制种8可以用右移3位来表示。</li>
+</ul>
+</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">else if (bpp == 24) &#123;</span><br><span class="line">    uint8_t *src = img_buffer;</span><br><span class="line">    uint16_t *dst = (uint16_t *)img_buffer;</span><br><span class="line">    for (uint32_t i = 0; i &lt; width * height; i++) &#123;</span><br><span class="line">        uint8_t b = src[i * 3 + 0] &gt;&gt; 3;</span><br><span class="line">        uint8_t g = src[i * 3 + 1] &gt;&gt; 2;</span><br><span class="line">        uint8_t r = src[i * 3 + 2] &gt;&gt; 3;</span><br><span class="line">        dst[i] = (r &lt;&lt; 11) | (g &lt;&lt; 5) | b;</span><br><span class="line">    &#125;</span><br><span class="line">    img_size = width * height * 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>将 BGR 转换为 RGB565，直接覆盖原缓冲区。</li>
+</ul>
+</li>
+<li><p>垂直翻转图像</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">uint16_t *buf = (uint16_t *)img_buffer;</span><br><span class="line">for (uint16_t y = 0; y &lt; height / 2; y++) &#123;</span><br><span class="line">    for (uint16_t x = 0; x &lt; width; x++) &#123;</span><br><span class="line">        uint16_t temp = buf[y * width + x];</span><br><span class="line">        buf[y * width + x] = buf[(height - 1 - y) * width + x];</span><br><span class="line">        buf[(height - 1 - y) * width + x] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>BMP 文件存储顺序：BMP 文件的像素数据通常从图像的底部开始，按行顺序存储到顶部（如果信息头中的高度字段 biHeight 为正值）。</li>
+</ul>
+</li>
+<li><p>配置LVGL并显示</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">img_dsc.header.w = width;</span><br><span class="line">img_dsc.header.h = height;</span><br><span class="line">img_dsc.header.cf = LV_IMG_CF_TRUE_COLOR;</span><br><span class="line">img_dsc.data_size = img_size;</span><br><span class="line">img_dsc.data = img_buffer;</span><br><span class="line"></span><br><span class="line">lv_img_set_src(img_obj, &amp;img_dsc);</span><br><span class="line">lv_img_set_zoom(img_obj, 128);  // 50% 缩放</span><br><span class="line">lv_obj_set_pos(img_obj, 100, 100);</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/stm32F407/" rel="tag"># stm32F407</a>
+              <a href="/tags/%E5%A4%9A%E5%AA%92%E4%BD%93%E9%A1%B9%E7%9B%AE/" rel="tag"># 多媒体项目</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/" rel="prev" title="音频播放">
+      <i class="fa fa-chevron-left"></i> 音频播放
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA"><span class="nav-number">1.</span> <span class="nav-text">图片显示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BMP%E6%A0%BC%E5%BC%8F%E8%A7%A3%E7%A0%81"><span class="nav-number">1.0.1.</span> <span class="nav-text">BMP格式解码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%E3%80%81BMP%E6%96%87%E4%BB%B6%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%9E%84%E6%88%90"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">1、BMP文件的基本构成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81%E8%A7%A3%E7%A0%81%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">2、解码步骤</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.0.2.</span> <span class="nav-text">代码分析</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>
