@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="音频播放前其准备我以思维导图的方式写了相关的原理和所需要的知识点。  https:&#x2F;&#x2F;mubu.com&#x2F;app&#x2F;edit&#x2F;home&#x2F;6T6aswkdt2I#m">
+<meta property="og:type" content="article">
+<meta property="og:title" content="音频播放">
+<meta property="og:url" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="音频播放前其准备我以思维导图的方式写了相关的原理和所需要的知识点。  https:&#x2F;&#x2F;mubu.com&#x2F;app&#x2F;edit&#x2F;home&#x2F;6T6aswkdt2I#m">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/123.png">
+<meta property="article:published_time" content="2025-03-14T01:44:29.000Z">
+<meta property="article:modified_time" content="2025-03-14T02:40:57.029Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="stm32F407">
+<meta property="article:tag" content="多媒体项目">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/123.png">
+
+<link rel="canonical" href="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>音频播放 | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">哈哈哈哈哈</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          音频播放
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2025-03-14 09:44:29 / 修改时间：10:40:57" itemprop="dateCreated datePublished" datetime="2025-03-14T09:44:29+08:00">2025-03-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32F407/" itemprop="url" rel="index"><span itemprop="name">stm32F407</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="音频播放"><a href="#音频播放" class="headerlink" title="音频播放"></a>音频播放</h1><h3 id="前其准备"><a href="#前其准备" class="headerlink" title="前其准备"></a>前其准备</h3><p>我以思维导图的方式写了相关的原理和所需要的知识点。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/123.png"></p>
+<p><a target="_blank" rel="noopener" href="https://mubu.com/app/edit/home/6T6aswkdt2I#m">https://mubu.com/app/edit/home/6T6aswkdt2I#m</a></p>
+<span id="more"></span>
+
+<h3 id="代码解读"><a href="#代码解读" class="headerlink" title="代码解读"></a>代码解读</h3><h4 id="audioplay-c"><a href="#audioplay-c" class="headerlink" title="audioplay.c"></a>audioplay.c</h4><ul>
+<li>全局变量</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">bool play_initialized = false;              // 播放是否初始化完成</span><br><span class="line">​static u8 *current_song = NULL;            // 当前播放的歌曲路径</span><br><span class="line">​static u32 last_fillnum = WAV_I2S_TX_DMA_BUFSIZE; // 上次填充的缓冲区大小</span><br><span class="line">​static DIR wavdir;                         // 音乐目录句柄</span><br><span class="line">​static u16 *wavindextbl;                   // WAV 文件索引表</span><br><span class="line">​static u16 totwavnum;                      // 路径下的文件总数</span><br><span class="line">​static u16 curindex;                       // 当前播放的歌曲索引</span><br><span class="line">​static char song_name[256] = &quot;Unknown&quot;;    // 当前歌曲名称</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>audio_start开始播放函数、audio_pause暂停播放函数、audio_resume从暂停状态到播放状态</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// 开始音频播放</span><br><span class="line">void audio_start(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status = 3 &lt;&lt; 0; // 开始播放+非暂停</span><br><span class="line">    I2S_Play_Start();</span><br><span class="line">&#125;</span><br><span class="line">// 暂停音频播放（仅停止硬件，不释放资源）</span><br><span class="line">void audio_pause(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status &amp;= ~(1 &lt;&lt; 0); // 清除bit0，标记暂停</span><br><span class="line">    I2S_Play_Stop();              // 停止I2S硬件播放</span><br><span class="line">&#125;</span><br><span class="line">// 继续播放（从暂停状态恢复）</span><br><span class="line">void audio_resume(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status |= (1 &lt;&lt; 0); // 设置bit0，继续播放</span><br><span class="line">    I2S_Play_Start();            // 恢复I2S硬件播放</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>结构体的内容如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef __packed struct</span><br><span class="line">&#123;  </span><br><span class="line">    u8 *i2sbuf1;</span><br><span class="line">    u8 *i2sbuf2;</span><br><span class="line">    u8 *tbuf;</span><br><span class="line">    FIL *file;</span><br><span class="line">    u8 status;</span><br><span class="line">&#125;__audiodev;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>audio_stop：停止播放并清理空间</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">void audio_stop(void)</span><br><span class="line">&#123;</span><br><span class="line">    audiodev.status = 0;</span><br><span class="line">    I2S_Play_Stop();</span><br><span class="line">    play_initialized = false;</span><br><span class="line">    if (current_song)</span><br><span class="line">    &#123;</span><br><span class="line">        myfree(SRAMIN, current_song);</span><br><span class="line">        current_song = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (audiodev.file)</span><br><span class="line">    &#123;</span><br><span class="line">        f_close(audiodev.file);</span><br><span class="line">        myfree(SRAMIN, audiodev.file);</span><br><span class="line">        audiodev.file = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (wavindextbl)</span><br><span class="line">    &#123;</span><br><span class="line">        myfree(SRAMIN, wavindextbl);</span><br><span class="line">        wavindextbl = NULL;</span><br><span class="line">    &#125;</span><br><span class="line">	strcpy(song_name, &quot;Unknown&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>清零status。关闭I2S。</li>
+<li>重置音乐播放标志位为false。</li>
+<li>释放申请的内存。</li>
+<li>将音乐界面的标签重置为”Unknown”。</li>
+</ul>
+</li>
+<li><p>audio_get_tnum：获取目录中的WAV文件总数</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">u16 audio_get_tnum(u8 *path)</span><br><span class="line">&#123;</span><br><span class="line">    u8 res;</span><br><span class="line">    u16 rval = 0;</span><br><span class="line">    DIR tdir;</span><br><span class="line">    FILINFO tfileinfo;</span><br><span class="line">    u8 *fn;</span><br><span class="line">    res = f_opendir(&amp;tdir, (const TCHAR*)path);</span><br><span class="line">    tfileinfo.lfsize = _MAX_LFN * 2 + 1;</span><br><span class="line">    tfileinfo.lfname = mymalloc(SRAMIN, tfileinfo.lfsize);</span><br><span class="line">    if (res == FR_OK &amp;&amp; tfileinfo.lfname != NULL)</span><br><span class="line">    &#123;</span><br><span class="line">        while (1)</span><br><span class="line">        &#123;</span><br><span class="line">            res = f_readdir(&amp;tdir, &amp;tfileinfo);</span><br><span class="line">            if (res != FR_OK || tfileinfo.fname[0] == 0) break;</span><br><span class="line">            fn = (u8*)(*tfileinfo.lfname ? tfileinfo.lfname : tfileinfo.fname);</span><br><span class="line">            res = f_typetell(fn);</span><br><span class="line">            if ((res &amp; 0XF0) == 0X40) rval++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMIN, tfileinfo.lfname);</span><br><span class="line">    return rval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用f_opendir打开目录。<ul>
+<li>f_opendir(DIR *dp, const TCHAR *path)<ul>
+<li>第一参数dp：指向DIR结构体的指针，用于存储目录信息。、</li>
+<li>返回值：FR—OK表示读取成功。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>动态分配文件名缓冲区（lfname）。<ul>
+<li>_MAX_LFN * 2 + 1<ul>
+<li>_MAX_LFN ：表示最大的文件名长度。</li>
+<li>乘2：再FATFS文件系统中LFN采用UTF-16，每个字符需要2个字节。</li>
+<li>+1：表示在字符的结尾加上字符串结束符“\0”。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>使用f_readdir依次读取目录中的文件。</li>
+<li>使用f_typetell 判断文件类型，0x40表示WAV文件。<ul>
+<li>f_typetell 用于判断文件类型。返回值res用于表示文件类型。</li>
+<li>低8位：大类（音频、视频、文档等）</li>
+<li>高8位：具体类型（MP3、WAV、TXT）</li>
+</ul>
+</li>
+<li>返回WAV文件总数rval。</li>
+</ul>
+</li>
+<li><p>audio_play_init：初始化播放器</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">u8 audio_play_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    // 配置 WM8978 音频编解码器</span><br><span class="line">    WM8978_ADDA_Cfg(1, 0);  // 使能 DAC，关闭 ADC</span><br><span class="line">    WM8978_Input_Cfg(0, 0, 0);  // 关闭输入路径</span><br><span class="line">    WM8978_Output_Cfg(1, 0);    // 使能 DAC 输出</span><br><span class="line"></span><br><span class="line">    // 打开音乐目录</span><br><span class="line">    while (f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;)) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    // 获取 WAV 文件总数</span><br><span class="line">    totwavnum = audio_get_tnum(&quot;0:/MUSIC&quot;);</span><br><span class="line">    if (totwavnum == 0) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    // 分配内存</span><br><span class="line">    wavfileinfo.lfsize = _MAX_LFN * 2 + 1;</span><br><span class="line">    wavfileinfo.lfname = mymalloc(SRAMIN, wavfileinfo.lfsize);</span><br><span class="line">    current_song = mymalloc(SRAMIN, wavfileinfo.lfsize);</span><br><span class="line">    wavindextbl = mymalloc(SRAMIN, 2 * totwavnum);</span><br><span class="line"></span><br><span class="line">    // 构建 WAV 文件索引表</span><br><span class="line">    res = f_opendir(&amp;wavdir, &quot;0:/MUSIC&quot;);</span><br><span class="line">    if (res == FR_OK)</span><br><span class="line">    &#123;</span><br><span class="line">        curindex = 0;</span><br><span class="line">        while (1)</span><br><span class="line">        &#123;</span><br><span class="line">            u16 temp = wavdir.index;</span><br><span class="line">            res = f_readdir(&amp;wavdir, &amp;wavfileinfo);</span><br><span class="line">            if (res != FR_OK || wavfileinfo.fname[0] == 0) break;</span><br><span class="line">            fn = (u8*)(*wavfileinfo.lfname ? wavfileinfo.lfname : wavfileinfo.fname);</span><br><span class="line">            res = f_typetell(fn);</span><br><span class="line">            if ((res &amp; 0XF0) == 0X40)</span><br><span class="line">            &#123;</span><br><span class="line">                wavindextbl[curindex] = temp;</span><br><span class="line">                curindex++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    myfree(SRAMIN, wavfileinfo.lfname);</span><br><span class="line">    curindex = 0; // 从第一首开始</span><br><span class="line">    return audio_play_next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>配置WM8978：启用DAC输出，关闭输入和ADC。</p>
+<ul>
+<li>使能DAC，即打开音频播放功能。</li>
+<li>关闭ADC，不使用音频录制。</li>
+<li>输入数据：关闭了ADC，音频数据不会从MIC或者LIN IN进入，而是通过I2S总线输入。</li>
+<li>使能DAC输出，时音频信号能够经过耳机或者喇叭输出。</li>
+</ul>
+</li>
+<li><p>打开0:&#x2F;MUSIC目录并统计WAV文件数。</p>
+</li>
+<li><p>分配内存：歌曲路径长文件名缓冲区和索引表</p>
+</li>
+<li><p>构建索引表：记录每个WAV文件的目录索引</p>
+<ul>
+<li><p>temp：存储这个当前遍历到的文件在目录中索引（从1开始计数）</p>
+</li>
+<li><p>例如：0:&#x2F;MUSIC目录下有四个文件，分别为one.wav、two.text、screen.wav、four.mp3。</p>
+</li>
+<li><table>
+<thead>
+<tr>
+<th><code>wavdir.index (temp)</code></th>
+<th>文件名</th>
+<th><code>res = f_typetell(fn)</code></th>
+<th><code>(res &amp; 0XF0) == 0X40</code></th>
+<th><code>wavindextbl[curindex]</code></th>
+<th><code>curindex</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>one.wav</td>
+<td>0x41</td>
+<td>✅（是 WAV）</td>
+<td><code>wavindextbl[0] = 1</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>two.txt</td>
+<td>0x30</td>
+<td>❌（不是 WAV）</td>
+<td>不存入数组</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>screen.wav</td>
+<td>0x41</td>
+<td>✅（是 WAV）</td>
+<td><code>wavindextbl[1] = 3</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>four.mp3</td>
+<td>0x50</td>
+<td>❌（不是 WAV）</td>
+<td>不存入数组</td>
+<td>2</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>调用audio_play_next函数，播放第一首歌。</p>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/stm32F407/" rel="tag"># stm32F407</a>
+              <a href="/tags/%E5%A4%9A%E5%AA%92%E4%BD%93%E9%A1%B9%E7%9B%AE/" rel="tag"># 多媒体项目</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/" rel="prev" title="stm32F407移植LVGL+GUI">
+      <i class="fa fa-chevron-left"></i> stm32F407移植LVGL+GUI
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE"><span class="nav-number">1.</span> <span class="nav-text">音频播放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E5%85%B6%E5%87%86%E5%A4%87"><span class="nav-number">1.0.1.</span> <span class="nav-text">前其准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="nav-number">1.0.2.</span> <span class="nav-text">代码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#audioplay-c"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">audioplay.c</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>
