@@ -21,17 +21,27 @@
     var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="樱琅的个人博客">
+  <meta name="description" content="1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡随着嵌入式系统在各个领域的日益普及，对高效数据存储解决方案的需求也随之增长。在众多可用的文件系统中，FATFS 因其轻量级特性和对 FAT 文件格式的广泛兼容性而成为嵌入式应用的热门选择 。与此同时，SD 卡已成为嵌入式系统中无处不在的存储介质，其种类繁多，容量各异，满足了各种应用场景的需求 。本报告旨在深入探讨 FATFS 在 SD 卡环境">
 <meta property="og:type" content="article">
 <meta property="og:title" content="基于SD卡的FATFS文件管理系统">
 <meta property="og:url" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/index.html">
 <meta property="og:site_name" content="有玉微凉、是为樱琅">
-<meta property="og:description" content="樱琅的个人博客">
+<meta property="og:description" content="1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡随着嵌入式系统在各个领域的日益普及，对高效数据存储解决方案的需求也随之增长。在众多可用的文件系统中，FATFS 因其轻量级特性和对 FAT 文件格式的广泛兼容性而成为嵌入式应用的热门选择 。与此同时，SD 卡已成为嵌入式系统中无处不在的存储介质，其种类繁多，容量各异，满足了各种应用场景的需求 。本报告旨在深入探讨 FATFS 在 SD 卡环境">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF002.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF004.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF005.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/SDIO002.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/SDIO003.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/SDIO01.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%5CSDIO004.png">
 <meta property="article:published_time" content="2025-03-19T08:11:47.000Z">
-<meta property="article:modified_time" content="2025-03-19T08:11:47.653Z">
+<meta property="article:modified_time" content="2025-03-19T09:18:38.343Z">
 <meta property="article:author" content="Dylan">
+<meta property="article:tag" content="stm32F407">
+<meta property="article:tag" content="多媒体项目">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF002.png">
 
 <link rel="canonical" href="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/">
 
@@ -218,8 +228,18 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2025-03-19 16:11:47" itemprop="dateCreated datePublished" datetime="2025-03-19T16:11:47+08:00">2025-03-19</time>
+              <time title="创建时间：2025-03-19 16:11:47 / 修改时间：17:18:38" itemprop="dateCreated datePublished" datetime="2025-03-19T16:11:47+08:00">2025-03-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32F407/" itemprop="url" rel="index"><span itemprop="name">stm32F407</span></a>
+                </span>
             </span>
 
           
@@ -233,7 +253,64 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h2 id="1-引言：理解嵌入式系统中的-FATFS-和-SD-卡"><a href="#1-引言：理解嵌入式系统中的-FATFS-和-SD-卡" class="headerlink" title="1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡"></a>1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡</h2><p>随着嵌入式系统在各个领域的日益普及，对高效数据存储解决方案的需求也随之增长。在众多可用的文件系统中，FATFS 因其轻量级特性和对 FAT 文件格式的广泛兼容性而成为嵌入式应用的热门选择 。与此同时，SD 卡已成为嵌入式系统中无处不在的存储介质，其种类繁多，容量各异，满足了各种应用场景的需求 。本报告旨在深入探讨 FATFS 在 SD 卡环境下的应用，涵盖其特性、实现、应用场景、性能、挑战以及与其他文件系统的比较。  </p>
+<p>FATFS 和 SD 卡在嵌入式系统中的广泛使用表明这两种技术之间存在强大的协同效应。这很可能归因于 FATFS 的设计原则与许多嵌入式应用的资源限制和存储需求高度契合。研究资料始终将 FATFS 描述为专为资源有限的小型嵌入式系统而设计 ，这与通常使用 SD 卡进行扩展存储的设备的典型特征直接相关。此外，SD 卡种类繁多，规格各异，这意味着开发人员需要深入了解这些特性，以便为他们的应用选择合适的卡，并确保与 FATFS 的兼容性。关于 SD 卡类型（SD、SDHC、SDXC、SDUC）及其容量和速度规格的众多资料  强调了选择最佳存储介质所涉及的复杂性。 </p>
+<span id="more"></span>
+
+<h1 id="2-FATFS-文件系统"><a href="#2-FATFS-文件系统" class="headerlink" title="2.FATFS 文件系统"></a>2.FATFS 文件系统</h1><h4 id="1、核心架构"><a href="#1、核心架构" class="headerlink" title="1、核心架构"></a>1、核心架构</h4><p>FATFS是一个通用的文件系统模块。其核心设计理念是将文件系统层与迪岑的磁盘控制层分离。FATFS 支持 FAT12、FAT16、FAT32 以及可选的 exFAT 文件系统类型 。由于其代码体积小，RAM 使用率低，FATFS 非常适合资源有限的微控制器 。</p>
+<p>FATFS 的设计目标是独立于平台和存储介质，通过一个由实现者提供的介质访问接口（磁盘 I&#x2F;O 层）与物理存储设备进行通信 。</p>
+<h4 id="2、主要特性和功能"><a href="#2、主要特性和功能" class="headerlink" title="2、主要特性和功能"></a>2、主要特性和功能</h4><p>FATFS提供了全套的API函数，用于文件访问（打开、关闭、读取、写入、定位、截断、同步等）；目录访问（打开、关闭、读取目录项、查找第一个&#x2F;下一个）；文件和目录管理（状态、取消链接、重命名、更改属性、更改时间戳、创建目录、更改当前目录、更改当前驱动器、检索当前目录）；</p>
+<p><strong>上一章的SPI Flash芯片驱动只完成了向物理地址写入数据的工作，而根据文件系统格式的逻辑转换部分则需要额外的代码来完成。 实质上，这个逻辑转换部分可以理解为当我们需要写入一段数据时，由它来求解向什么物理地址写入数据、以什么格式写入及写入一些原始数据以外的信息(如目录)。 这个逻辑转换部分代码我们也习惯称之为文件系统。</strong> </p>
+<p><strong>所以我们利用前面写好的SPI Flash芯片驱动，把FatFs文件系统代码移植到工程之中， 就可以利用文件系统的各种函数，对SPI Flash芯片以“文件”格式进行读写操作了。</strong></p>
+<h4 id="3、FATFS源码"><a href="#3、FATFS源码" class="headerlink" title="3、FATFS源码"></a>3、FATFS源码</h4><p>官网：<a target="_blank" rel="noopener" href="http://elm-chan.org/fsw/ff/00index_e.html">http://elm-chan.org/fsw/ff/00index_e.html</a></p>
+<p>下载后如下：<br><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF002.png" alt="FatFs文件目录"></p>
+<p>打开src文件夹，如图：<br><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF004.png" alt="src文件夹的文件目录"></p>
+<p>src文件夹下的源码文件功能简介如下：</p>
+<ul>
+<li>integer.h：文件中包含了一些数值类型定义。</li>
+<li>diskio.c：包含底层存储介质的操作函数，这些函数需要用户自己实现，主要添加底层驱动函数。</li>
+<li>ff.c： FatFs核心文件，文件管理的实现方法。该文件独立于底层介质操作文件的函数，利用这些函数实现文件的读写。</li>
+<li>cc936.c：本文件在option目录下，是简体中文支持所需要添加的文件，包含了简体中文的GBK和Unicode相互转换功能函数。</li>
+<li>ffconf.h: 这个头文件包含了对FatFs功能配置的宏定义，通过修改这些宏定义就可以裁剪FatFs的功能。如需要支持简体中文， 需要把 ffconf.h中的_CODE_PAGE 的宏改成936并把上面的cc936.c文件加入到工程之中。</li>
+</ul>
+<p><strong>建议阅读这些源码的顺序为： integer.h –&gt; diskio.c –&gt; ff.c。 阅读文件系统源码ff.c文件需要一定的功底，建议读者先阅读FAT32的文件格式，再去分析ff.c文件。若仅为使用文件系统， 则只需要理解integer.h及diskio.c文件并会调用ff.c文件中的函数就可以了。</strong> </p>
+<h4 id="4、FATFS结构体图"><a href="#4、FATFS结构体图" class="headerlink" title="4、FATFS结构体图"></a>4、FATFS结构体图</h4><p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/FLASHF005.png" alt="FatFs程序结构图"></p>
+<p>用户应用程序需要由用户编写，想实现什么功能就编写什么的程序，一般我们只用到f_mount()、f_open()、f_write()、f_read()就可以实现文件的读写操作。</p>
+<p>FatFs组件是FatFs的主体，文件都在源码src文件夹中，其中ff.c、ff.h、integer.h以及diskio.h四个文件我们不需要改动，只需要修改ffconf.h和diskio.c两个文件。</p>
+<h1 id="3、SDIO-SD卡"><a href="#3、SDIO-SD卡" class="headerlink" title="3、SDIO - SD卡"></a>3、SDIO - SD卡</h1><h3 id="1、SDIO简介"><a href="#1、SDIO简介" class="headerlink" title="1、SDIO简介"></a>1、SDIO简介</h3><p>微控制器通过两种方式控制SD卡：SPI接口、SDIO接口。</p>
+<p>SDIO全称安全数字输入&#x2F;输出接口，多媒体（MMC）、SD卡、SDI&#x2F;O都有SDIO接口。STM32F4系列有一个SDIO主机接口。并且一般设计SD I&#x2F;O卡是可以插入到SD的插槽。</p>
+<p>SD卡协会网站 <a target="_blank" rel="noopener" href="http://www.sdcard.org/">www.sdcard.org</a> 中提供了SD存储卡和SDIO卡系统规范。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/SDIO002.png" alt="SDIO接口的设备"></p>
+<h4 id="2、SD卡物理结构"><a href="#2、SD卡物理结构" class="headerlink" title="2、SD卡物理结构"></a>2、SD卡物理结构</h4><p>一张SDka包括：</p>
+<ul>
+<li>存储单元<ul>
+<li>存储数据的地方。</li>
+<li>存储单元通过存储单元接口与卡控制单元进行数据传输。</li>
+</ul>
+</li>
+<li>存储单元接口</li>
+<li>电源检测<ul>
+<li>电源检测控制SD卡在一个合适电压环境下。</li>
+</ul>
+</li>
+<li>卡及接口控制器<ul>
+<li>控制SD卡的运行状态。</li>
+<li>包含8个寄存器。</li>
+</ul>
+</li>
+<li>接口驱动器。<ul>
+<li>控制引脚的输入输出。</li>
+</ul>
+</li>
+</ul>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/SDIO003.png" alt="SD卡物理结构"></p>
+<p>SD卡总共8个寄存器，用于设定和表示SD的信息。这些寄存器只能通过相对因的命令访问。</p>
+<p>SD卡的寄存器有些特殊，需要通过命令才能控制，SDIO中设定了64个命令，每个命令都有自己都有的意义。SD卡会根据接收到命令对SD卡进行配置。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/SDIO01.png" alt="SD卡寄存器"></p>
+<h4 id="3、SDIO总线"><a href="#3、SDIO总线" class="headerlink" title="3、SDIO总线"></a>3、SDIO总线</h4><p>SD卡支持SPI和SDIO两种接口。我们治理用到SDIO接口操作方式。</p>
+<p>SDIO总线的结构如图，虽然可以共用总线， 但不推荐多卡槽共用总线信号，要求一个单独SD总线应该连接一个单独的SD卡。</p>
+<p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%5CSDIO004.png" alt="SD卡总线拓扑"></p>
+
     </div>
 
     
@@ -241,6 +318,10 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/stm32F407/" rel="tag"># stm32F407</a>
+              <a href="/tags/%E5%A4%9A%E5%AA%92%E4%BD%93%E9%A1%B9%E7%9B%AE/" rel="tag"># 多媒体项目</a>
+          </div>
 
         
 
@@ -251,10 +332,7 @@
     <a href="/2025/03/17/OV2460%E6%91%84%E5%83%8F%E5%A4%B4/" rel="prev" title="OV2460摄像头">
       <i class="fa fa-chevron-left"></i> OV2460摄像头
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F-1/" rel="next" title="基于SD卡的FATFS文件管理系统">
-      基于SD卡的FATFS文件管理系统 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -313,6 +391,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%9A%E7%90%86%E8%A7%A3%E5%B5%8C%E5%85%A5%E5%BC%8F%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%9A%84-FATFS-%E5%92%8C-SD-%E5%8D%A1"><span class="nav-number">1.</span> <span class="nav-text">1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-FATFS-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number"></span> <span class="nav-text">2.FATFS 文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%E3%80%81%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84"><span class="nav-number">0.0.1.</span> <span class="nav-text">1、核心架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81%E4%B8%BB%E8%A6%81%E7%89%B9%E6%80%A7%E5%92%8C%E5%8A%9F%E8%83%BD"><span class="nav-number">0.0.2.</span> <span class="nav-text">2、主要特性和功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%E3%80%81FATFS%E6%BA%90%E7%A0%81"><span class="nav-number">0.0.3.</span> <span class="nav-text">3、FATFS源码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4%E3%80%81FATFS%E7%BB%93%E6%9E%84%E4%BD%93%E5%9B%BE"><span class="nav-number">0.0.4.</span> <span class="nav-text">4、FATFS结构体图</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3%E3%80%81SDIO-SD%E5%8D%A1"><span class="nav-number"></span> <span class="nav-text">3、SDIO - SD卡</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81SDIO%E7%AE%80%E4%BB%8B"><span class="nav-number">0.1.</span> <span class="nav-text">1、SDIO简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81SD%E5%8D%A1%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84"><span class="nav-number">0.1.1.</span> <span class="nav-text">2、SD卡物理结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%E3%80%81SDIO%E6%80%BB%E7%BA%BF"><span class="nav-number">0.1.2.</span> <span class="nav-text">3、SDIO总线</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -328,7 +407,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

@@ -193,63 +193,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/pages.jpg">
-      <meta itemprop="name" content="Dylan">
-      <meta itemprop="description" content="樱琅的个人博客">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="有玉微凉、是为樱琅">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F-1/" class="post-title-link" itemprop="url">基于SD卡的FATFS文件管理系统</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2025-03-19 17:18:07" itemprop="dateCreated datePublished" datetime="2025-03-19T17:18:07+08:00">2025-03-19</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -273,8 +216,18 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2025-03-19 16:11:47" itemprop="dateCreated datePublished" datetime="2025-03-19T16:11:47+08:00">2025-03-19</time>
+              <time title="创建时间：2025-03-19 16:11:47 / 修改时间：17:18:38" itemprop="dateCreated datePublished" datetime="2025-03-19T16:11:47+08:00">2025-03-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32F407/" itemprop="url" rel="index"><span itemprop="name">stm32F407</span></a>
+                </span>
             </span>
 
           
@@ -288,7 +241,16 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <h2 id="1-引言：理解嵌入式系统中的-FATFS-和-SD-卡"><a href="#1-引言：理解嵌入式系统中的-FATFS-和-SD-卡" class="headerlink" title="1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡"></a>1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡</h2><p>随着嵌入式系统在各个领域的日益普及，对高效数据存储解决方案的需求也随之增长。在众多可用的文件系统中，FATFS 因其轻量级特性和对 FAT 文件格式的广泛兼容性而成为嵌入式应用的热门选择 。与此同时，SD 卡已成为嵌入式系统中无处不在的存储介质，其种类繁多，容量各异，满足了各种应用场景的需求 。本报告旨在深入探讨 FATFS 在 SD 卡环境下的应用，涵盖其特性、实现、应用场景、性能、挑战以及与其他文件系统的比较。  </p>
+<p>FATFS 和 SD 卡在嵌入式系统中的广泛使用表明这两种技术之间存在强大的协同效应。这很可能归因于 FATFS 的设计原则与许多嵌入式应用的资源限制和存储需求高度契合。研究资料始终将 FATFS 描述为专为资源有限的小型嵌入式系统而设计 ，这与通常使用 SD 卡进行扩展存储的设备的典型特征直接相关。此外，SD 卡种类繁多，规格各异，这意味着开发人员需要深入了解这些特性，以便为他们的应用选择合适的卡，并确保与 FATFS 的兼容性。关于 SD 卡类型（SD、SDHC、SDXC、SDUC）及其容量和速度规格的众多资料  强调了选择最佳存储介质所涉及的复杂性。 </p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -965,6 +927,80 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2025/02/26/%E5%9F%BA%E4%BA%8EWVP-GB28181-POR-STM32MP157-%E5%B1%80%E5%9F%9F%E7%BD%91%E5%88%86%E5%B1%8F%E7%9B%91%E6%8E%A7/" class="post-title-link" itemprop="url">基于WVP-GB28181-POR[STM32MP157]局域网分屏监控</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-02-26 08:42:10" itemprop="dateCreated datePublished" datetime="2025-02-26T08:42:10+08:00">2025-02-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-03-09 13:02:13" itemprop="dateModified" datetime="2025-03-09T13:02:13+08:00">2025-03-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><a target="_blank" rel="noopener" href="https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh">https://www.yuque.com/daoge-r0f6y/xzzl3u/gn1f9lgyrf5bpxzh</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1036,7 +1072,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
