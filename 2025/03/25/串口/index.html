@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="串口1、串行通信接口简介：串行通信是一种在电子设备之间传输数据的基本方法，其特点是通过单根导线按顺序传输单个比特。这种方法与并行通信形成对比，后者在多根导线上同时传输多个比特。 虽然并行通信由于并行传输的特性，直观上看起来速度更快，但是串行通信的显著优势在于所需的连接和电缆更少，这使其特别适合远距数据传输。此外，许多串口通信标准支持全双工通信，允许同时发送和接收数据，这可以在各种引用中实现高效的总">
+<meta property="og:type" content="article">
+<meta property="og:title" content="串口">
+<meta property="og:url" content="http://basswo.github.io/2025/03/25/%E4%B8%B2%E5%8F%A3/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="串口1、串行通信接口简介：串行通信是一种在电子设备之间传输数据的基本方法，其特点是通过单根导线按顺序传输单个比特。这种方法与并行通信形成对比，后者在多根导线上同时传输多个比特。 虽然并行通信由于并行传输的特性，直观上看起来速度更快，但是串行通信的显著优势在于所需的连接和电缆更少，这使其特别适合远距数据传输。此外，许多串口通信标准支持全双工通信，允许同时发送和接收数据，这可以在各种引用中实现高效的总">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://basswo.github.io/2025/03/25/%E4%B8%B2%E5%8F%A3/133739.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/25/%E4%B8%B2%E5%8F%A3/135630.png">
+<meta property="article:published_time" content="2025-03-25T01:25:44.000Z">
+<meta property="article:modified_time" content="2025-03-25T06:30:10.681Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="TTL串口">
+<meta property="article:tag" content="485串口">
+<meta property="article:tag" content="232串口">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://basswo.github.io/2025/03/25/%E4%B8%B2%E5%8F%A3/133739.png">
+
+<link rel="canonical" href="http://basswo.github.io/2025/03/25/%E4%B8%B2%E5%8F%A3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>串口 | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">哈哈哈哈哈</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/25/%E4%B8%B2%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          串口
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2025-03-25 09:25:44 / 修改时间：14:30:10" itemprop="dateCreated datePublished" datetime="2025-03-25T09:25:44+08:00">2025-03-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32/" itemprop="url" rel="index"><span itemprop="name">stm32</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="串口"><a href="#串口" class="headerlink" title="串口"></a>串口</h1><h2 id="1、串行通信接口简介："><a href="#1、串行通信接口简介：" class="headerlink" title="1、串行通信接口简介："></a>1、串行通信接口简介：</h2><p>串行通信是一种在电子设备之间传输数据的基本方法，其特点是通过单根导线按顺序传输单个比特。这种方法与并行通信形成对比，后者在多根导线上同时传输多个比特。</p>
+<p>虽然并行通信由于并行传输的特性，直观上看起来速度更快，但是串行通信的显著优势在于所需的连接和电缆更少，这使其特别适合远距数据传输。此外，许多串口通信标准支持全双工通信，允许同时发送和接收数据，这可以在各种引用中实现高效的总体数据吞吐量。这使得串行通信称为众多电子系统的基石，促进微控制器、计算机和各种外围设备之间的通信。</p>
+<p>在各种串行通信标准中，晶体管-晶体管逻辑（TTL）、推荐标准232（RS232）、标准485（RS485）、标准422（RS422）是常见的几种。这些标准定义用于在电子设备之间交换数据的接口的电气和物理特性。这些接口中的每一个都具有独特的优点和缺点，这决定了他们在特定应用和环境中的适用性。</p>
+<span id="more"></span>
+
+<h2 id="2、TTL串行接口"><a href="#2、TTL串行接口" class="headerlink" title="2、TTL串行接口"></a>2、TTL串行接口</h2><p>TTL串行通信是一种基本的串行数据交换形式，他利用晶体管电压电平来表示二进制数据。名为晶体管-晶体管逻辑，源于其底层的逻辑门是由双极结型晶体管构成。这些晶体管同时执行逻辑运算和信号放大功能。</p>
+<p>TTL串行通信通常与通用异步接收器&#x2F;发送器（UART）协议结合使用。UART是一个硬件模块，负责处理串行数据的发送和接收，包含讲来自微控制器的并行数据转换位串行流以用于传输。虽然UART管理这通信协议，但是TTL定义了用于电信号的特定电压电平标准。本质上，UART可以使用各种电气标准进行操作，包括TTL、RS232.</p>
+<p>TTL串行通信的电气特性由其电压电平和单端信令定义。通常TTL在一个低电压范围内工作，介于0V-VCC（3.5V或者5V）。</p>
+<p>逻辑高电平（二进制表示1）通常由VCC电压电平（3.3V或5V）。逻辑低电平（二进制表示0），通常在0V附近。</p>
+<p>TTL接收器可以接收输入电压电平通常为，逻辑低电平0-0.8V。逻辑高电平2-5V。</p>
+<p>TTL发送器的输出电压电平，逻辑低电平0-0.4或0.5V，逻辑高电平2.4或2.7V-5V。</p>
+<p>尽管具有诸多优点，TTL 串行通信也存在一些局限性。由于其相对较小的噪声容限，它容易受到外部电噪声和干扰的影响，这可能会损坏传输的数据 。与其他串行通信标准相比，TTL 通常具有有限的传输速度和频率能力 。此外，在较高的工作频率下，TTL 电路的功耗可能会更高 。TTL 固有的较低电压电平也限制了其在长距离传输中的有效使用，因为信号衰减会更加明显 。与差分信令技术相比，TTL 采用的单端信令方法本质上更容易在较长的电缆长度上累积噪声 。此外，某些 TTL 实现中的基本输出级配置可能具有相对较高的输出电阻，这会限制可以可靠驱动的输入设备数量（扇出）</p>
+<h2 id="3、RS232串行接口"><a href="#3、RS232串行接口" class="headerlink" title="3、RS232串行接口"></a>3、RS232串行接口</h2><p>RS232串行接口时最早也是历史上最重要的串行通信标准之一。通常简称串行连接，他的开发是为了建立一种异步串行数据交换的标准化方法。RS232 采用异步传输，这意味着数据位按顺序传输，没有共享的时钟信号。相反，发送和接收设备之间的同步是通过使用起始位和停止位来实现的，这些位构成每个数据包的帧 。</p>
+<p>RS232的电气特性使用负电压、正电压便是二进制逻辑状态。</p>
+<p>逻辑1，通常称为标记、非断言状态。由负电压表示，通常范围在-3至-15V。</p>
+<p>逻辑0，通常称为空格、断言状态。由正电压表示，通常范围在+3V至+15V。</p>
+<p>这种更宽的电压摆幅以及正负电压的使用有助于 RS232 相比 TTL 具有更高的抗噪声和抗干扰能力，因为逻辑电平之间较大的电压差为抵抗杂散电压波动提供了更大的裕量 。</p>
+<p>RS232通常使用9针或者25针连接器。在9针配置中：</p>
+<ul>
+<li>发送数据TXD引脚：将数据从DTE发送给DCE。</li>
+<li>接收数据RXD引脚：接收DCE发送到DTE的数据。</li>
+<li>接地GND引脚：为所有信号提供公共的电压参考。</li>
+<li>请求发送RTS：提示DTE打算发送数据。</li>
+<li>清除发送CTS：表示DCE已准备好接收数据。</li>
+<li>数据中断就绪DTR</li>
+<li>数据集就绪DSR</li>
+<li>数据载波检测DCD</li>
+<li>振铃指示器RI</li>
+</ul>
+<p>RS232接口最大传输距离和数据速率方面存在限制，当较低波特率（9600），最大的传输距离15米。</p>
+<p>TTL和RS232串行接口比较：<br><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/25/%E4%B8%B2%E5%8F%A3/133739.png"></p>
+<h2 id="RS485串行接口"><a href="#RS485串行接口" class="headerlink" title="RS485串行接口"></a>RS485串行接口</h2><p>RS485是在RS232基础上的一个进步，专门克制距离限制和多个设备通信的能力。RS485采用平衡传输、差分接收。提供了高数据传输速率和抗电噪声能力。RS485支持多点网络拓扑。允许多个设备连接在同一条总线上。（最多32个发送器和32个接收器）RS485可以工作在半双工模式，或者全双工。</p>
+<p>RS485增强抗噪声能力主要是差分信令的使用。使用这种方法，数据不再是相对于地的绝对电压点评传输，而是作为一根导线的两端电压差传输。这种方法有效抑制共模噪声。</p>
+<p>RS485还具备多设备连接。允许多个设备共享同一组通信线路。形成一种总线拓扑结构。所有设备并联连接在主传输线上。</p>
+<p>与RS232相比，RS485提升了最大传输速率和传输距离。RS485最大传输距离1200米。最大传输速率可达到10Mbps。</p>
+<h2 id="RS422串行接口"><a href="#RS422串行接口" class="headerlink" title="RS422串行接口"></a>RS422串行接口</h2><p>RS422串行接口，也成为EIA-422A，其开发的目的是为了解决RS-232C标准的一些局限性。尤其是在传输距离和传输速率上。与RS485类似，RS422采用差分信令。这增强看抗噪声干扰和更远距离传输。在常见的RS422配置中，是一个发送器和多达10个接收器进行通信，形成多点设置。</p>
+<p>RS422与RS485相比的区别是：</p>
+<ul>
+<li>RS422通常在任何给定时间内，都是一个发送器和多个接收器；RS485则是多个发送器和多个接收器同时发起通信。</li>
+<li>RS422通常以全双工模式运行；RS485通常是半双工或者全双工。</li>
+</ul>
+<h2 id="TTL、RS232、RS485、RS422串口经进行比较"><a href="#TTL、RS232、RS485、RS422串口经进行比较" class="headerlink" title="TTL、RS232、RS485、RS422串口经进行比较"></a>TTL、RS232、RS485、RS422串口经进行比较</h2><p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/25/%E4%B8%B2%E5%8F%A3/135630.png"></p>
+<h2 id="TTL、RS232、RS485、RS422与UART、IIC-I²C-、SPI、CAN的区别"><a href="#TTL、RS232、RS485、RS422与UART、IIC-I²C-、SPI、CAN的区别" class="headerlink" title="TTL、RS232、RS485、RS422与UART、IIC (I²C)、SPI、CAN的区别"></a>TTL、RS232、RS485、RS422与UART、IIC (I²C)、SPI、CAN的区别</h2><ul>
+<li>TTL、RS232、RS485、RS422主要描述的物理层的电气特性和信号传输方式。它们定义了信号的电压电平，传输方式（单端还是差分），传输距离、连接方式等物理层的规范。</li>
+<li>UART、IIC (I²C)、SPI、CAN 主要描述的是数据链路层和部分网络层的通信协议。它们规定了数据是如何组织、编码、寻址、同步、校验以在多i个设备中间进行有效通信的规和流程。</li>
+</ul>
+<p><strong>1. 物理层标准 (The Physical Envelope and Delivery Method):</strong></p>
+<ul>
+<li><p>TTL、RS232、RS485、RS422 就好比您选择的信封和邮递方式。</p>
+<p>   它们关注的是如何物理地将信息从一个地方送到另一个地方。</p>
+<ul>
+<li><strong>TTL:</strong> 可以想象成您只是把写好的便条直接递给坐在您旁边的人。距离很近，方式简单。</li>
+<li><strong>RS232:</strong> 就像您使用普通的信封，通过邮局以普通邮件的方式寄给同城的人。距离稍远，但速度可能不是很快。</li>
+<li><strong>RS485&#x2F;RS422:</strong> 更像是您使用更坚固的信封，并且选择了快递服务。这样可以保证信件在更远的距离上更可靠地传输，不容易损坏。RS485 还允许多个人（多个地址）在同一个邮政系统（同一条线路）上寄送和接收信件。</li>
+</ul>
+</li>
+</ul>
+<p><strong>2. 通信协议 (The Content and Rules of the Letter):</strong></p>
+<ul>
+<li><p>UART、IIC、SPI、CAN 就好比您在信封里写的信的内容、格式和邮寄的规则。</p>
+<p>   它们关注的是您要传递什么信息以及如何确保对方能够正确理解。</p>
+<ul>
+<li><strong>UART:</strong> 就像您写一封简单的短信或便条，包含一些文字，没有复杂的格式。您需要确保收发双方都知道发送信息的“速度”（波特率）以及如何识别每个字符的开始和结束。</li>
+<li><strong>IIC (I²C):</strong> 就像您写一封需要发送给特定收件人的信件，并且可能需要对方回复。您需要在信封上写清楚收件人的地址，并且可能需要使用某种方式确认对方收到了信件。</li>
+<li><strong>SPI:</strong> 就像您和多个朋友约定好一个特定的暗号和交流方式。有一个“领导者”负责发起对话，其他人按照约定好的顺序和方式进行回应。</li>
+<li><strong>CAN:</strong> 更像是在一个组织内部发送通知或消息。每条消息都有一个优先级，重要的消息会优先传递。如果发送过程中出现问题，系统会自动尝试重新发送。</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/TTL%E4%B8%B2%E5%8F%A3/" rel="tag"># TTL串口</a>
+              <a href="/tags/485%E4%B8%B2%E5%8F%A3/" rel="tag"># 485串口</a>
+              <a href="/tags/232%E4%B8%B2%E5%8F%A3/" rel="tag"># 232串口</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/" rel="prev" title="FreeRTOS学习">
+      <i class="fa fa-chevron-left"></i> FreeRTOS学习
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%B2%E5%8F%A3"><span class="nav-number">1.</span> <span class="nav-text">串口</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81%E4%B8%B2%E8%A1%8C%E9%80%9A%E4%BF%A1%E6%8E%A5%E5%8F%A3%E7%AE%80%E4%BB%8B%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">1、串行通信接口简介：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81TTL%E4%B8%B2%E8%A1%8C%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.2.</span> <span class="nav-text">2、TTL串行接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81RS232%E4%B8%B2%E8%A1%8C%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.3.</span> <span class="nav-text">3、RS232串行接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RS485%E4%B8%B2%E8%A1%8C%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.4.</span> <span class="nav-text">RS485串行接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RS422%E4%B8%B2%E8%A1%8C%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.5.</span> <span class="nav-text">RS422串行接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TTL%E3%80%81RS232%E3%80%81RS485%E3%80%81RS422%E4%B8%B2%E5%8F%A3%E7%BB%8F%E8%BF%9B%E8%A1%8C%E6%AF%94%E8%BE%83"><span class="nav-number">1.6.</span> <span class="nav-text">TTL、RS232、RS485、RS422串口经进行比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TTL%E3%80%81RS232%E3%80%81RS485%E3%80%81RS422%E4%B8%8EUART%E3%80%81IIC-I%C2%B2C-%E3%80%81SPI%E3%80%81CAN%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.7.</span> <span class="nav-text">TTL、RS232、RS485、RS422与UART、IIC (I²C)、SPI、CAN的区别</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>

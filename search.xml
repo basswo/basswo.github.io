@@ -91,211 +91,111 @@
       </tags>
   </entry>
   <entry>
-    <title>FSMC—扩展外部SRAM</title>
-    <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
-    <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><p>STM32F407ZGT6 自带了 192K 字节的 SRAM，对一般应用来说，已经足够了，不过在一 些对内存要求高的场合，STM32F4 自带的这些内存就不够用了。比如跑算法或者跑 GUI 等， 就可能不太够用，所以探索者 STM32F4 开发板板载了一颗 1M 字节容量的 SRAM 芯片： XM8A51216。</p>
+    <title>FreeRTOS学习</title>
+    <url>/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h1 id="FreeRTOS学习"><a href="#FreeRTOS学习" class="headerlink" title="FreeRTOS学习"></a>FreeRTOS学习</h1><p>​	以下内容根据刀哥的文档，进行学习和总结。</p>
+<pre><code>### FreeRTOS概述
+</code></pre>
+<p><img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/113615.png"></p>
+<ul>
+<li>如图，是我们从官网下载的FreeRTOS的文件及其每个文件的讲解。</li>
+<li>移植到工程中，暂时不在这里讲，其他地方有讲，可以进行搜索。</li>
+<li>主要的文件是：<ul>
+<li>Demo<ul>
+<li>存在着，在不同系统上的示例工程。</li>
+</ul>
+</li>
+<li>source<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/114209.png"><ul>
+<li>根目录的和兴文件。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/114321.png"></li>
+</ul>
 <span id="more"></span>
 
-<h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
-<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
+<h3 id="编程规范"><a href="#编程规范" class="headerlink" title="编程规范"></a>编程规范</h3><ul>
+<li><p>TickType_t：</p>
 <ul>
-<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
-<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
-<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
-<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
+<li><p>TickType_t是一个无符号整数类型，用于系统节拍（tick）的计数。</p>
+</li>
+<li><p>在FreeRTOS中配置着一个周期性的中断：Tick Interrupt。</p>
+</li>
+<li><p>每次发生中断，中断有一个TICK_Count计数累加。FreeRTOS 启动以来发生的系统时钟节拍的总数。</p>
+</li>
+<li><p>TICK_Count变量的类型是TickType_t类型的。</p>
+</li>
+<li><p>TickType_t可能是uint16-t或者uint32-t的。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">在32位架构中，我们一般设置为uint32-t。</span><br><span class="line"></span><br><span class="line">FreeRTOSConfig.h</span><br><span class="line">#define configUSE_16_BIT_TICKS					0                       //系统节拍计数器变量数据类型，</span><br><span class="line"></span><br><span class="line">portmacro.h</span><br><span class="line">#if( configUSE_16_BIT_TICKS == 1 )</span><br><span class="line">	typedef uint16_t TickType_t;</span><br><span class="line">	#define portMAX_DELAY ( TickType_t ) 0xffff</span><br><span class="line">#else</span><br><span class="line">	typedef uint32_t TickType_t;</span><br><span class="line">	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL</span><br></pre></td></tr></table></figure>
+
+</li>
+<li><p>时间单位：每个系统节拍维持时间由configTICK_RATE_HZ这个宏来定义。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">FreeRTOSConfig.h</span><br><span class="line">#define configTICK_RATE_HZ						(1000)                  //时钟节拍频率，也就是每秒的时钟节拍数，这里设置为1000，周期就是1ms，1秒钟中1000次节拍，1ms一次节拍</span><br><span class="line"></span><br><span class="line">portmacro.h</span><br><span class="line">#define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )</span><br><span class="line">1000表示1000ms</span><br><span class="line">1000 / configTICK_RATE_HZ：表示每个节拍维持的时间为1ms。</span><br></pre></td></tr></table></figure></li>
 </ul>
-<h4 id="XM8A51216简介"><a href="#XM8A51216简介" class="headerlink" title="XM8A51216简介"></a>XM8A51216简介</h4><p>在我们使用的是XM8A51216的SRAM芯片内部结构框图。以他为模型学习。</p>
+</li>
+<li><p>BaseType_t</p>
 <ul>
-<li>国产SRAM芯片具有最高10&#x2F;12ns的访问速度。</li>
-<li>具备低功耗</li>
-<li>TTL电容兼容<ul>
-<li>TTL：晶体管-晶体管逻辑。一种逻辑电平标准。<br>  TTL定义逻辑高和逻辑低电平的范围。高电平是2.4-5V，低电平是0-0.8V。</li>
+<li><p>一个基本整数类型，通常用于布尔值或者函数的调用状态。</p>
+</li>
+<li><p>在32位架构中，他是uint32-t类型。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">portmacro.h</span><br><span class="line">typedef long BaseType_t;</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
-<li>三态输出。<ul>
-<li>三态表示：高电平、低电平、高阻抗（既不输出高、也不输出低）。</li>
-<li>作用：当多个设备连接一天总线时，通过控制三态输出端使能端，当一个设备输出时，其他设备设置高阻抗，不干扰总线数据传输。</li>
-<li>这允许多个存储器芯片或其他设备共享同一组数据线，从而减少了电路板上的布线数量。</li>
-</ul>
+<li><p>变量名前缀：<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121040.png"></p>
 </li>
-<li>全静态操作，不需要刷新</li>
-<li>字节控制功能，可以读取16位、8位数据。</li>
-</ul>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092613.png"></p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092731.png"></p>
-<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092950.png"></p>
-<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
-<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits），即1M字节容量16位宽的静态内存芯片。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/093304.png"></p>
-<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
-<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
-<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
-<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
-<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
-<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
-<p>OE、WE可以控制读写使能，防止误操作。</p>
-<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/094859.png"></p>
-<p>读写时序的流程：</p>
-<ul>
-<li>主机使能地址信号线，发送要访问的存储器地址。</li>
-<li>控制片选信号CS1、CS2，使能存储芯片</li>
-<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
-<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
-<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
-</ul>
-<h3 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h3><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
-<p> FSMC 具有四个芯片选择输出（NE1-NE4），允许 STM32F407 与最多四个外部存储设备接口。FSMC 为外部存储器提供了一个专用的地址空间，通常从 0x60000000 开始，</p>
-<p>FSMC 的内存映射特性简化了对外部存储器的访问，因为可以像访问内部存储器位置一样，使用微控制器的标准加载和存储指令来处理它</p>
-<h4 id="FSMC框图解析"><a href="#FSMC框图解析" class="headerlink" title="FSMC框图解析"></a>FSMC框图解析</h4><p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095536.png"></p>
-<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095737.png"></p>
-<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
-<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
-<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
-<ul>
-<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
+<li><p>函数名前缀<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121236.png"></p>
 </li>
-<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
-</li>
-<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
+<li><p>宏的前缀<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121346.png"></p>
 </li>
 </ul>
-<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
-<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/100215.png"></p>
-<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
-<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/105408.png"></p>
-<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111455.png"></p>
-<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111509.png"></p>
-<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
-<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。</p>
-<ul>
-<li>在地址建立周期中，地址线发出要访问的地址， </li>
-<li>数据掩码信号线指示出要读取地址的高、低字节部分，</li>
-<li>片选信号使能存储器芯片；</li>
-<li>地址建立周期结束后读使能信号线发出读使能信号， </li>
-<li>接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</li>
-</ul>
-<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
-<h5 id="6、代码"><a href="#6、代码" class="headerlink" title="6、代码"></a>6、代码</h5><ul>
-<li>FSMC初始化</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void FSMC_SRAM_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef  				GPIO_InitStructure;</span><br><span class="line">	FSMC_NORSRAMInitTypeDef  		FSMC_NORSRAMInitStructure;</span><br><span class="line">	FSMC_NORSRAMTimingInitTypeDef  	readWriteTiming; </span><br><span class="line">	</span><br><span class="line">	XmRamInit();                //初始化XMRAM 20191024</span><br><span class="line">	delay_us(100);</span><br><span class="line"></span><br><span class="line">	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB|RCC_AHB1Periph_GPIOD|RCC_AHB1Periph_GPIOE|RCC_AHB1Periph_GPIOF|RCC_AHB1Periph_GPIOG, ENABLE);//使能PD,PE,PF,PG时钟  </span><br><span class="line">	RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FSMC,ENABLE);//使能FSMC时钟  </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;//PB15 推挽输出,控制背光</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);//初始化 //PB15 推挽输出,控制背光</span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = (3&lt;&lt;0)|(3&lt;&lt;4)|(0XFF&lt;&lt;8);//PD0,1,4,5,8~15 AF OUT</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOD, &amp;GPIO_InitStructure);//初始化  </span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = (3&lt;&lt;0)|(0X1FF&lt;&lt;7);//PE0,1,7~15,AF OUT</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOE, &amp;GPIO_InitStructure);//初始化  </span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = (0X3F&lt;&lt;0)|(0XF&lt;&lt;12); 	//PF0~5,12~15</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOF, &amp;GPIO_InitStructure);//初始化  </span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin =(0X3F&lt;&lt;0)| GPIO_Pin_10;//PG0~5,10</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOG, &amp;GPIO_InitStructure);//初始化 </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource0,GPIO_AF_FSMC);//PD0,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource1,GPIO_AF_FSMC);//PD1,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource4,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource5,GPIO_AF_FSMC); </span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource8,GPIO_AF_FSMC); </span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource9,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource10,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource11,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource12,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource13,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource14,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource15,GPIO_AF_FSMC);//PD15,AF12</span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource0,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource1,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource7,GPIO_AF_FSMC);//PE7,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource8,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource9,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource10,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource11,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource12,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource13,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource14,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource15,GPIO_AF_FSMC);//PE15,AF12</span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource0,GPIO_AF_FSMC);//PF0,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource1,GPIO_AF_FSMC);//PF1,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource2,GPIO_AF_FSMC);//PF2,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource3,GPIO_AF_FSMC);//PF3,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource4,GPIO_AF_FSMC);//PF4,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource5,GPIO_AF_FSMC);//PF5,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource12,GPIO_AF_FSMC);//PF12,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource13,GPIO_AF_FSMC);//PF13,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource14,GPIO_AF_FSMC);//PF14,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource15,GPIO_AF_FSMC);//PF15,AF12</span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource0,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource1,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource2,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource3,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource4,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource5,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource10,GPIO_AF_FSMC);</span><br><span class="line">	</span><br><span class="line"> 	  </span><br><span class="line"> 	readWriteTiming.FSMC_AddressSetupTime = 0;	 			//地址建立时间（ADDSET）为1个HCLK 1/36M=27ns </span><br><span class="line">	readWriteTiming.FSMC_AddressHoldTime = 0;				//地址保持时间（ADDHLD）模式A未用到	</span><br><span class="line">	readWriteTiming.FSMC_DataSetupTime = 12;		 		//数据保持时间（DATAST）为13个HCLK 6*13=117ns		 	 </span><br><span class="line">	readWriteTiming.FSMC_BusTurnAroundDuration = 0x00;</span><br><span class="line">	readWriteTiming.FSMC_CLKDivision = 0x00;</span><br><span class="line">	readWriteTiming.FSMC_DataLatency = 0x00;</span><br><span class="line">	readWriteTiming.FSMC_AccessMode = FSMC_AccessMode_A;	 //模式A </span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_Bank = FSMC_Bank1_NORSRAM3;//  这里我们使用NE3 ，也就对应BTCR[4],[5]。</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable; </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_MemoryType =FSMC_MemoryType_SRAM;// FSMC_MemoryType_SRAM;  //SRAM   </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;//存储器数据宽度为16bit  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_BurstAccessMode =FSMC_BurstAccessMode_Disable;// FSMC_BurstAccessMode_Disable; </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_AsynchronousWait=FSMC_AsynchronousWait_Disable;</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WrapMode = FSMC_WrapMode_Disable;   </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;	//存储器写使能 </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable; // 读写使用相同的时序</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &amp;readWriteTiming;</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &amp;readWriteTiming; //读写同样时序</span><br><span class="line"></span><br><span class="line">	FSMC_NORSRAMInit(&amp;FSMC_NORSRAMInitStructure);  //初始化FSMC配置</span><br><span class="line"></span><br><span class="line"> 	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);  // 使能BANK1区域3	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>GPIO初始化：配置了多个 GPIO 引脚的工作模式、输出类型、速度和上下拉状态。这些引脚将用作 SRAM 的地址线、数据线和控制线。</p>
-</li>
-<li><p>GPIO复用功能配置：将配置好的 GPIO 引脚连接到 FSMC 外设的相应功能。</p>
-</li>
-<li><pre><code>  readWriteTiming.FSMC_AddressSetupTime = 0;                 //地址建立时间（ADDSET）为1个HCLK 1/36M=27ns
-      readWriteTiming.FSMC_AddressHoldTime = 0;                //地址保持时间（ADDHLD）模式A未用到
-      readWriteTiming.FSMC_DataSetupTime = 12;                 //数据保持时间（DATAST）为13个HCLK 6*13=117ns
-      readWriteTiming.FSMC_BusTurnAroundDuration = 0x00;
-      readWriteTiming.FSMC_CLKDivision = 0x00;
-      readWriteTiming.FSMC_DataLatency = 0x00;
-      readWriteTiming.FSMC_AccessMode = FSMC_AccessMode_A;     //模式A
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">    * 配置FSMC的读写时序。定义了在惊醒SRAM读写时，地址线和数据线和控制信号之间的时序。</span><br><span class="line">    * FSMC_AddressSetupTime = 0;</span><br><span class="line">        * 设置地址建立时间为0个HCLK周期。</span><br><span class="line">        * 地址建立时间是指在使能控制信号之前，地址信号必须保持稳定。</span><br><span class="line">    * `FSMC_AddressHoldTime = 0;`:</span><br><span class="line">        * 设置地址保持时间为0个HCLK周期。</span><br><span class="line">        * 地址保持时间是指在禁用控制信号之后，地址信号必须保持稳定的时间。</span><br><span class="line">    * FSMC_DataSetupTime = 12;</span><br><span class="line">        * 设置数据建立时间 (DATAST) 为 12 个 HCLK 周期。</span><br><span class="line">        * 数据建立时间是指在读取操作期间，数据信号在被微控制器采样之前必须保持稳定的时间。</span><br><span class="line">    * `FSMC_BusTurnAroundDuration = 0x00;`: 设置总线周转时间，在非复用总线模式下通常设置为 0。</span><br><span class="line">    * `FSMC_CLKDivision = 0x00;`: 设置时钟分频因子，在异步模式下通常设置为 0。</span><br><span class="line">    * `FSMC_DataLatency = 0x00;`: 设置数据延迟，在异步模式下通常设置为 0。</span><br><span class="line">    * `FSMC_AccessMode = FSMC_AccessMode_A;`: 选择 FSMC 的访问模式为模式 A。不同的访问模式定义了不同的时序行为。</span><br><span class="line"></span><br><span class="line">* ```</span><br><span class="line">    FSMC_NORSRAMInitStructure.FSMC_Bank = FSMC_Bank1_NORSRAM3;//  这里我们使用NE3 ，也就对应BTCR[4],[5]。</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_MemoryType =FSMC_MemoryType_SRAM;// FSMC_MemoryType_SRAM;  //SRAM</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;//存储器数据宽度为16bit</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_BurstAccessMode =FSMC_BurstAccessMode_Disable;// FSMC_BurstAccessMode_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_AsynchronousWait=FSMC_AsynchronousWait_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WrapMode = FSMC_WrapMode_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;	//存储器写使能</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable; // 读写使用相同的时序</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &amp;readWriteTiming;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &amp;readWriteTiming; //读写同样时序</span><br><span class="line">    </span><br><span class="line">    	FSMC_NORSRAMInit(&amp;FSMC_NORSRAMInitStructure);  //初始化FSMC配置</span><br><span class="line">    </span><br><span class="line">     	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);  // 使能BANK1区域3</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-  * 选择 FSMC Bank 1 的第三个 NOR/SRAM 区域 (NE3)。
-
-  * `FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;`: 禁用数据线和地址线的复用模式，因为 SRAM 通常使用独立的地址线和数据线。
-
-  * `FSMC_MemoryType = FSMC_MemoryType_SRAM;`: 设置存储器类型为 SRAM。
-
-  * `FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;`: 设置存储器的数据宽度为 16 位
-
-  * `FSMC_BurstAccessMode = FSMC_BurstAccessMode_Disable;`: 禁用突发访问模式。
-
-      `FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;`: 设置等待信号的极性（如果使用）。
-
-      `FSMC_AsynchronousWait = FSMC_AsynchronousWait_Disable;`: 禁用异步等待模式。
-
-      `FSMC_WrapMode = FSMC_WrapMode_Disable;`: 禁用回绕模式。
-
-      `FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;`: 设置等待信号激活的时间（如果使用）。
-
-      `FSMC_WriteOperation = FSMC_WriteOperation_Enable;`: 使能对 SRAM 的写操作。
-
-      `FSMC_WaitSignal = FSMC_WaitSignal_Disable;`: 禁用等待信号。
-
-      `FSMC_ExtendedMode = FSMC_ExtendedMode_Disable;`: 禁用扩展模式，这意味着读写操作使用相同的时序配置。
-
-      `FSMC_WriteBurst = FSMC_WriteBurst_Disable;`: 禁用写突发模式。
-
-      `FSMC_ReadWriteTimingStruct = &amp;readWriteTiming;`: 将之前配置的读写时序参数结构体赋值给 FSMC 初始化结构体。
-
-      `FSMC_WriteTimingStruct = &amp;readWriteTiming;`: 由于禁用了扩展模式，写操作也使用相同的时序配置。
-
-      `FSMC_NORSRAMInit(&amp;FSMC_NORSRAMInitStructure);`: 使用配置好的参数初始化 FSMC 外设。
-
-      `FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);`: 使能 FSMC Bank 1 的第三个区域，激活与该区域连接的外部 SRAM 芯片，使其可以被微控制器访问。
-</code></pre>
-</li>
-</ul>
-<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p><strong>一、硬件连接准备：</strong></p>
-<ol>
-<li><strong>连接地址线：</strong> 将 STM32F407 的 FSMC 地址线引脚（例如 A0-A18）与 IS62WV51216 SRAM 芯片的对应地址引脚连接。IS62WV51216 是 512K x 16 位，需要 19 根地址线。</li>
-<li><strong>连接数据线：</strong> 将 STM32F407 的 FSMC 数据线引脚（D0-D15）与 IS62WV51216 SRAM 芯片的对应数据引脚连接，实现 16 位的数据传输。</li>
-<li><strong>连接片选信号：</strong> 将 STM32F407 的一个 FSMC Bank 选择引脚（例如 NE3）与 IS62WV51216 SRAM 芯片的片选信号引脚（CS# 或 CE#）连接。</li>
-<li><strong>连接读使能信号：</strong> 将 STM32F407 的 FSMC 读使能引脚（NOE）与 IS62WV51216 SRAM 芯片的读使能引脚（OE# 或 RD#）连接。</li>
-<li><strong>连接写使能信号：</strong> 将 STM32F407 的 FSMC 写使能引脚（NWE）与 IS62WV51216 SRAM 芯片的写使能引脚（WE# 或 WR#）连接。</li>
-<li><strong>连接字节控制信号：</strong> 将 STM32F407 的 FSMC 字节控制引脚（NBL0 和 NBL1）与 IS62WV51216 SRAM 芯片的字节控制引脚（LB# 和 UB#）连接，以支持按字节读写。</li>
-<li><strong>电源和地：</strong> 确保 STM32F407 和 IS62WV51216 SRAM 芯片的电源和地线连接正确。</li>
-</ol>
-<p><strong>二、软件初始化流程 (概念性描述)：</strong></p>
-<ol>
-<li><p><strong>使能时钟：</strong> 在 STM32F407 的初始化代码中，需要使能 FSMC 外设的时钟以及所有与 SRAM 连接的 GPIO 端口的时钟。</p>
-</li>
-<li><p><strong>配置 GPIO：</strong> 对于所有连接到 SRAM 的 STM32F407 引脚，将其配置为“复用功能 (Alternate Function)”模式。同时设置合适的输出类型（通常为推挽）、输出速度（建议设置为高速或极高速以满足 SRAM 的时序要求）和上拉&#x2F;下拉电阻（通常使用上拉）。选择与 FSMC 外设对应的复用功能（一般是 AF12）。</p>
-</li>
-<li><p><strong>配置 FSMC Bank</strong>：</p>
-<p>  选择一个 FSMC Bank（例如 Bank 1 的第三个子 Bank，对应 NE3 引脚）来连接 IS62WV51216。对该 Bank 进行如下配置：</p>
-<ul>
-<li><strong>存储器类型：</strong> 设置为 SRAM。</li>
-<li><strong>数据&#x2F;地址复用：</strong> 禁用，因为 SRAM 使用独立的地址线和数据线。</li>
-<li><strong>存储器数据宽度：</strong> 设置为 16 位，与 IS62WV51216 的数据宽度匹配。</li>
-<li><strong>突发访问模式：</strong> 通常禁用，因为 IS62WV51216 是异步 SRAM。</li>
-<li><strong>等待信号：</strong> 禁用，因为这是一个异步 SRAM。</li>
-<li><strong>写使能：</strong> 启用，允许向 SRAM 写入数据。</li>
-<li><strong>扩展模式：</strong> 通常禁用，以便读写操作使用相同的时序配置。</li>
+<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><ul>
+<li>task、queue、semaphores、event group等，通常使用的是动态分配：用时分配，不用时释放。</li>
+<li>在C语言库函数中，由malloc、free函数，但是在FreeRTOS中不适用：<ul>
+<li>不适合用在资源紧缺的嵌入式系统中。</li>
+<li>可能会造成内存碎片化</li>
+<li>函数实现过于复杂，占用太多代码空间。</li>
 </ul>
 </li>
-<li><p>配置 FSMC 时序：</p>
-<p>  这是驱动 SRAM 的关键步骤，需要根据 IS62WV51216 的数据手册进行配置。主要配置以下参数：</p>
-<ul>
-<li><strong>地址建立时间 (Address Setup Time)：</strong> 设置地址信号在读&#x2F;写使能信号有效之前需要保持稳定的时间，以 HCLK 时钟周期为单位。</li>
-<li><strong>地址保持时间 (Address Hold Time)：</strong> 设置地址信号在读&#x2F;写使能信号无效之后需要保持稳定的时间，以 HCLK 时钟周期为单位。</li>
-<li>数据建立时间 (Data Setup Time)：<ul>
-<li><strong>读取时：</strong> 设置在读使能信号有效后，SRAM 输出的数据需要保持稳定的时间，以便 FSMC 正确采样，以 HCLK 时钟周期为单位。</li>
-<li><strong>写入时：</strong> 设置在写使能信号有效后，STM32F407 输出的数据需要保持稳定的时间，以确保 SRAM 正确写入，以 HCLK 时钟周期为单位。</li>
+<li>在FreeRTOS由专门的内存管理文件：<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121941.png"><ul>
+<li>heap_1.c文件<ul>
+<li>只分配，不释放：在代码中只实现了pvPortMalloc函数，没有实现vPortFree函数。</li>
+<li>原理：先定义一个大数组，调用pvPortMalloc时，在数组中分配空间。</li>
 </ul>
 </li>
-<li>根据 IS62WV51216 的访问速度（最高 10&#x2F;12ns），结合 STM32F407 的时钟频率，合理设置这些时序参数。</li>
+<li>heap_2.c文件<ul>
+<li>可分配，可释放：在函数中实现了pvPortMalloc和vPortFree。</li>
+<li>采用了最佳匹配算法来分配空间。</li>
+<li>碎片化：他不会合并空闲相邻的内存，会造成严重的碎片化问题。</li>
+<li>速度：比heap1分配速度要慢，但是比C库函数malloc、free速度要快。</li>
 </ul>
 </li>
-<li><p><strong>初始化 FSMC：</strong> 使用配置好的参数初始化 FSMC 外设。</p>
+<li>heap_3.c文件<ul>
+<li>直接使用C库中malloc、free函数。</li>
+<li><strong>不是线程安全的</strong>。标准库的 <code>malloc()</code> 和 <code>free()</code> 通常不是为多任务环境设计的，可能存在竞态条件。因此，FreeRTOS 会在调用这些函数时禁用调度器，以确保线程安全，但这可能会影响实时性。</li>
+</ul>
 </li>
-<li><p><strong>使能 FSMC Bank：</strong> 启用所选的 FSMC Bank，使得外部 SRAM 可以通过 STM32F407 的内存映射地址空间进行访问。</p>
+<li>heap_4.c文件<ul>
+<li>同样使用大数组分配内存。</li>
+<li>合并空闲内存：heap4使用first fit来分配内存，并且可以将相邻的空闲内存块合并。</li>
+</ul>
 </li>
-</ol>
-<p><strong>三、读写数据流程：</strong></p>
-<ol>
-<li><strong>内存映射：</strong> 完成 FSMC 初始化后，外部 SRAM 会被映射到 STM32F407 的一块特定的内存地址空间。例如，如果使用 Bank 1 的第三个子 Bank，起始地址通常是 <code>0x68000000</code>。</li>
-<li><strong>写入数据：</strong> 要向 SRAM 写入数据，只需要像操作 STM32F407 内部内存一样，向 SRAM 映射的地址执行写操作。例如，要向地址 <code>0x68000000 + 0x1000</code> 写入一个 16 位的数据 <code>0xABCD</code>，您只需要在代码中执行类似于 <code>*(volatile uint16_t*)(0x68000000 + 0x1000) = 0xABCD;</code> 的操作。FSMC 硬件会自动产生相应的控制信号（片选、写使能）和时序来完成写入过程。</li>
-<li><strong>读取数据：</strong> 要从 SRAM 读取数据，同样只需要像操作内部内存一样，从 SRAM 映射的地址执行读操作。例如，要从地址 <code>0x68000000 + 0x1000</code> 读取一个 16 位的数据，您可以执行类似于 <code>uint16_t data = *(volatile uint16_t*)(0x68000000 + 0x1000);</code> 的操作。FSMC 硬件会自动产生相应的控制信号（片选、读使能）和时序来完成读取过程，并将读取到的数据返回给您的程序。</li>
-<li><strong>字节控制：</strong> 如果需要进行字节级别的读写，您可以使用 8 位的数据类型（<code>uint8_t</code>）并配合 FSMC 的字节控制信号（NBL0 和 NBL1）。当您访问奇数地址或偶数地址时，FSMC 会自动激活相应的字节使能信号，从而实现对 SRAM 特定字节的操作。</li>
-</ol>
+<li>heap_5.c文件<ul>
+<li>heap_5: 分配内存、释放内存的算法跟heap_4相同。</li>
+<li>heap_5不在局限于在一个大的数组中进行内存管理。允许从<strong>多个不连续的内存区域</strong>分配内存。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 ]]></content>
       <categories>
-        <category>stm32F407</category>
+        <category>FreeRTOS</category>
       </categories>
       <tags>
-        <tag>stm32F407</tag>
-        <tag>多媒体项目</tag>
+        <tag>stm32学习</tag>
+        <tag>操作系统</tag>
+        <tag>FreeRTOS</tag>
       </tags>
   </entry>
   <entry>
@@ -543,6 +443,214 @@
         <tag>Pinctrl子系统</tag>
         <tag>GPIO子系统</tag>
         <tag>Linux学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>FSMC—扩展外部SRAM</title>
+    <url>/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/</url>
+    <content><![CDATA[<h1 id="FSMC—扩展外部SRAM"><a href="#FSMC—扩展外部SRAM" class="headerlink" title="FSMC—扩展外部SRAM"></a>FSMC—扩展外部SRAM</h1><p>STM32F407ZGT6 自带了 192K 字节的 SRAM，对一般应用来说，已经足够了，不过在一 些对内存要求高的场合，STM32F4 自带的这些内存就不够用了。比如跑算法或者跑 GUI 等， 就可能不太够用，所以探索者 STM32F4 开发板板载了一颗 1M 字节容量的 SRAM 芯片： XM8A51216。</p>
+<span id="more"></span>
+
+<h3 id="1、SRAM控制原理"><a href="#1、SRAM控制原理" class="headerlink" title="1、SRAM控制原理"></a>1、SRAM控制原理</h3><p>拓展内存时一般选择SRAM和SDRAM两种，但是stm32F407不支持拓展SDRAM（stm32F429系列支持），芯片使用FSMC外设拓展SRAM。</p>
+<p>SRAM（静态随机存储器）和SDRAM（同步动态随机存储器）。</p>
+<ul>
+<li>SRAM：静态存储器，使用触发器来存储数据。只要保持通电，数据就不会丢失，无需刷新。</li>
+<li>SDRAM：动态随机存储器。使用电容器存储数据，与系统时钟同步操作，需要定期的刷新以保持数据。</li>
+<li>SRAM：使用六个晶体管称为一个存储单元，通过触发器保持状态。</li>
+<li>SDRAM：每个存储由一个电容器和一个晶体管组成，依靠电容器存储的电荷来存储数据，需要定期充电保持数据。</li>
+</ul>
+<h4 id="XM8A51216简介"><a href="#XM8A51216简介" class="headerlink" title="XM8A51216简介"></a>XM8A51216简介</h4><p>在我们使用的是XM8A51216的SRAM芯片内部结构框图。以他为模型学习。</p>
+<ul>
+<li>国产SRAM芯片具有最高10&#x2F;12ns的访问速度。</li>
+<li>具备低功耗</li>
+<li>TTL电容兼容<ul>
+<li>TTL：晶体管-晶体管逻辑。一种逻辑电平标准。<br>  TTL定义逻辑高和逻辑低电平的范围。高电平是2.4-5V，低电平是0-0.8V。</li>
+</ul>
+</li>
+<li>三态输出。<ul>
+<li>三态表示：高电平、低电平、高阻抗（既不输出高、也不输出低）。</li>
+<li>作用：当多个设备连接一天总线时，通过控制三态输出端使能端，当一个设备输出时，其他设备设置高阻抗，不干扰总线数据传输。</li>
+<li>这允许多个存储器芯片或其他设备共享同一组数据线，从而减少了电路板上的布线数量。</li>
+</ul>
+</li>
+<li>全静态操作，不需要刷新</li>
+<li>字节控制功能，可以读取16位、8位数据。</li>
+</ul>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092613.png"></p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092731.png"></p>
+<h5 id="1、SRAM信号线"><a href="#1、SRAM信号线" class="headerlink" title="1、SRAM信号线"></a>1、SRAM信号线</h5><p>第一张图是芯片内部结构框图，其说明表如下图。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/092950.png"></p>
+<p>SRAM的控制比较简单，只要使能控制信号，从地址从线输入要访问的地址，就可以读写数据。</p>
+<h5 id="2、存储矩阵"><a href="#2、存储矩阵" class="headerlink" title="2、存储矩阵"></a>2、存储矩阵</h5><p>框图中标记号表示存储矩阵，这个SRAM芯片的内部空间大小为512*16（bits），即1M字节容量16位宽的静态内存芯片。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/093304.png"></p>
+<p>SRAM内部包含的存储阵列，可以把它理解成一张表格，数据就填在这张表格上。和表格查找一样，指定一个行地址和列地址，就可以精确地找到目标单元格， 这是SRAM芯片寻址的基本原理。这样的每个单元格被称为存储单元，而这样的表则被称为存储矩阵。</p>
+<h5 id="3、地址编译器、列I-o及I-O数据电路"><a href="#3、地址编译器、列I-o及I-O数据电路" class="headerlink" title="3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路"></a>3、地址编译器、列I&#x2F;o及I&#x2F;O数据电路</h5><p>地址编译器把N条地址线转换为2N根信号线，每根地址线对应着一列或着一行存储单元，通过地址线找到具体的存储单元。如果存储矩阵比较大，地址会分为列地址线、行地址线，或者行、列地址线会复用一条地址线，访问数据寻址时会先用地址线传输行地址再传输列地址。</p>
+<p>我们这次使用的SRAM比较小，没有列地址线，只有行地址线。再图中我们看到数据线为0-15，传输16位数据，则就是2字节。地址线是0-18，经过转换就是2^18&#x3D;2^8x1024&#x3D;512K行存储单元。所以总共是512*16bits空间大小。</p>
+<p>例如，当要访问宽度为16位的数据时，使用行地址线指出地址，然后把UB#和LB#线都设置为低电平， 那么I&#x2F;O0-I&#x2F;O15线都有效，它们一起输出该地址的16位数据(或者接收16位数据到该地址)；当要访问宽度为8位的数据时，使用行地址线指出地址， 然后把UB#或LB#其中一个设置为低电平，I&#x2F;O会对应输出该地址的高8位和低8位数据，因此它们被称为数据掩码信号。</p>
+<h5 id="4、控制电路"><a href="#4、控制电路" class="headerlink" title="4、控制电路"></a>4、控制电路</h5><p>控制电路包括了片选、读写使能、上面提到的数据宽度控制信号UB、LB。</p>
+<p>利用片选信号可以把多个SRAM组成一个大容量的内存条。</p>
+<p>OE、WE可以控制读写使能，防止误操作。</p>
+<h5 id="5、SRAM的读写流程"><a href="#5、SRAM的读写流程" class="headerlink" title="5、SRAM的读写流程"></a>5、SRAM的读写流程</h5><p>对SRAM进行读写数据时，它各个信号线的时序流程图如图。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/094859.png"></p>
+<p>读写时序的流程：</p>
+<ul>
+<li>主机使能地址信号线，发送要访问的存储器地址。</li>
+<li>控制片选信号CS1、CS2，使能存储芯片</li>
+<li>若进行读操作，则控制读使能信号OE；若进行写操作，则控制写使能信号WE。</li>
+<li>使用掩码LB与UB指示访问目标的高、低字节。</li>
+<li>若读取过程中，存储去会通过数据线像主机输出目标数据；若写入过程，主要使用数据像存储器传输木目标。</li>
+</ul>
+<h3 id="2、FSMC简介"><a href="#2、FSMC简介" class="headerlink" title="2、FSMC简介"></a>2、FSMC简介</h3><p>STM32F407系列芯片使用FSMC外设来管理扩展的存储器， FSMC是Flexible Static Memory Controller的缩写，译为灵活的静态存储控制器。 它可以用于驱动包括SRAM、NOR FLASH以及NANDFLSAH类型的存储器， 不能驱动如SDRAM这种动态的存储器而在STM32F429系列的控制器中， 它具有FMC外设，支持控制SDRAM存储器。</p>
+<p> FSMC 具有四个芯片选择输出（NE1-NE4），允许 STM32F407 与最多四个外部存储设备接口。FSMC 为外部存储器提供了一个专用的地址空间，通常从 0x60000000 开始，</p>
+<p>FSMC 的内存映射特性简化了对外部存储器的访问，因为可以像访问内部存储器位置一样，使用微控制器的标准加载和存储指令来处理它</p>
+<h4 id="FSMC框图解析"><a href="#FSMC框图解析" class="headerlink" title="FSMC框图解析"></a>FSMC框图解析</h4><p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095536.png"></p>
+<h5 id="1、通讯引脚"><a href="#1、通讯引脚" class="headerlink" title="1、通讯引脚"></a>1、通讯引脚</h5><p>在框图的右侧是FSMC外设相关的控制引脚，由于控制不同类型存储器的时候会有一些不同的引脚，看起来有非常多，其中地址线FSMC_A和数据线FSMC_D是所有控制器都共用的。 这些FSMC引脚具体对应的GPIO端口及引脚号可在《STM32F4xx规格书》中搜索查找到，不在此列出。针对本示例中的SRAM控制 器，我们整理出以下的FSMC与SRAM引脚对照表 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id14">FSMC中的SRAM控制信号线</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/095737.png"></p>
+<p>其中比较特殊的FSMC_NE是用于控制SRAM芯片的片选控制信号线，STM32具有FSMC_NE1&#x2F;2&#x2F;3&#x2F;4号引脚，不同的引脚对应STM32内部不同的地址区域。 例如，当STM32访问0x6C000000-0x6FFFFFFF地址空间时，FSMC_NE3引脚会自动设置为低电平，由于它连接到SRAM的CE#引脚， 所以SRAM的片选被使能，而访问0x60000000-0x63FFFFFF地址时，FSMC_NE1会输出低电平。当使用不同的FSMC_NE引脚连接外部存储器时， STM32访问SRAM的地址不一样，从而达到控制多块SRAM芯片的目的。各引脚对应的地址会在后面“FSMC的地址映射”小节讲解。</p>
+<h5 id="2、存储器控制器"><a href="#2、存储器控制器" class="headerlink" title="2、存储器控制器"></a>2、存储器控制器</h5><p>上面不同类型的引脚是连接到FSMC内部对应的存储控制器中的。NOR&#x2F;PSRAM&#x2F;SRAM设备使用相同的控制器，NAND&#x2F;PC卡设备使用相同的控制器，不同的控制器有专用的寄存器用于配置其工作模式。</p>
+<p>控制SRAM的有FSMC_BCR1&#x2F;2&#x2F;3&#x2F;4控制寄存器、FSMC_BTR1&#x2F;2&#x2F;3&#x2F;4片选时序寄存器以及FSMC_BWTR1&#x2F;2&#x2F;3&#x2F;4写时序寄存器。每种寄存器都有4个，分别对应于4个不同的存储区域，各种寄存器介绍如下：</p>
+<ul>
+<li><p>FSMC_BCR控制寄存器可配置要控制的存储器类型、数据线宽度以及信号有效极性能参数。</p>
+</li>
+<li><p>FMC_BTR时序寄存器用于配置SRAM访问时的各种时间延迟，如数据保持时间、地址保持时间等。</p>
+</li>
+<li><p>FMC_BWTR写时序寄存器与FMC_BTR寄存器控制的参数类似，它专门用于控制写时序的时间参数。</p>
+</li>
+</ul>
+<h5 id="3、时钟控制逻辑"><a href="#3、时钟控制逻辑" class="headerlink" title="3、时钟控制逻辑"></a>3、时钟控制逻辑</h5><p>FSMC外设挂载在AHB总线上，时钟信号来自于HCLK(默认168MHz)，控制器的同步时钟输出就是由它分频得到。例如，NOR控制器的FSMC_CLK引脚输出的时钟，它可用于与同步类型的SRAM芯片进行同步通讯，它的时钟频率可通过FSMC_BTR寄存器的CLKDIV位配置，可以配置为HCLK的1&#x2F;2或 1&#x2F;3，也就是说，若它与同步类型的SRAM通讯时，同步时钟最高频率为84MHz。本示例中的SRAM为异步类型的存储器，不使用同步时钟信号，所以时钟分频配置不起作用。</p>
+<h5 id="4、FSMC地址映射"><a href="#4、FSMC地址映射" class="headerlink" title="4、FSMC地址映射"></a>4、FSMC地址映射</h5><p>FSMC连接好外部的存储器并初始化后，就可以直接通过访问地址来读写数据，这种地址访问与I2C EEPROM、SPI FLASH的不一样， 后两种方式都需要控制I2C或SPI总线给存储器发送地址，然后获取数据；在程序里，这个地址和数据都需要分开使用不同的变量存储， 并且访问时还需要使用代码控制发送读写命令。而使用FSMC外接存储器时，其存储单元是映射到STM32的内部寻址空间的；在程序里， 定义一个指向这些地址的指针，然后就可以通过指针直接修改该存储单元的内容，FSMC外设会自动完成数据访问过程， 读写命令之类的操作不需要程序控制。FSMC的地址映射见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id18">FSMC的地址映射</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/100215.png"></p>
+<p>图中左侧的是Cortex-M4内核的存储空间分配，右侧是STM32 FSMC外设的地址映射。 可以看到FSMC的NOR&#x2F;PSRAM&#x2F;SRAM&#x2F;NAND FLASH以及PC卡的地址都在ExternalRAM地址空间内。 正是因为存在这样的地址映射，使得访问FSMC控制的存储器时，就跟访问STM32的片上外设寄存器一样(片上外设的地址映射即图中左侧的“Peripheral”区域)。</p>
+<p>FSMC把整个External RAM存储区域分成了4个Bank区域，并分配了地址范围及适用的存储器类型， 如NOR及SRAM存储器只能使用Bank1的地址。在每个Bank的内部又分成了4个小块， 每个小块有相应的控制引脚用于连接片选信号，如FSMC_NE[4:1]信号线可用于选择BANK1内部的4小块地址区域， 见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#bank1">Bank1内部的小块地址分配</a> ， 当STM32访问0x6C000000-0x6FFFFFFF地址空间时，会访问到Bank1的第4小块区域， 相应的FSMC_NE3信号线会输出控制信号。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/105408.png"></p>
+<h5 id="5、FSMC控制SRAM的时序"><a href="#5、FSMC控制SRAM的时序" class="headerlink" title="5、FSMC控制SRAM的时序"></a>5、FSMC控制SRAM的时序</h5><p>FSMC外设支持输出多种不同的时序以便于控制不同的存储器，它具有ABCD四种模式， 下面我们仅针对控制SRAM使用的模式A进行讲解，见图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#fsmca">FSMC模式A的读时序</a> 及图 <a href="https://doc.embedfire.com/mcu/stm32/f407batianhu/std/zh/latest/book/FSMC.html#id20">FSMC模式A的写时序</a>。</p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111455.png"></p>
+<p><img src="/2025/03/03/FSMC%E2%80%94%E6%89%A9%E5%B1%95%E5%A4%96%E9%83%A8SRAM/111509.png"></p>
+<p>当内核发出访问某个指向外部存储器地址时，FSMC外设会根据配置控制信号线产生时序访问存储器，上图中的是访问外部SRAM时FSMC外设的读写时序。</p>
+<p>以读时序为例，该图表示一个存储器操作周期由地址建立周期(ADDSET)、数据建立周期(DATAST)以及2个HCLK周期组成。</p>
+<ul>
+<li>在地址建立周期中，地址线发出要访问的地址， </li>
+<li>数据掩码信号线指示出要读取地址的高、低字节部分，</li>
+<li>片选信号使能存储器芯片；</li>
+<li>地址建立周期结束后读使能信号线发出读使能信号， </li>
+<li>接着存储器通过数据信号线把目标数据传输给FSMC，FSMC把它交给内核。</li>
+</ul>
+<p>写时序类似，区别是它的一个存储器操作周期仅由地址建立周期(ADDSET)和数据建立周期(DATAST)组成， 且在数据建立周期期间写使能信号线发出写信号，接着FSMC把数据通过数据线传输到存储器中。</p>
+<h5 id="6、代码"><a href="#6、代码" class="headerlink" title="6、代码"></a>6、代码</h5><ul>
+<li>FSMC初始化</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void FSMC_SRAM_Init(void)</span><br><span class="line">&#123;</span><br><span class="line">	GPIO_InitTypeDef  				GPIO_InitStructure;</span><br><span class="line">	FSMC_NORSRAMInitTypeDef  		FSMC_NORSRAMInitStructure;</span><br><span class="line">	FSMC_NORSRAMTimingInitTypeDef  	readWriteTiming; </span><br><span class="line">	</span><br><span class="line">	XmRamInit();                //初始化XMRAM 20191024</span><br><span class="line">	delay_us(100);</span><br><span class="line"></span><br><span class="line">	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB|RCC_AHB1Periph_GPIOD|RCC_AHB1Periph_GPIOE|RCC_AHB1Periph_GPIOF|RCC_AHB1Periph_GPIOG, ENABLE);//使能PD,PE,PF,PG时钟  </span><br><span class="line">	RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FSMC,ENABLE);//使能FSMC时钟  </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;//PB15 推挽输出,控制背光</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOB, &amp;GPIO_InitStructure);//初始化 //PB15 推挽输出,控制背光</span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = (3&lt;&lt;0)|(3&lt;&lt;4)|(0XFF&lt;&lt;8);//PD0,1,4,5,8~15 AF OUT</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOD, &amp;GPIO_InitStructure);//初始化  </span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = (3&lt;&lt;0)|(0X1FF&lt;&lt;7);//PE0,1,7~15,AF OUT</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOE, &amp;GPIO_InitStructure);//初始化  </span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin = (0X3F&lt;&lt;0)|(0XF&lt;&lt;12); 	//PF0~5,12~15</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOF, &amp;GPIO_InitStructure);//初始化  </span><br><span class="line"></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin =(0X3F&lt;&lt;0)| GPIO_Pin_10;//PG0~5,10</span><br><span class="line">	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用输出</span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出</span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz</span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉</span><br><span class="line">	GPIO_Init(GPIOG, &amp;GPIO_InitStructure);//初始化 </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource0,GPIO_AF_FSMC);//PD0,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource1,GPIO_AF_FSMC);//PD1,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource4,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource5,GPIO_AF_FSMC); </span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource8,GPIO_AF_FSMC); </span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource9,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource10,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource11,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource12,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource13,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource14,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOD,GPIO_PinSource15,GPIO_AF_FSMC);//PD15,AF12</span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource0,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource1,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource7,GPIO_AF_FSMC);//PE7,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource8,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource9,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource10,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource11,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource12,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource13,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource14,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOE,GPIO_PinSource15,GPIO_AF_FSMC);//PE15,AF12</span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource0,GPIO_AF_FSMC);//PF0,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource1,GPIO_AF_FSMC);//PF1,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource2,GPIO_AF_FSMC);//PF2,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource3,GPIO_AF_FSMC);//PF3,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource4,GPIO_AF_FSMC);//PF4,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource5,GPIO_AF_FSMC);//PF5,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource12,GPIO_AF_FSMC);//PF12,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource13,GPIO_AF_FSMC);//PF13,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource14,GPIO_AF_FSMC);//PF14,AF12</span><br><span class="line">	GPIO_PinAFConfig(GPIOF,GPIO_PinSource15,GPIO_AF_FSMC);//PF15,AF12</span><br><span class="line"></span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource0,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource1,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource2,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource3,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource4,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource5,GPIO_AF_FSMC);</span><br><span class="line">	GPIO_PinAFConfig(GPIOG,GPIO_PinSource10,GPIO_AF_FSMC);</span><br><span class="line">	</span><br><span class="line"> 	  </span><br><span class="line"> 	readWriteTiming.FSMC_AddressSetupTime = 0;	 			//地址建立时间（ADDSET）为1个HCLK 1/36M=27ns </span><br><span class="line">	readWriteTiming.FSMC_AddressHoldTime = 0;				//地址保持时间（ADDHLD）模式A未用到	</span><br><span class="line">	readWriteTiming.FSMC_DataSetupTime = 12;		 		//数据保持时间（DATAST）为13个HCLK 6*13=117ns		 	 </span><br><span class="line">	readWriteTiming.FSMC_BusTurnAroundDuration = 0x00;</span><br><span class="line">	readWriteTiming.FSMC_CLKDivision = 0x00;</span><br><span class="line">	readWriteTiming.FSMC_DataLatency = 0x00;</span><br><span class="line">	readWriteTiming.FSMC_AccessMode = FSMC_AccessMode_A;	 //模式A </span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_Bank = FSMC_Bank1_NORSRAM3;//  这里我们使用NE3 ，也就对应BTCR[4],[5]。</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable; </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_MemoryType =FSMC_MemoryType_SRAM;// FSMC_MemoryType_SRAM;  //SRAM   </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;//存储器数据宽度为16bit  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_BurstAccessMode =FSMC_BurstAccessMode_Disable;// FSMC_BurstAccessMode_Disable; </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_AsynchronousWait=FSMC_AsynchronousWait_Disable;</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WrapMode = FSMC_WrapMode_Disable;   </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;	//存储器写使能 </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable; // 读写使用相同的时序</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;  </span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &amp;readWriteTiming;</span><br><span class="line">	FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &amp;readWriteTiming; //读写同样时序</span><br><span class="line"></span><br><span class="line">	FSMC_NORSRAMInit(&amp;FSMC_NORSRAMInitStructure);  //初始化FSMC配置</span><br><span class="line"></span><br><span class="line"> 	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);  // 使能BANK1区域3	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>GPIO初始化：配置了多个 GPIO 引脚的工作模式、输出类型、速度和上下拉状态。这些引脚将用作 SRAM 的地址线、数据线和控制线。</p>
+</li>
+<li><p>GPIO复用功能配置：将配置好的 GPIO 引脚连接到 FSMC 外设的相应功能。</p>
+</li>
+<li><pre><code>  readWriteTiming.FSMC_AddressSetupTime = 0;                 //地址建立时间（ADDSET）为1个HCLK 1/36M=27ns
+      readWriteTiming.FSMC_AddressHoldTime = 0;                //地址保持时间（ADDHLD）模式A未用到
+      readWriteTiming.FSMC_DataSetupTime = 12;                 //数据保持时间（DATAST）为13个HCLK 6*13=117ns
+      readWriteTiming.FSMC_BusTurnAroundDuration = 0x00;
+      readWriteTiming.FSMC_CLKDivision = 0x00;
+      readWriteTiming.FSMC_DataLatency = 0x00;
+      readWriteTiming.FSMC_AccessMode = FSMC_AccessMode_A;     //模式A
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">    * 配置FSMC的读写时序。定义了在惊醒SRAM读写时，地址线和数据线和控制信号之间的时序。</span><br><span class="line">    * FSMC_AddressSetupTime = 0;</span><br><span class="line">        * 设置地址建立时间为0个HCLK周期。</span><br><span class="line">        * 地址建立时间是指在使能控制信号之前，地址信号必须保持稳定。</span><br><span class="line">    * `FSMC_AddressHoldTime = 0;`:</span><br><span class="line">        * 设置地址保持时间为0个HCLK周期。</span><br><span class="line">        * 地址保持时间是指在禁用控制信号之后，地址信号必须保持稳定的时间。</span><br><span class="line">    * FSMC_DataSetupTime = 12;</span><br><span class="line">        * 设置数据建立时间 (DATAST) 为 12 个 HCLK 周期。</span><br><span class="line">        * 数据建立时间是指在读取操作期间，数据信号在被微控制器采样之前必须保持稳定的时间。</span><br><span class="line">    * `FSMC_BusTurnAroundDuration = 0x00;`: 设置总线周转时间，在非复用总线模式下通常设置为 0。</span><br><span class="line">    * `FSMC_CLKDivision = 0x00;`: 设置时钟分频因子，在异步模式下通常设置为 0。</span><br><span class="line">    * `FSMC_DataLatency = 0x00;`: 设置数据延迟，在异步模式下通常设置为 0。</span><br><span class="line">    * `FSMC_AccessMode = FSMC_AccessMode_A;`: 选择 FSMC 的访问模式为模式 A。不同的访问模式定义了不同的时序行为。</span><br><span class="line"></span><br><span class="line">* ```</span><br><span class="line">    FSMC_NORSRAMInitStructure.FSMC_Bank = FSMC_Bank1_NORSRAM3;//  这里我们使用NE3 ，也就对应BTCR[4],[5]。</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_MemoryType =FSMC_MemoryType_SRAM;// FSMC_MemoryType_SRAM;  //SRAM</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;//存储器数据宽度为16bit</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_BurstAccessMode =FSMC_BurstAccessMode_Disable;// FSMC_BurstAccessMode_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_AsynchronousWait=FSMC_AsynchronousWait_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WrapMode = FSMC_WrapMode_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;	//存储器写使能</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable; // 读写使用相同的时序</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &amp;readWriteTiming;</span><br><span class="line">    	FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &amp;readWriteTiming; //读写同样时序</span><br><span class="line">    </span><br><span class="line">    	FSMC_NORSRAMInit(&amp;FSMC_NORSRAMInitStructure);  //初始化FSMC配置</span><br><span class="line">    </span><br><span class="line">     	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);  // 使能BANK1区域3</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+  * 选择 FSMC Bank 1 的第三个 NOR/SRAM 区域 (NE3)。
+
+  * `FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;`: 禁用数据线和地址线的复用模式，因为 SRAM 通常使用独立的地址线和数据线。
+
+  * `FSMC_MemoryType = FSMC_MemoryType_SRAM;`: 设置存储器类型为 SRAM。
+
+  * `FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;`: 设置存储器的数据宽度为 16 位
+
+  * `FSMC_BurstAccessMode = FSMC_BurstAccessMode_Disable;`: 禁用突发访问模式。
+
+      `FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;`: 设置等待信号的极性（如果使用）。
+
+      `FSMC_AsynchronousWait = FSMC_AsynchronousWait_Disable;`: 禁用异步等待模式。
+
+      `FSMC_WrapMode = FSMC_WrapMode_Disable;`: 禁用回绕模式。
+
+      `FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;`: 设置等待信号激活的时间（如果使用）。
+
+      `FSMC_WriteOperation = FSMC_WriteOperation_Enable;`: 使能对 SRAM 的写操作。
+
+      `FSMC_WaitSignal = FSMC_WaitSignal_Disable;`: 禁用等待信号。
+
+      `FSMC_ExtendedMode = FSMC_ExtendedMode_Disable;`: 禁用扩展模式，这意味着读写操作使用相同的时序配置。
+
+      `FSMC_WriteBurst = FSMC_WriteBurst_Disable;`: 禁用写突发模式。
+
+      `FSMC_ReadWriteTimingStruct = &amp;readWriteTiming;`: 将之前配置的读写时序参数结构体赋值给 FSMC 初始化结构体。
+
+      `FSMC_WriteTimingStruct = &amp;readWriteTiming;`: 由于禁用了扩展模式，写操作也使用相同的时序配置。
+
+      `FSMC_NORSRAMInit(&amp;FSMC_NORSRAMInitStructure);`: 使用配置好的参数初始化 FSMC 外设。
+
+      `FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);`: 使能 FSMC Bank 1 的第三个区域，激活与该区域连接的外部 SRAM 芯片，使其可以被微控制器访问。
+</code></pre>
+</li>
+</ul>
+<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p><strong>一、硬件连接准备：</strong></p>
+<ol>
+<li><strong>连接地址线：</strong> 将 STM32F407 的 FSMC 地址线引脚（例如 A0-A18）与 IS62WV51216 SRAM 芯片的对应地址引脚连接。IS62WV51216 是 512K x 16 位，需要 19 根地址线。</li>
+<li><strong>连接数据线：</strong> 将 STM32F407 的 FSMC 数据线引脚（D0-D15）与 IS62WV51216 SRAM 芯片的对应数据引脚连接，实现 16 位的数据传输。</li>
+<li><strong>连接片选信号：</strong> 将 STM32F407 的一个 FSMC Bank 选择引脚（例如 NE3）与 IS62WV51216 SRAM 芯片的片选信号引脚（CS# 或 CE#）连接。</li>
+<li><strong>连接读使能信号：</strong> 将 STM32F407 的 FSMC 读使能引脚（NOE）与 IS62WV51216 SRAM 芯片的读使能引脚（OE# 或 RD#）连接。</li>
+<li><strong>连接写使能信号：</strong> 将 STM32F407 的 FSMC 写使能引脚（NWE）与 IS62WV51216 SRAM 芯片的写使能引脚（WE# 或 WR#）连接。</li>
+<li><strong>连接字节控制信号：</strong> 将 STM32F407 的 FSMC 字节控制引脚（NBL0 和 NBL1）与 IS62WV51216 SRAM 芯片的字节控制引脚（LB# 和 UB#）连接，以支持按字节读写。</li>
+<li><strong>电源和地：</strong> 确保 STM32F407 和 IS62WV51216 SRAM 芯片的电源和地线连接正确。</li>
+</ol>
+<p><strong>二、软件初始化流程 (概念性描述)：</strong></p>
+<ol>
+<li><p><strong>使能时钟：</strong> 在 STM32F407 的初始化代码中，需要使能 FSMC 外设的时钟以及所有与 SRAM 连接的 GPIO 端口的时钟。</p>
+</li>
+<li><p><strong>配置 GPIO：</strong> 对于所有连接到 SRAM 的 STM32F407 引脚，将其配置为“复用功能 (Alternate Function)”模式。同时设置合适的输出类型（通常为推挽）、输出速度（建议设置为高速或极高速以满足 SRAM 的时序要求）和上拉&#x2F;下拉电阻（通常使用上拉）。选择与 FSMC 外设对应的复用功能（一般是 AF12）。</p>
+</li>
+<li><p><strong>配置 FSMC Bank</strong>：</p>
+<p>  选择一个 FSMC Bank（例如 Bank 1 的第三个子 Bank，对应 NE3 引脚）来连接 IS62WV51216。对该 Bank 进行如下配置：</p>
+<ul>
+<li><strong>存储器类型：</strong> 设置为 SRAM。</li>
+<li><strong>数据&#x2F;地址复用：</strong> 禁用，因为 SRAM 使用独立的地址线和数据线。</li>
+<li><strong>存储器数据宽度：</strong> 设置为 16 位，与 IS62WV51216 的数据宽度匹配。</li>
+<li><strong>突发访问模式：</strong> 通常禁用，因为 IS62WV51216 是异步 SRAM。</li>
+<li><strong>等待信号：</strong> 禁用，因为这是一个异步 SRAM。</li>
+<li><strong>写使能：</strong> 启用，允许向 SRAM 写入数据。</li>
+<li><strong>扩展模式：</strong> 通常禁用，以便读写操作使用相同的时序配置。</li>
+</ul>
+</li>
+<li><p>配置 FSMC 时序：</p>
+<p>  这是驱动 SRAM 的关键步骤，需要根据 IS62WV51216 的数据手册进行配置。主要配置以下参数：</p>
+<ul>
+<li><strong>地址建立时间 (Address Setup Time)：</strong> 设置地址信号在读&#x2F;写使能信号有效之前需要保持稳定的时间，以 HCLK 时钟周期为单位。</li>
+<li><strong>地址保持时间 (Address Hold Time)：</strong> 设置地址信号在读&#x2F;写使能信号无效之后需要保持稳定的时间，以 HCLK 时钟周期为单位。</li>
+<li>数据建立时间 (Data Setup Time)：<ul>
+<li><strong>读取时：</strong> 设置在读使能信号有效后，SRAM 输出的数据需要保持稳定的时间，以便 FSMC 正确采样，以 HCLK 时钟周期为单位。</li>
+<li><strong>写入时：</strong> 设置在写使能信号有效后，STM32F407 输出的数据需要保持稳定的时间，以确保 SRAM 正确写入，以 HCLK 时钟周期为单位。</li>
+</ul>
+</li>
+<li>根据 IS62WV51216 的访问速度（最高 10&#x2F;12ns），结合 STM32F407 的时钟频率，合理设置这些时序参数。</li>
+</ul>
+</li>
+<li><p><strong>初始化 FSMC：</strong> 使用配置好的参数初始化 FSMC 外设。</p>
+</li>
+<li><p><strong>使能 FSMC Bank：</strong> 启用所选的 FSMC Bank，使得外部 SRAM 可以通过 STM32F407 的内存映射地址空间进行访问。</p>
+</li>
+</ol>
+<p><strong>三、读写数据流程：</strong></p>
+<ol>
+<li><strong>内存映射：</strong> 完成 FSMC 初始化后，外部 SRAM 会被映射到 STM32F407 的一块特定的内存地址空间。例如，如果使用 Bank 1 的第三个子 Bank，起始地址通常是 <code>0x68000000</code>。</li>
+<li><strong>写入数据：</strong> 要向 SRAM 写入数据，只需要像操作 STM32F407 内部内存一样，向 SRAM 映射的地址执行写操作。例如，要向地址 <code>0x68000000 + 0x1000</code> 写入一个 16 位的数据 <code>0xABCD</code>，您只需要在代码中执行类似于 <code>*(volatile uint16_t*)(0x68000000 + 0x1000) = 0xABCD;</code> 的操作。FSMC 硬件会自动产生相应的控制信号（片选、写使能）和时序来完成写入过程。</li>
+<li><strong>读取数据：</strong> 要从 SRAM 读取数据，同样只需要像操作内部内存一样，从 SRAM 映射的地址执行读操作。例如，要从地址 <code>0x68000000 + 0x1000</code> 读取一个 16 位的数据，您可以执行类似于 <code>uint16_t data = *(volatile uint16_t*)(0x68000000 + 0x1000);</code> 的操作。FSMC 硬件会自动产生相应的控制信号（片选、读使能）和时序来完成读取过程，并将读取到的数据返回给您的程序。</li>
+<li><strong>字节控制：</strong> 如果需要进行字节级别的读写，您可以使用 8 位的数据类型（<code>uint8_t</code>）并配合 FSMC 的字节控制信号（NBL0 和 NBL1）。当您访问奇数地址或偶数地址时，FSMC 会自动激活相应的字节使能信号，从而实现对 SRAM 特定字节的操作。</li>
+</ol>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32F407</tag>
+        <tag>多媒体项目</tag>
       </tags>
   </entry>
   <entry>
@@ -1161,6 +1269,33 @@
 <li><p>使用流程<br>  <img src="/2025/03/20/TFTLCD/155428.png"></p>
 </li>
 </ul>
+<h2 id="FSMC"><a href="#FSMC" class="headerlink" title="FSMC"></a>FSMC</h2><p>FSMC的基础相关知识点在SRAM的文章内容内。这里只讲FSMC与TFTLCD相关的知识点。</p>
+<ul>
+<li>为什么可以把TFTLCD当成外部SRAM使用？<ul>
+<li>外部SRAM有：19条地址线、16条数据线、写信号WE、读信号OE、片选信号CS，UB&#x2F;LB字节控制信号线。</li>
+<li>TFTLCD有：RS（写数据还是写命令）、16条数据线、WR写信号、RD读信号、RST硬件复位、CS片选，BL高8位掩码。</li>
+<li>控制TFTLCD只用到了RS、D0-15、WR、RD、CS。和操作SRAM大致相同，除了多了一个RS，没有地址信号线。</li>
+<li>RS的功能：决定传输的是数据还是命令。所以这里使用了一根地址线来连接。实现这个功能。由主机发送0时，就是告诉TFTLCD现在发送发是命令。反之则是数据。</li>
+</ul>
+</li>
+<li>在STM32F4系列中，FSMC管理着1GB的空间，用于4个存储块，每个存储块256M字节（2^28），由28根地址线来寻址。</li>
+<li>本次我们使用的是Bank1.每个bank中又分了4个区，每个区为64M字节（2^26）.由26根地址线来寻址。</li>
+<li>少的两个地址线的作用：用来片选是哪个区的。<br>  <img src="/2025/03/20/TFTLCD/100639.png"><ul>
+<li>在表中：HADDR【25：0】的对应关系。<ul>
+<li>当 Bank1 接的是 16 位宽度存储器的时候：HADDR[25:1]→ FSMC_A[24:0]。</li>
+<li>当 Bank1 接的是 8 位宽度存储器的时候：HADDR[25:0]→ FSMC_A[25:0]。</li>
+<li><strong>解释：为什么16位宽时是那样的对应？</strong><ul>
+<li>在CPU通过AHB总线发送HADDR，指向一个8位的字节地址。</li>
+<li>而外部存储器则是选择的16位宽度，每位地址对应着一个16位存储空间。</li>
+<li>一个16位的字在外部存储单元中，占用一个存储单元。所以FSMC_A[24:0]25根地址线，大概32M字节（2^25）.<br>  但是在CPU内部字节地址空间中，则占用2个连续的字节地址存储单元。</li>
+<li>最低为HADDR【0】的作用：当设置为8位宽度，需要HADDR【0】这个位来判断发送的是高8位、低8位。但是设置为16位宽度时，一次就发送了16位，所以不用判断。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 ]]></content>
       <categories>
         <category>stm32F407</category>
@@ -1293,114 +1428,6 @@
         <tag>stm32cubide</tag>
         <tag>HAL</tag>
         <tag>USART</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>FreeRTOS学习</title>
-    <url>/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<h1 id="FreeRTOS学习"><a href="#FreeRTOS学习" class="headerlink" title="FreeRTOS学习"></a>FreeRTOS学习</h1><p>​	以下内容根据刀哥的文档，进行学习和总结。</p>
-<pre><code>### FreeRTOS概述
-</code></pre>
-<p><img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/113615.png"></p>
-<ul>
-<li>如图，是我们从官网下载的FreeRTOS的文件及其每个文件的讲解。</li>
-<li>移植到工程中，暂时不在这里讲，其他地方有讲，可以进行搜索。</li>
-<li>主要的文件是：<ul>
-<li>Demo<ul>
-<li>存在着，在不同系统上的示例工程。</li>
-</ul>
-</li>
-<li>source<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/114209.png"><ul>
-<li>根目录的和兴文件。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/114321.png"></li>
-</ul>
-<span id="more"></span>
-
-<h3 id="编程规范"><a href="#编程规范" class="headerlink" title="编程规范"></a>编程规范</h3><ul>
-<li><p>TickType_t：</p>
-<ul>
-<li><p>TickType_t是一个无符号整数类型，用于系统节拍（tick）的计数。</p>
-</li>
-<li><p>在FreeRTOS中配置着一个周期性的中断：Tick Interrupt。</p>
-</li>
-<li><p>每次发生中断，中断有一个TICK_Count计数累加。FreeRTOS 启动以来发生的系统时钟节拍的总数。</p>
-</li>
-<li><p>TICK_Count变量的类型是TickType_t类型的。</p>
-</li>
-<li><p>TickType_t可能是uint16-t或者uint32-t的。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">在32位架构中，我们一般设置为uint32-t。</span><br><span class="line"></span><br><span class="line">FreeRTOSConfig.h</span><br><span class="line">#define configUSE_16_BIT_TICKS					0                       //系统节拍计数器变量数据类型，</span><br><span class="line"></span><br><span class="line">portmacro.h</span><br><span class="line">#if( configUSE_16_BIT_TICKS == 1 )</span><br><span class="line">	typedef uint16_t TickType_t;</span><br><span class="line">	#define portMAX_DELAY ( TickType_t ) 0xffff</span><br><span class="line">#else</span><br><span class="line">	typedef uint32_t TickType_t;</span><br><span class="line">	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL</span><br></pre></td></tr></table></figure>
-
-</li>
-<li><p>时间单位：每个系统节拍维持时间由configTICK_RATE_HZ这个宏来定义。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">FreeRTOSConfig.h</span><br><span class="line">#define configTICK_RATE_HZ						(1000)                  //时钟节拍频率，也就是每秒的时钟节拍数，这里设置为1000，周期就是1ms，1秒钟中1000次节拍，1ms一次节拍</span><br><span class="line"></span><br><span class="line">portmacro.h</span><br><span class="line">#define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )</span><br><span class="line">1000表示1000ms</span><br><span class="line">1000 / configTICK_RATE_HZ：表示每个节拍维持的时间为1ms。</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>BaseType_t</p>
-<ul>
-<li><p>一个基本整数类型，通常用于布尔值或者函数的调用状态。</p>
-</li>
-<li><p>在32位架构中，他是uint32-t类型。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">portmacro.h</span><br><span class="line">typedef long BaseType_t;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>变量名前缀：<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121040.png"></p>
-</li>
-<li><p>函数名前缀<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121236.png"></p>
-</li>
-<li><p>宏的前缀<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121346.png"></p>
-</li>
-</ul>
-<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><ul>
-<li>task、queue、semaphores、event group等，通常使用的是动态分配：用时分配，不用时释放。</li>
-<li>在C语言库函数中，由malloc、free函数，但是在FreeRTOS中不适用：<ul>
-<li>不适合用在资源紧缺的嵌入式系统中。</li>
-<li>可能会造成内存碎片化</li>
-<li>函数实现过于复杂，占用太多代码空间。</li>
-</ul>
-</li>
-<li>在FreeRTOS由专门的内存管理文件：<br>  <img src="/2025/03/23/FreeRTOS%E5%AD%A6%E4%B9%A0/121941.png"><ul>
-<li>heap_1.c文件<ul>
-<li>只分配，不释放：在代码中只实现了pvPortMalloc函数，没有实现vPortFree函数。</li>
-<li>原理：先定义一个大数组，调用pvPortMalloc时，在数组中分配空间。</li>
-</ul>
-</li>
-<li>heap_2.c文件<ul>
-<li>可分配，可释放：在函数中实现了pvPortMalloc和vPortFree。</li>
-<li>采用了最佳匹配算法来分配空间。</li>
-<li>碎片化：他不会合并空闲相邻的内存，会造成严重的碎片化问题。</li>
-<li>速度：比heap1分配速度要慢，但是比C库函数malloc、free速度要快。</li>
-</ul>
-</li>
-<li>heap_3.c文件<ul>
-<li>直接使用C库中malloc、free函数。</li>
-<li><strong>不是线程安全的</strong>。标准库的 <code>malloc()</code> 和 <code>free()</code> 通常不是为多任务环境设计的，可能存在竞态条件。因此，FreeRTOS 会在调用这些函数时禁用调度器，以确保线程安全，但这可能会影响实时性。</li>
-</ul>
-</li>
-<li>heap_4.c文件<ul>
-<li>同样使用大数组分配内存。</li>
-<li>合并空闲内存：heap4使用first fit来分配内存，并且可以将相邻的空闲内存块合并。</li>
-</ul>
-</li>
-<li>heap_5.c文件<ul>
-<li>heap_5: 分配内存、释放内存的算法跟heap_4相同。</li>
-<li>heap_5不在局限于在一个大的数组中进行内存管理。允许从<strong>多个不连续的内存区域</strong>分配内存。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>FreeRTOS</category>
-      </categories>
-      <tags>
-        <tag>stm32学习</tag>
-        <tag>操作系统</tag>
-        <tag>FreeRTOS</tag>
       </tags>
   </entry>
   <entry>
@@ -1547,6 +1574,173 @@
       </tags>
   </entry>
   <entry>
+    <title>stm32F407移植LVGL+GUI</title>
+    <url>/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/</url>
+    <content><![CDATA[<h1 id="stm32F407移植LVGL-GUI"><a href="#stm32F407移植LVGL-GUI" class="headerlink" title="stm32F407移植LVGL+GUI"></a>stm32F407移植LVGL+GUI</h1><h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><ul>
+<li>我现在使用的开发板是STM32F407ZGT6.</li>
+<li>从网站上下载LVGL。官方网址：<a href="https://github.com/lvgl/lvgl%EF%BC%8C%E6%88%91%E5%9C%A8%E8%BF%99%E6%AC%A1%E7%A7%BB%E6%A4%8D%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E7%89%88%E6%9C%AC%E4%B8%BAv8.2%E3%80%82%EF%BC%88%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E7%9B%B8%E5%90%8C%E7%89%88%E6%9C%AC%E7%9A%84%EF%BC%8C%E5%9C%A8%E5%90%8E%E9%9D%A2%E5%A6%82%E6%9E%9C%E7%89%88%E6%9C%AC%E4%B8%8D%E5%8C%B9%E9%85%8D%E7%9A%84%E8%AF%9D%EF%BC%8C%E4%BC%9A%E5%87%BA%E7%8E%B0%E5%90%84%E7%A7%8D%E9%97%AE%E9%A2%98%EF%BC%8C%E6%89%80%E4%BB%A5%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E5%92%8C%E6%88%91%E4%B8%80%E6%A0%B7%E7%9A%84%E7%89%88%E6%9C%AC%EF%BC%89">https://github.com/lvgl/lvgl，我在这次移植过程中使用的版本为v8.2。（建议使用相同版本的，在后面如果版本不匹配的话，会出现各种问题，所以建议使用和我一样的版本）</a></li>
+<li>移植之前，准备好LCD显示实验、触摸屏实验、基本定时器实验、内存管理实验。（这里使用的所有文件都是正点原子的例程代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/165612.png"></li>
+<li>我们以内存管理实现为基础，向其添加其他文件所用的相关代码。并编译后，没有报错的话，开始正式移植。</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="移植LVGL"><a href="#移植LVGL" class="headerlink" title="移植LVGL"></a>移植LVGL</h3><h4 id="1、准备LVGL源码"><a href="#1、准备LVGL源码" class="headerlink" title="1、准备LVGL源码"></a>1、准备LVGL源码</h4><p>1、当你从上述网址中下载了LVGL的源码后，你会得到一个压缩包，解压后会得到一个如图所示的文件夹。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170022.png"></p>
+<p>2、将上图中的lv_conf_template.h 文件改名为 lv_conf.h。然后打开这个文件，在最开始的地方，找到下面的代码，并按下面的要求修改。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
+
+
+
+<p>3、删除一些我们不要的文件。</p>
+<p>在lvgl-8.2.0目录下的文件，除了demos、examples、src、lv_conf.h、lvgl.h，其他文件全部删除。最后的结果如图</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170831.png"></p>
+<p>然后打开文件examples，将其中的文件除了porting，其他全部删除。结果如图。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171049.png"></p>
+<h3 id="2、裸机移植LVGL"><a href="#2、裸机移植LVGL" class="headerlink" title="2、裸机移植LVGL"></a>2、裸机移植LVGL</h3><p>打开内存管理实验文件夹，没有移植之前的工程目录大概如下。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171409.png"></p>
+<p>我们在其中新建一些文件夹，用来存放我们要移植的代码，从Middlewares开始创建，内容如图.</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171555.png"></p>
+<p>创建完成后，我们可以把处理好的LVGL中的文件examples、src、lv_conf.h、lvgl.h这四个复制到Middlewares&#x2F;LVGL&#x2F;GUI&#x2F;lvgl目录下。结果如图</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171908.png"></p>
+<p>打开内存管理的工程，进入到keil界面的操作。</p>
+<p>点击图中红色方框。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172136.png"></p>
+<p>进入到下图这个界面按照图中创建分组，并添加相关的代码。（请注意，添加的代码比较烦，所以一定要注意）</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172319.png"></p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172602.png"></p>
+<p>添加相关的头文件路径（按照图中自上而下顺序操作）</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172743.png"></p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172917.png"></p>
+<p>开启C99模式</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/173013.png"></p>
+<p>然后编译一下，如果报错了，请检查一下，文件是否添加进来了，头文件路径是否正确。如果正常没有报错，但是会有一些报错。不必理会。</p>
+<h3 id="修改代码"><a href="#修改代码" class="headerlink" title="修改代码"></a>修改代码</h3><p>1、为LVGL提供时基。</p>
+<p>打开我们工程中的timer.c。在头部添加LVGL的头文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lvgl.h&quot;  </span><br></pre></td></tr></table></figure>
+
+<p>在中断中添加lvgl的心跳函数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//定时器3中断服务函数</span><br><span class="line">void TIM3_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET) //溢出中断</span><br><span class="line">	&#123;</span><br><span class="line">		 lv_tick_inc ( 1 );</span><br><span class="line">	&#125;</span><br><span class="line">	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述源码中，定时器中断回调函数调用了 LVGL 的 lv_tick_inc 函数，该函数可以让 LVGL内部的时基参数加 1 （入口参数为 1 的情况下）， 这里要注意，你定时器设置多少毫秒进入一次中断，那么， lv_tick_inc();函数的入口参数就设置为多少，不然时基就不准确。</p>
+<p>接下来打开main.c文件，在mian函数中添加初始化。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">TIM3_Int_Init(999,167);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>2、配置显示屏、触摸输入驱动。</p>
+<p>打开 Middlewares&#x2F;lvgl&#x2F;examples&#x2F;porting 分组中的 lv_port_disp_template.c&#x2F;h（显示屏相关）和 lv_port_indev_template.c&#x2F;h （触摸输入相关）文件，将这 4 个文件中的条件编译指令 #if 0 都修改成#if 1 ，如下源码所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>1、修改lv_port_disp_template.c文件。（基本按照图中改好，可能跟下面的截图不同，以下为准，因为这是我添加别的功能，修改了代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code.png"></p>
+<ul>
+<li><p>添加lcd的头文件，我们要使用lcd显示界面。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lcd.h&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置屏幕的分辨率。我是用的3.5存的TFTLCD屏幕，代码如下</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define MY_DISP_HOR_RES 320   /* 屏幕宽度 */</span><br><span class="line">#define MY_DISP_VER_RES 480   /* 屏幕高度 */</span><br></pre></td></tr></table></figure>
+
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175313.png"></p>
+</li>
+<li><p>在lv_port_disp_init函数中，按照图片注释下面的，保留上面的。初始化缓冲区，我们默认使用单行缓冲区。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175409.png"></p>
+</li>
+<li><p>修改分辨率。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175438.png"></p>
+</li>
+<li><p>在disp_init函数中，添加LCD的初始化。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175501.png"></p>
+</li>
+<li><p>配置花点函数，这个函数在lcd.h中可以找到。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175534.png"></p>
+</li>
+</ul>
+</li>
+<li><p>2、修改lv_port_indev_template.c文件</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code2.png"></p>
+<ul>
+<li><p>添加头文件</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180544.png"></p>
+</li>
+<li><p>注销处理显示屏之外的东西</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180611.png"></p>
+</li>
+<li><p>触摸屏初始化</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">   tp_dev . init ();</span><br><span class="line">        /* 电阻屏坐标矫正 */</span><br><span class="line">        if (KEY_Scan( 0 ) == KEY0_PRES) /* KEY0 按下 , 则执行校准程序 */</span><br><span class="line">        &#123;</span><br><span class="line">        LCD_Clear(WHITE); /* 清屏 */</span><br><span class="line">        TP_Adjust(); /* 屏幕校准 */</span><br><span class="line">        TP_Save_Adjdata();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">	//TP_Init();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检测屏幕是否被按下，</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*Return true is the touchpad is pressed*/</span><br><span class="line">static bool touchpad_is_pressed(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    tp_dev.scan(0);</span><br><span class="line">    if(tp_dev.sta &amp; TP_PRES_DOWN)</span><br><span class="line">        return true;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>返回按下的坐标</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    (*x) = tp_dev.x[0];</span><br><span class="line">    (*y) = tp_dev.y[0];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>3、修改main.c文件</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;sys.h&quot;</span><br><span class="line">#include &quot;delay.h&quot;</span><br><span class="line">#include &quot;usart.h&quot;</span><br><span class="line">#include &quot;led.h&quot;</span><br><span class="line">#include &quot;lcd.h&quot;</span><br><span class="line">#include &quot;key.h&quot;    </span><br><span class="line">#include &quot;malloc.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#include &quot;timer.h&quot;</span><br><span class="line">#include &quot;sram.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/* LVGL */</span><br><span class="line">#include &quot;lvgl.h&quot;</span><br><span class="line">#include &quot;lv_port_indev_template.h&quot;</span><br><span class="line">#include &quot;lv_port_disp_template.h&quot;</span><br><span class="line"></span><br><span class="line">#include &quot;lv_demo_stress.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;        </span><br><span class="line">    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);</span><br><span class="line">    delay_init(168);</span><br><span class="line">    uart_init(115200);</span><br><span class="line">    LED_Init();</span><br><span class="line">    LCD_Init();</span><br><span class="line">    KEY_Init(); </span><br><span class="line">    TIM3_Int_Init(999,167);</span><br><span class="line"> </span><br><span class="line">    lv_init();</span><br><span class="line">    lv_port_disp_init();</span><br><span class="line">    lv_port_indev_init();</span><br><span class="line">    </span><br><span class="line">	lv_obj_t *label = lv_label_create(lv_scr_act());</span><br><span class="line">   	lv_label_set_text(label,&quot;Hello KUrumi!!!&quot;);</span><br><span class="line">   	lv_obj_center(label);/</span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">    &#123;	</span><br><span class="line">        lv_task_handler();</span><br><span class="line">        delay_ms(5);</span><br><span class="line">    &#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>然后你会在屏幕上看到相对应的字符串。说明移植成功。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/181528.png"></p>
+</li>
+</ul>
+<h3 id="移植GUI"><a href="#移植GUI" class="headerlink" title="移植GUI"></a>移植GUI</h3><p>1、首先你要下载一个软件，GUI-Guider工具，提供了界面设计和代码生成的功能，使用这个工具能够让我们很快的设计好一个界面。（注意：你所下载的版本最好和LVGL的版本所匹配，GUI是基于LVGL的一个工具。）</p>
+<p>2、下载后，打开软件，你会看到下面这个界面。点击创建新建项目。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131252.png"></p>
+<p>3、然后你会进入一个选择LVGL版本的界面，如图，选择你项目中使用的版本号。前面使用的v8.2，所以我们选择v8.2。点击下一步。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131409.png"></p>
+<p>跳转到下面的界面，双击simulator（模拟器），这一步是选择空白的模拟器。再点击下一步。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131853.png"></p>
+<p>进入到了Templates模板界面中，我们选择EmptyUI。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/132016.png"></p>
+<p>进入带项目配置信息界面。再右侧输入栏中。我们先填写项目的名称，例如我们输入xianshi。下面是工程的路径，最后生成的代码也在这。在下面是面板类型，我们在下拉菜单中选择Custom…，下面出现新的一行，我们依次输入LCD，宽度：320；高度：480。输入完成后，点击创建。</p>
+<p>然后进入到了下面的界面，你就可以创建你的界面了。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/132920.png"></p>
+<p>下面编辑界面我就不讲解了，讲起来比较麻烦，截图太多。下面我讲解你设计好界面后如何生成代码，如何加入到工程中。</p>
+<p>插一句：如果你设计好了界面，想看看效果，GUI提供了模拟器，可以查看，点击图中绿色的按钮，选择C，就可以模拟。但是有一个前提，就是要在你的电脑上安装Java环境，才能用模拟器。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/133552.png"></p>
+<p>如何导出代码。有两种办法。</p>
+<ul>
+<li><p>你可以去你创建时的那个目录中寻找。</p>
+</li>
+<li><p>你可以直接在工具栏中选择工具-》代码导出-》路径选择桌面。</p>
+<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/133832.png"></p>
+</li>
+</ul>
+<p>我用的第二种方法，在桌面上你可以看到两个文件夹，custom和generated。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134002.png"></p>
+<p>复制这两个文件夹到我们工程目录的中 “移植gui\Middlewares\LVGL\GUI_APP\“目录中</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134203.png"></p>
+<p>打开工程，在keil添加分组，为分组中添加文件中所有的.c文件。再添加文件路径。</p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134359.png"></p>
+<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134444.png"></p>
+<p>这样就成功把GUi生成的代码加入到了我们工程中了。</p>
+<p>然后再修改mian.c中的内容。</p>
+<ul>
+<li><p>添加头文件</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">#include &quot;gui_guider.h&quot;</span><br><span class="line">#include &quot;events_init.h&quot;</span><br><span class="line">#include &quot;custom.h&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>添加全局变量</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lv_ui guider_ui;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在mian函数中添加初始化。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setup_ui(&amp;guider_ui);</span><br><span class="line">   events_init(&amp;guider_ui);</span><br><span class="line">   custom_init(&amp;guider_ui);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译没有报错，你就可以在你的LCD屏幕上看到你设计的界面了。</p>
+</li>
+<li><p>如果编译报错，如下面这样，提示#include “lv_font.h”出错，找到guider_fonts.h文件，修改#include “lv_font.h”。修改完成后如下，或者你可直接找到lv_font.h文件，直接复制到generated文件夹中。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">..\Middlewares\LVGL\GUI_APP\generated\guider_fonts\guider_fonts.h(8): error:  #5: cannot open source input file &quot;lv_font.h&quot;: No such file or directory</span><br><span class="line">      #include &quot;lv_font.h&quot;</span><br></pre></td></tr></table></figure>
+
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef GUIDER_FONTS_H</span><br><span class="line">#define GUIDER_FONTS_H</span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">extern &quot;C&quot; &#123;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#include &quot;../../GUI/lvgl/src/font/lv_font.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line">#endif</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>stm32F407</tag>
+        <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu根文件系统移植</title>
     <url>/2025/02/20/ubuntu%E6%A0%B9%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
     <content><![CDATA[<h1 id="ubuntu根文件系统移植"><a href="#ubuntu根文件系统移植" class="headerlink" title="ubuntu根文件系统移植"></a>ubuntu根文件系统移植</h1><p>现在有更好的教程了。还是两个结合的看把。</p>
@@ -1668,6 +1862,114 @@
       <tags>
         <tag>linux移植</tag>
         <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>内存管理</title>
+    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
+    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
+<p>下面是对内存的动态管理。</p>
+<span id="more"></span>
+
+<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
+<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
+<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
+<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
+<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
+<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
+<p><strong>分配原理</strong> </p>
+<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
+<p><strong>释放原理</strong> </p>
+<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
+]]></content>
+      <categories>
+        <category>stm32F407</category>
+      </categories>
+      <tags>
+        <tag>多媒体项目</tag>
+        <tag>stm32</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>串口</title>
+    <url>/2025/03/25/%E4%B8%B2%E5%8F%A3/</url>
+    <content><![CDATA[<h1 id="串口"><a href="#串口" class="headerlink" title="串口"></a>串口</h1><h2 id="1、串行通信接口简介："><a href="#1、串行通信接口简介：" class="headerlink" title="1、串行通信接口简介："></a>1、串行通信接口简介：</h2><p>串行通信是一种在电子设备之间传输数据的基本方法，其特点是通过单根导线按顺序传输单个比特。这种方法与并行通信形成对比，后者在多根导线上同时传输多个比特。</p>
+<p>虽然并行通信由于并行传输的特性，直观上看起来速度更快，但是串行通信的显著优势在于所需的连接和电缆更少，这使其特别适合远距数据传输。此外，许多串口通信标准支持全双工通信，允许同时发送和接收数据，这可以在各种引用中实现高效的总体数据吞吐量。这使得串行通信称为众多电子系统的基石，促进微控制器、计算机和各种外围设备之间的通信。</p>
+<p>在各种串行通信标准中，晶体管-晶体管逻辑（TTL）、推荐标准232（RS232）、标准485（RS485）、标准422（RS422）是常见的几种。这些标准定义用于在电子设备之间交换数据的接口的电气和物理特性。这些接口中的每一个都具有独特的优点和缺点，这决定了他们在特定应用和环境中的适用性。</p>
+<span id="more"></span>
+
+<h2 id="2、TTL串行接口"><a href="#2、TTL串行接口" class="headerlink" title="2、TTL串行接口"></a>2、TTL串行接口</h2><p>TTL串行通信是一种基本的串行数据交换形式，他利用晶体管电压电平来表示二进制数据。名为晶体管-晶体管逻辑，源于其底层的逻辑门是由双极结型晶体管构成。这些晶体管同时执行逻辑运算和信号放大功能。</p>
+<p>TTL串行通信通常与通用异步接收器&#x2F;发送器（UART）协议结合使用。UART是一个硬件模块，负责处理串行数据的发送和接收，包含讲来自微控制器的并行数据转换位串行流以用于传输。虽然UART管理这通信协议，但是TTL定义了用于电信号的特定电压电平标准。本质上，UART可以使用各种电气标准进行操作，包括TTL、RS232.</p>
+<p>TTL串行通信的电气特性由其电压电平和单端信令定义。通常TTL在一个低电压范围内工作，介于0V-VCC（3.5V或者5V）。</p>
+<p>逻辑高电平（二进制表示1）通常由VCC电压电平（3.3V或5V）。逻辑低电平（二进制表示0），通常在0V附近。</p>
+<p>TTL接收器可以接收输入电压电平通常为，逻辑低电平0-0.8V。逻辑高电平2-5V。</p>
+<p>TTL发送器的输出电压电平，逻辑低电平0-0.4或0.5V，逻辑高电平2.4或2.7V-5V。</p>
+<p>尽管具有诸多优点，TTL 串行通信也存在一些局限性。由于其相对较小的噪声容限，它容易受到外部电噪声和干扰的影响，这可能会损坏传输的数据 。与其他串行通信标准相比，TTL 通常具有有限的传输速度和频率能力 。此外，在较高的工作频率下，TTL 电路的功耗可能会更高 。TTL 固有的较低电压电平也限制了其在长距离传输中的有效使用，因为信号衰减会更加明显 。与差分信令技术相比，TTL 采用的单端信令方法本质上更容易在较长的电缆长度上累积噪声 。此外，某些 TTL 实现中的基本输出级配置可能具有相对较高的输出电阻，这会限制可以可靠驱动的输入设备数量（扇出）</p>
+<h2 id="3、RS232串行接口"><a href="#3、RS232串行接口" class="headerlink" title="3、RS232串行接口"></a>3、RS232串行接口</h2><p>RS232串行接口时最早也是历史上最重要的串行通信标准之一。通常简称串行连接，他的开发是为了建立一种异步串行数据交换的标准化方法。RS232 采用异步传输，这意味着数据位按顺序传输，没有共享的时钟信号。相反，发送和接收设备之间的同步是通过使用起始位和停止位来实现的，这些位构成每个数据包的帧 。</p>
+<p>RS232的电气特性使用负电压、正电压便是二进制逻辑状态。</p>
+<p>逻辑1，通常称为标记、非断言状态。由负电压表示，通常范围在-3至-15V。</p>
+<p>逻辑0，通常称为空格、断言状态。由正电压表示，通常范围在+3V至+15V。</p>
+<p>这种更宽的电压摆幅以及正负电压的使用有助于 RS232 相比 TTL 具有更高的抗噪声和抗干扰能力，因为逻辑电平之间较大的电压差为抵抗杂散电压波动提供了更大的裕量 。</p>
+<p>RS232通常使用9针或者25针连接器。在9针配置中：</p>
+<ul>
+<li>发送数据TXD引脚：将数据从DTE发送给DCE。</li>
+<li>接收数据RXD引脚：接收DCE发送到DTE的数据。</li>
+<li>接地GND引脚：为所有信号提供公共的电压参考。</li>
+<li>请求发送RTS：提示DTE打算发送数据。</li>
+<li>清除发送CTS：表示DCE已准备好接收数据。</li>
+<li>数据中断就绪DTR</li>
+<li>数据集就绪DSR</li>
+<li>数据载波检测DCD</li>
+<li>振铃指示器RI</li>
+</ul>
+<p>RS232接口最大传输距离和数据速率方面存在限制，当较低波特率（9600），最大的传输距离15米。</p>
+<p>TTL和RS232串行接口比较：<br><img src="/2025/03/25/%E4%B8%B2%E5%8F%A3/133739.png"></p>
+<h2 id="RS485串行接口"><a href="#RS485串行接口" class="headerlink" title="RS485串行接口"></a>RS485串行接口</h2><p>RS485是在RS232基础上的一个进步，专门克制距离限制和多个设备通信的能力。RS485采用平衡传输、差分接收。提供了高数据传输速率和抗电噪声能力。RS485支持多点网络拓扑。允许多个设备连接在同一条总线上。（最多32个发送器和32个接收器）RS485可以工作在半双工模式，或者全双工。</p>
+<p>RS485增强抗噪声能力主要是差分信令的使用。使用这种方法，数据不再是相对于地的绝对电压点评传输，而是作为一根导线的两端电压差传输。这种方法有效抑制共模噪声。</p>
+<p>RS485还具备多设备连接。允许多个设备共享同一组通信线路。形成一种总线拓扑结构。所有设备并联连接在主传输线上。</p>
+<p>与RS232相比，RS485提升了最大传输速率和传输距离。RS485最大传输距离1200米。最大传输速率可达到10Mbps。</p>
+<h2 id="RS422串行接口"><a href="#RS422串行接口" class="headerlink" title="RS422串行接口"></a>RS422串行接口</h2><p>RS422串行接口，也成为EIA-422A，其开发的目的是为了解决RS-232C标准的一些局限性。尤其是在传输距离和传输速率上。与RS485类似，RS422采用差分信令。这增强看抗噪声干扰和更远距离传输。在常见的RS422配置中，是一个发送器和多达10个接收器进行通信，形成多点设置。</p>
+<p>RS422与RS485相比的区别是：</p>
+<ul>
+<li>RS422通常在任何给定时间内，都是一个发送器和多个接收器；RS485则是多个发送器和多个接收器同时发起通信。</li>
+<li>RS422通常以全双工模式运行；RS485通常是半双工或者全双工。</li>
+</ul>
+<h2 id="TTL、RS232、RS485、RS422串口经进行比较"><a href="#TTL、RS232、RS485、RS422串口经进行比较" class="headerlink" title="TTL、RS232、RS485、RS422串口经进行比较"></a>TTL、RS232、RS485、RS422串口经进行比较</h2><p><img src="/2025/03/25/%E4%B8%B2%E5%8F%A3/135630.png"></p>
+<h2 id="TTL、RS232、RS485、RS422与UART、IIC-I²C-、SPI、CAN的区别"><a href="#TTL、RS232、RS485、RS422与UART、IIC-I²C-、SPI、CAN的区别" class="headerlink" title="TTL、RS232、RS485、RS422与UART、IIC (I²C)、SPI、CAN的区别"></a>TTL、RS232、RS485、RS422与UART、IIC (I²C)、SPI、CAN的区别</h2><ul>
+<li>TTL、RS232、RS485、RS422主要描述的物理层的电气特性和信号传输方式。它们定义了信号的电压电平，传输方式（单端还是差分），传输距离、连接方式等物理层的规范。</li>
+<li>UART、IIC (I²C)、SPI、CAN 主要描述的是数据链路层和部分网络层的通信协议。它们规定了数据是如何组织、编码、寻址、同步、校验以在多i个设备中间进行有效通信的规和流程。</li>
+</ul>
+<p><strong>1. 物理层标准 (The Physical Envelope and Delivery Method):</strong></p>
+<ul>
+<li><p>TTL、RS232、RS485、RS422 就好比您选择的信封和邮递方式。</p>
+<p>   它们关注的是如何物理地将信息从一个地方送到另一个地方。</p>
+<ul>
+<li><strong>TTL:</strong> 可以想象成您只是把写好的便条直接递给坐在您旁边的人。距离很近，方式简单。</li>
+<li><strong>RS232:</strong> 就像您使用普通的信封，通过邮局以普通邮件的方式寄给同城的人。距离稍远，但速度可能不是很快。</li>
+<li><strong>RS485&#x2F;RS422:</strong> 更像是您使用更坚固的信封，并且选择了快递服务。这样可以保证信件在更远的距离上更可靠地传输，不容易损坏。RS485 还允许多个人（多个地址）在同一个邮政系统（同一条线路）上寄送和接收信件。</li>
+</ul>
+</li>
+</ul>
+<p><strong>2. 通信协议 (The Content and Rules of the Letter):</strong></p>
+<ul>
+<li><p>UART、IIC、SPI、CAN 就好比您在信封里写的信的内容、格式和邮寄的规则。</p>
+<p>   它们关注的是您要传递什么信息以及如何确保对方能够正确理解。</p>
+<ul>
+<li><strong>UART:</strong> 就像您写一封简单的短信或便条，包含一些文字，没有复杂的格式。您需要确保收发双方都知道发送信息的“速度”（波特率）以及如何识别每个字符的开始和结束。</li>
+<li><strong>IIC (I²C):</strong> 就像您写一封需要发送给特定收件人的信件，并且可能需要对方回复。您需要在信封上写清楚收件人的地址，并且可能需要使用某种方式确认对方收到了信件。</li>
+<li><strong>SPI:</strong> 就像您和多个朋友约定好一个特定的暗号和交流方式。有一个“领导者”负责发起对话，其他人按照约定好的顺序和方式进行回应。</li>
+<li><strong>CAN:</strong> 更像是在一个组织内部发送通知或消息。每条消息都有一个优先级，重要的消息会优先传递。如果发送过程中出现问题，系统会自动尝试重新发送。</li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>stm32</category>
+      </categories>
+      <tags>
+        <tag>TTL串口</tag>
+        <tag>485串口</tag>
+        <tag>232串口</tag>
       </tags>
   </entry>
   <entry>
@@ -1863,173 +2165,6 @@
       </tags>
   </entry>
   <entry>
-    <title>stm32F407移植LVGL+GUI</title>
-    <url>/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/</url>
-    <content><![CDATA[<h1 id="stm32F407移植LVGL-GUI"><a href="#stm32F407移植LVGL-GUI" class="headerlink" title="stm32F407移植LVGL+GUI"></a>stm32F407移植LVGL+GUI</h1><h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><ul>
-<li>我现在使用的开发板是STM32F407ZGT6.</li>
-<li>从网站上下载LVGL。官方网址：<a href="https://github.com/lvgl/lvgl%EF%BC%8C%E6%88%91%E5%9C%A8%E8%BF%99%E6%AC%A1%E7%A7%BB%E6%A4%8D%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E7%89%88%E6%9C%AC%E4%B8%BAv8.2%E3%80%82%EF%BC%88%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E7%9B%B8%E5%90%8C%E7%89%88%E6%9C%AC%E7%9A%84%EF%BC%8C%E5%9C%A8%E5%90%8E%E9%9D%A2%E5%A6%82%E6%9E%9C%E7%89%88%E6%9C%AC%E4%B8%8D%E5%8C%B9%E9%85%8D%E7%9A%84%E8%AF%9D%EF%BC%8C%E4%BC%9A%E5%87%BA%E7%8E%B0%E5%90%84%E7%A7%8D%E9%97%AE%E9%A2%98%EF%BC%8C%E6%89%80%E4%BB%A5%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E5%92%8C%E6%88%91%E4%B8%80%E6%A0%B7%E7%9A%84%E7%89%88%E6%9C%AC%EF%BC%89">https://github.com/lvgl/lvgl，我在这次移植过程中使用的版本为v8.2。（建议使用相同版本的，在后面如果版本不匹配的话，会出现各种问题，所以建议使用和我一样的版本）</a></li>
-<li>移植之前，准备好LCD显示实验、触摸屏实验、基本定时器实验、内存管理实验。（这里使用的所有文件都是正点原子的例程代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/165612.png"></li>
-<li>我们以内存管理实现为基础，向其添加其他文件所用的相关代码。并编译后，没有报错的话，开始正式移植。</li>
-</ul>
-<span id="more"></span>
-
-<h3 id="移植LVGL"><a href="#移植LVGL" class="headerlink" title="移植LVGL"></a>移植LVGL</h3><h4 id="1、准备LVGL源码"><a href="#1、准备LVGL源码" class="headerlink" title="1、准备LVGL源码"></a>1、准备LVGL源码</h4><p>1、当你从上述网址中下载了LVGL的源码后，你会得到一个压缩包，解压后会得到一个如图所示的文件夹。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170022.png"></p>
-<p>2、将上图中的lv_conf_template.h 文件改名为 lv_conf.h。然后打开这个文件，在最开始的地方，找到下面的代码，并按下面的要求修改。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
-
-
-
-<p>3、删除一些我们不要的文件。</p>
-<p>在lvgl-8.2.0目录下的文件，除了demos、examples、src、lv_conf.h、lvgl.h，其他文件全部删除。最后的结果如图</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/170831.png"></p>
-<p>然后打开文件examples，将其中的文件除了porting，其他全部删除。结果如图。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171049.png"></p>
-<h3 id="2、裸机移植LVGL"><a href="#2、裸机移植LVGL" class="headerlink" title="2、裸机移植LVGL"></a>2、裸机移植LVGL</h3><p>打开内存管理实验文件夹，没有移植之前的工程目录大概如下。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171409.png"></p>
-<p>我们在其中新建一些文件夹，用来存放我们要移植的代码，从Middlewares开始创建，内容如图.</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171555.png"></p>
-<p>创建完成后，我们可以把处理好的LVGL中的文件examples、src、lv_conf.h、lvgl.h这四个复制到Middlewares&#x2F;LVGL&#x2F;GUI&#x2F;lvgl目录下。结果如图</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/171908.png"></p>
-<p>打开内存管理的工程，进入到keil界面的操作。</p>
-<p>点击图中红色方框。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172136.png"></p>
-<p>进入到下图这个界面按照图中创建分组，并添加相关的代码。（请注意，添加的代码比较烦，所以一定要注意）</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172319.png"></p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172602.png"></p>
-<p>添加相关的头文件路径（按照图中自上而下顺序操作）</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172743.png"></p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/172917.png"></p>
-<p>开启C99模式</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/173013.png"></p>
-<p>然后编译一下，如果报错了，请检查一下，文件是否添加进来了，头文件路径是否正确。如果正常没有报错，但是会有一些报错。不必理会。</p>
-<h3 id="修改代码"><a href="#修改代码" class="headerlink" title="修改代码"></a>修改代码</h3><p>1、为LVGL提供时基。</p>
-<p>打开我们工程中的timer.c。在头部添加LVGL的头文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lvgl.h&quot;  </span><br></pre></td></tr></table></figure>
-
-<p>在中断中添加lvgl的心跳函数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//定时器3中断服务函数</span><br><span class="line">void TIM3_IRQHandler(void)</span><br><span class="line">&#123;</span><br><span class="line">	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET) //溢出中断</span><br><span class="line">	&#123;</span><br><span class="line">		 lv_tick_inc ( 1 );</span><br><span class="line">	&#125;</span><br><span class="line">	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上述源码中，定时器中断回调函数调用了 LVGL 的 lv_tick_inc 函数，该函数可以让 LVGL内部的时基参数加 1 （入口参数为 1 的情况下）， 这里要注意，你定时器设置多少毫秒进入一次中断，那么， lv_tick_inc();函数的入口参数就设置为多少，不然时基就不准确。</p>
-<p>接下来打开main.c文件，在mian函数中添加初始化。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">TIM3_Int_Init(999,167);</span><br></pre></td></tr></table></figure>
-
-
-
-<p>2、配置显示屏、触摸输入驱动。</p>
-<p>打开 Middlewares&#x2F;lvgl&#x2F;examples&#x2F;porting 分组中的 lv_port_disp_template.c&#x2F;h（显示屏相关）和 lv_port_indev_template.c&#x2F;h （触摸输入相关）文件，将这 4 个文件中的条件编译指令 #if 0 都修改成#if 1 ，如下源码所示：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">修改前：</span><br><span class="line"></span><br><span class="line">#if 0 /*Set it to &quot;1&quot; to enable content*/</span><br><span class="line"></span><br><span class="line">修改后：</span><br><span class="line"></span><br><span class="line">#if 1 /* 把#if 0 修改成</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>1、修改lv_port_disp_template.c文件。（基本按照图中改好，可能跟下面的截图不同，以下为准，因为这是我添加别的功能，修改了代码）<br>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code.png"></p>
-<ul>
-<li><p>添加lcd的头文件，我们要使用lcd显示界面。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;lcd.h&quot;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>配置屏幕的分辨率。我是用的3.5存的TFTLCD屏幕，代码如下</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define MY_DISP_HOR_RES 320   /* 屏幕宽度 */</span><br><span class="line">#define MY_DISP_VER_RES 480   /* 屏幕高度 */</span><br></pre></td></tr></table></figure>
-
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175313.png"></p>
-</li>
-<li><p>在lv_port_disp_init函数中，按照图片注释下面的，保留上面的。初始化缓冲区，我们默认使用单行缓冲区。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175409.png"></p>
-</li>
-<li><p>修改分辨率。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175438.png"></p>
-</li>
-<li><p>在disp_init函数中，添加LCD的初始化。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175501.png"></p>
-</li>
-<li><p>配置花点函数，这个函数在lcd.h中可以找到。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/175534.png"></p>
-</li>
-</ul>
-</li>
-<li><p>2、修改lv_port_indev_template.c文件</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/code2.png"></p>
-<ul>
-<li><p>添加头文件</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180544.png"></p>
-</li>
-<li><p>注销处理显示屏之外的东西</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/180611.png"></p>
-</li>
-<li><p>触摸屏初始化</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_init(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">   tp_dev . init ();</span><br><span class="line">        /* 电阻屏坐标矫正 */</span><br><span class="line">        if (KEY_Scan( 0 ) == KEY0_PRES) /* KEY0 按下 , 则执行校准程序 */</span><br><span class="line">        &#123;</span><br><span class="line">        LCD_Clear(WHITE); /* 清屏 */</span><br><span class="line">        TP_Adjust(); /* 屏幕校准 */</span><br><span class="line">        TP_Save_Adjdata();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">	//TP_Init();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>检测屏幕是否被按下，</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/*Return true is the touchpad is pressed*/</span><br><span class="line">static bool touchpad_is_pressed(void)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    tp_dev.scan(0);</span><br><span class="line">    if(tp_dev.sta &amp; TP_PRES_DOWN)</span><br><span class="line">        return true;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>返回按下的坐标</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)</span><br><span class="line">&#123;</span><br><span class="line">    /*Your code comes here*/</span><br><span class="line">    (*x) = tp_dev.x[0];</span><br><span class="line">    (*y) = tp_dev.y[0];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>3、修改main.c文件</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &quot;sys.h&quot;</span><br><span class="line">#include &quot;delay.h&quot;</span><br><span class="line">#include &quot;usart.h&quot;</span><br><span class="line">#include &quot;led.h&quot;</span><br><span class="line">#include &quot;lcd.h&quot;</span><br><span class="line">#include &quot;key.h&quot;    </span><br><span class="line">#include &quot;malloc.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#include &quot;timer.h&quot;</span><br><span class="line">#include &quot;sram.h&quot; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/* LVGL */</span><br><span class="line">#include &quot;lvgl.h&quot;</span><br><span class="line">#include &quot;lv_port_indev_template.h&quot;</span><br><span class="line">#include &quot;lv_port_disp_template.h&quot;</span><br><span class="line"></span><br><span class="line">#include &quot;lv_demo_stress.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;        </span><br><span class="line">    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);</span><br><span class="line">    delay_init(168);</span><br><span class="line">    uart_init(115200);</span><br><span class="line">    LED_Init();</span><br><span class="line">    LCD_Init();</span><br><span class="line">    KEY_Init(); </span><br><span class="line">    TIM3_Int_Init(999,167);</span><br><span class="line"> </span><br><span class="line">    lv_init();</span><br><span class="line">    lv_port_disp_init();</span><br><span class="line">    lv_port_indev_init();</span><br><span class="line">    </span><br><span class="line">	lv_obj_t *label = lv_label_create(lv_scr_act());</span><br><span class="line">   	lv_label_set_text(label,&quot;Hello KUrumi!!!&quot;);</span><br><span class="line">   	lv_obj_center(label);/</span><br><span class="line"></span><br><span class="line">    while(1)</span><br><span class="line">    &#123;	</span><br><span class="line">        lv_task_handler();</span><br><span class="line">        delay_ms(5);</span><br><span class="line">    &#125;	</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>然后你会在屏幕上看到相对应的字符串。说明移植成功。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/181528.png"></p>
-</li>
-</ul>
-<h3 id="移植GUI"><a href="#移植GUI" class="headerlink" title="移植GUI"></a>移植GUI</h3><p>1、首先你要下载一个软件，GUI-Guider工具，提供了界面设计和代码生成的功能，使用这个工具能够让我们很快的设计好一个界面。（注意：你所下载的版本最好和LVGL的版本所匹配，GUI是基于LVGL的一个工具。）</p>
-<p>2、下载后，打开软件，你会看到下面这个界面。点击创建新建项目。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131252.png"></p>
-<p>3、然后你会进入一个选择LVGL版本的界面，如图，选择你项目中使用的版本号。前面使用的v8.2，所以我们选择v8.2。点击下一步。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131409.png"></p>
-<p>跳转到下面的界面，双击simulator（模拟器），这一步是选择空白的模拟器。再点击下一步。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/131853.png"></p>
-<p>进入到了Templates模板界面中，我们选择EmptyUI。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/132016.png"></p>
-<p>进入带项目配置信息界面。再右侧输入栏中。我们先填写项目的名称，例如我们输入xianshi。下面是工程的路径，最后生成的代码也在这。在下面是面板类型，我们在下拉菜单中选择Custom…，下面出现新的一行，我们依次输入LCD，宽度：320；高度：480。输入完成后，点击创建。</p>
-<p>然后进入到了下面的界面，你就可以创建你的界面了。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/132920.png"></p>
-<p>下面编辑界面我就不讲解了，讲起来比较麻烦，截图太多。下面我讲解你设计好界面后如何生成代码，如何加入到工程中。</p>
-<p>插一句：如果你设计好了界面，想看看效果，GUI提供了模拟器，可以查看，点击图中绿色的按钮，选择C，就可以模拟。但是有一个前提，就是要在你的电脑上安装Java环境，才能用模拟器。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/133552.png"></p>
-<p>如何导出代码。有两种办法。</p>
-<ul>
-<li><p>你可以去你创建时的那个目录中寻找。</p>
-</li>
-<li><p>你可以直接在工具栏中选择工具-》代码导出-》路径选择桌面。</p>
-<p>  <img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/133832.png"></p>
-</li>
-</ul>
-<p>我用的第二种方法，在桌面上你可以看到两个文件夹，custom和generated。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134002.png"></p>
-<p>复制这两个文件夹到我们工程目录的中 “移植gui\Middlewares\LVGL\GUI_APP\“目录中</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134203.png"></p>
-<p>打开工程，在keil添加分组，为分组中添加文件中所有的.c文件。再添加文件路径。</p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134359.png"></p>
-<p><img src="/2025/03/07/stm32F407%E7%A7%BB%E6%A4%8DLVGL-GUI/134444.png"></p>
-<p>这样就成功把GUi生成的代码加入到了我们工程中了。</p>
-<p>然后再修改mian.c中的内容。</p>
-<ul>
-<li><p>添加头文件</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">#include &quot;gui_guider.h&quot;</span><br><span class="line">#include &quot;events_init.h&quot;</span><br><span class="line">#include &quot;custom.h&quot;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>添加全局变量</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lv_ui guider_ui;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在mian函数中添加初始化。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setup_ui(&amp;guider_ui);</span><br><span class="line">   events_init(&amp;guider_ui);</span><br><span class="line">   custom_init(&amp;guider_ui);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>编译没有报错，你就可以在你的LCD屏幕上看到你设计的界面了。</p>
-</li>
-<li><p>如果编译报错，如下面这样，提示#include “lv_font.h”出错，找到guider_fonts.h文件，修改#include “lv_font.h”。修改完成后如下，或者你可直接找到lv_font.h文件，直接复制到generated文件夹中。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">..\Middlewares\LVGL\GUI_APP\generated\guider_fonts\guider_fonts.h(8): error:  #5: cannot open source input file &quot;lv_font.h&quot;: No such file or directory</span><br><span class="line">      #include &quot;lv_font.h&quot;</span><br></pre></td></tr></table></figure>
-
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#ifndef GUIDER_FONTS_H</span><br><span class="line">#define GUIDER_FONTS_H</span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">extern &quot;C&quot; &#123;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#include &quot;../../GUI/lvgl/src/font/lv_font.h&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line">#endif</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>stm32F407</tag>
-        <tag>多媒体项目</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>基于SD卡的FATFS文件管理系统</title>
     <url>/2025/03/19/%E5%9F%BA%E4%BA%8ESD%E5%8D%A1%E7%9A%84FATFS%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/</url>
     <content><![CDATA[<h2 id="1-引言：理解嵌入式系统中的-FATFS-和-SD-卡"><a href="#1-引言：理解嵌入式系统中的-FATFS-和-SD-卡" class="headerlink" title="1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡"></a>1. 引言：理解嵌入式系统中的 FATFS 和 SD 卡</h2><p>随着嵌入式系统在各个领域的日益普及，对高效数据存储解决方案的需求也随之增长。在众多可用的文件系统中，FATFS 因其轻量级特性和对 FAT 文件格式的广泛兼容性而成为嵌入式应用的热门选择 。与此同时，SD 卡已成为嵌入式系统中无处不在的存储介质，其种类繁多，容量各异，满足了各种应用场景的需求 。本报告旨在深入探讨 FATFS 在 SD 卡环境下的应用，涵盖其特性、实现、应用场景、性能、挑战以及与其他文件系统的比较。  </p>
@@ -2108,32 +2243,6 @@
       </categories>
       <tags>
         <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>内存管理</title>
-    <url>/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
-    <content><![CDATA[<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>前面学习了FSMC外设驱动外部SRAM，拓展STM32F407的内存，而且STM32F407本身就有192K的内存。</p>
-<p>下面是对内存的动态管理。</p>
-<span id="more"></span>
-
-<h3 id="1、内存管理简介"><a href="#1、内存管理简介" class="headerlink" title="1、内存管理简介"></a>1、内存管理简介</h3><p>内存管理就是，在软件运行时对计算机的内存资源进行分配和使用。主要目的就是如何高效、快速的分配，并在适当的时候回收这些资源。内存管理的实现方法有很多中，主要实现的是两个 函数：malloc、free。</p>
-<p>下面介绍一个一个简单的方法来实现：分块式内存管理。</p>
-<p><img src="/2025/03/06/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/094306.png"></p>
-<p>从图片中，可以看出内存管理分为内存池和内存管理表。内存池和内存管理表都分为N块，并且一一对应。</p>
-<p>其中内存管理表的项值代表着内存池中占用的数量。当项值为0时，表示未有内存被占用。当项值为10，表示有10个内存块被占用。</p>
-<p>内存分配的方向是从顶到低。即寻找最低端的空内存。当内存初始化时，内存表会被清空。</p>
-<p><strong>分配原理</strong> </p>
-<p>当指针调用malloc内存分配函数时，首先要知道指针需要的内存块数，然后从第N项开始，向下寻找，知道找到指针需要的内存块数，最后，把这个空内存块的地址放回给指针。如果内存不足，则返回NULL。</p>
-<p><strong>释放原理</strong> </p>
-<p>当指针的内存使用完成后，需要释放时，调用free内存释放函数。free函数会根据传入的指针，找到其指向的内存块，在找到相对应的内存管理表项，根据其项值，知道了使用的内存块数量，然后将这个写内存块全部清零。</p>
-]]></content>
-      <categories>
-        <category>stm32F407</category>
-      </categories>
-      <tags>
-        <tag>多媒体项目</tag>
-        <tag>stm32</tag>
       </tags>
   </entry>
   <entry>
@@ -3194,109 +3303,6 @@
       </tags>
   </entry>
   <entry>
-    <title>驱动和设备匹配过程</title>
-    <url>/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/</url>
-    <content><![CDATA[<h1 id="匹配过程及其问题"><a href="#匹配过程及其问题" class="headerlink" title="匹配过程及其问题"></a>匹配过程及其问题</h1><h4 id="1、匹配过程"><a href="#1、匹配过程" class="headerlink" title="1、匹配过程"></a>1、匹配过程</h4><p>​	在linux驱动中，目前学到了三种编写代码的方式。</p>
-<ul>
-<li><p>第一种：传统编写。驱动和硬件写在一起，让linux内核和硬件交织在一起，这是早期linux开发的编写方式，不推荐使用，可以在初学时看看，也可以不看，不影响。</p>
-</li>
-<li><p>第二种：使驱动和设备硬件分开编写。pdrv主要编写linux的内核代码，pdev主要关于硬件的资源。分开有利管理，但是当设备多了之后，又出现了问题，代码太多，太繁。</p>
-</li>
-<li><p>第三种：使用设备树。驱动的代码基本不变，修改设备硬件的代码，把使用的设备硬件汇总为一个设备树的结构，每个节点都是一个设备硬件，代码简单、方便、便于移植。</p>
-<span id="more"></span></li>
-</ul>
-<p>第一种不说了。主要讲第二、三种的匹配过程，阅读一下内核源码，看一下整个流程。（目前刚刚开始学习不久，仅仅学到设备树，所以就目前掌握的开始写和搜的，如果以后学习到更深，在回来补充）</p>
-<ul>
-<li><p>平台总线的平台驱动和平台设备匹配过程</p>
-<ul>
-<li><p>1、首先先讲解两个函数。平台设备注册int platform_device_register(struct <em>platform_device</em> *)；平台驱动注册platform_driver_register(<em>drv</em>)。这是两个注册函数，将我们自定义的平台设备和平台驱动注册到平台总线中去。他们会在平台总线中相遇，至于怎么找到双方，那就要有一个信物，两者个持一个，匹配上了就会成功。这个信物就是name（名称），下面会讲解。</p>
-<ul>
-<li><p><em><em>平台设备注册：int platform_device_register(struct platform_device pdev</em>)</em>* </p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_register(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	device_initialize(&amp;pdev-&gt;dev);</span><br><span class="line">	setup_pdev_dma_masks(pdev);</span><br><span class="line">	return platform_device_add(pdev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>在平台设备注册函数中主要完成下面任务：</p>
-<p>  1、初始化struct platform_device结构体中的struct device结构体。[它将平台设备纳入到 Linux 设备模型中，使其能够被设备模型管理和访问。](#####1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？)</p>
-<p>  2、关于DMA的，这个函数用于设置设备的 DMA (Direct Memory Access) 掩码。DMA 允许设备直接访问内存，而无需 CPU 的干预，从而提高数据传输效率。DMA 掩码用于限制设备可以访问的内存地址范围。</p>
-<p>  3、这个函数是平台设备的注册的真正执行着，将平台设备添加到平台总线的设备列表中。触发驱动程序等到匹配。</p>
-</li>
-<li><p><strong>在platform_device_add(pdev);函数中，找到源码解读。</strong><br>  1、参数检查和初始化</p>
-<ul>
-<li>首先检查pdev指针是否为空。</li>
-<li>如果pdev的父设备为空，则将其设置成平台总线。（可见平台总线相当于根节点，下面挂着一串平台设备列表）</li>
-<li>设备pdev的总线类型为平台总线类型（platform_bus_type）（<a href="#####2%E3%80%81%E5%B9%B3%E5%8F%B0%E6%80%BB%E7%BA%BF%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%B9%B3%E5%8F%B0%E5%8C%B9%E9%85%8D%E7%9A%84%E5%85%B3%E7%B3%BB">这个平台总线类型是平台匹配的重要部分</a>）。</li>
-</ul>
-<p>  2、设置设备名称</p>
-<ul>
-<li>根据 <code>pdev-&gt;id</code>的值，使用<code>dev_set_name</code>函数设备<code>pdev</code>的设备名称。</li>
-<li>如果<code>pdev-&gt;id</code>为默认值，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id</code>。</li>
-<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_NONE</code>，则将名称设置为<code>pdev-&gt;name</code>。</li>
-<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_AUTO</code>，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id.auto</code>。</li>
-</ul>
-<p>  3、注册设备资源</p>
-<ul>
-<li>遍历<code>pdev-&gt;resource</code> 数组，该数组中存放着设备使用的资源信息（例如内存地址、中断号等）</li>
-<li>为每个资源设置名称</li>
-<li>为每个资源设置父资源</li>
-</ul>
-<p>  4、添加设备</p>
-<ul>
-<li>打印注册信息</li>
-<li>调用 <code>device_add</code> 函数将设备添加到linux设备模型中。</li>
-</ul>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_add(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	u32 i;</span><br><span class="line">	int ret;</span><br><span class="line"></span><br><span class="line">	if (!pdev)</span><br><span class="line">		return -EINVAL;</span><br><span class="line"></span><br><span class="line">	if (!pdev-&gt;dev.parent)</span><br><span class="line">		pdev-&gt;dev.parent = &amp;platform_bus;</span><br><span class="line"></span><br><span class="line">	pdev-&gt;dev.bus = &amp;platform_bus_type;</span><br><span class="line"></span><br><span class="line">	switch (pdev-&gt;id) &#123;</span><br><span class="line">	default:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d&quot;, pdev-&gt;name,  pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_NONE:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s&quot;, pdev-&gt;name);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_AUTO:</span><br><span class="line">		/*</span><br><span class="line">		 * Automatically allocated device ID. We mark it as such so</span><br><span class="line">		 * that we remember it must be freed, and we append a suffix</span><br><span class="line">		 * to avoid namespace collision with explicit IDs.</span><br><span class="line">		 */</span><br><span class="line">		ret = ida_simple_get(&amp;platform_devid_ida, 0, 0, GFP_KERNEL);</span><br><span class="line">		if (ret &lt; 0)</span><br><span class="line">			goto err_out;</span><br><span class="line">		pdev-&gt;id = ret;</span><br><span class="line">		pdev-&gt;id_auto = true;</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d.auto&quot;, pdev-&gt;name, pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	for (i = 0; i &lt; pdev-&gt;num_resources; i++) &#123;</span><br><span class="line">		struct resource *p, *r = &amp;pdev-&gt;resource[i];</span><br><span class="line"></span><br><span class="line">		if (r-&gt;name == NULL)</span><br><span class="line">			r-&gt;name = dev_name(&amp;pdev-&gt;dev);</span><br><span class="line"></span><br><span class="line">		p = r-&gt;parent;</span><br><span class="line">		if (!p) &#123;</span><br><span class="line">			if (resource_type(r) == IORESOURCE_MEM)</span><br><span class="line">				p = &amp;iomem_resource;</span><br><span class="line">			else if (resource_type(r) == IORESOURCE_IO)</span><br><span class="line">				p = &amp;ioport_resource;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if (p) &#123;</span><br><span class="line">			ret = insert_resource(p, r);</span><br><span class="line">			if (ret) &#123;</span><br><span class="line">				dev_err(&amp;pdev-&gt;dev, &quot;failed to claim resource %d: %pR\n&quot;, i, r);</span><br><span class="line">				goto failed;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Registering platform device &#x27;%s&#x27;. Parent at %s\n&quot;,</span><br><span class="line">		 dev_name(&amp;pdev-&gt;dev), dev_name(pdev-&gt;dev.parent));</span><br><span class="line"></span><br><span class="line">	ret = device_add(&amp;pdev-&gt;dev);</span><br><span class="line">	if (ret == 0)</span><br><span class="line">		return ret;</span><br><span class="line"></span><br><span class="line"> failed:</span><br><span class="line">	if (pdev-&gt;id_auto) &#123;</span><br><span class="line">		ida_simple_remove(&amp;platform_devid_ida, pdev-&gt;id);</span><br><span class="line">		pdev-&gt;id = PLATFORM_DEVID_AUTO;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	while (i--) &#123;</span><br><span class="line">		struct resource *r = &amp;pdev-&gt;resource[i];</span><br><span class="line">		if (r-&gt;parent)</span><br><span class="line">			release_resource(r);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"> err_out:</span><br><span class="line">	return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>注册平台设备需要一个struct platform_device *<em>pdev</em>结构体，具体内容如下：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct platform_device &#123;</span><br><span class="line">	const char	*name;</span><br><span class="line">	int		id;</span><br><span class="line">	bool		id_auto;</span><br><span class="line">	struct device	dev;</span><br><span class="line">	u64		platform_dma_mask;</span><br><span class="line">	u32		num_resources;</span><br><span class="line">	struct resource	*resource;</span><br><span class="line"></span><br><span class="line">	const struct platform_device_id	*id_entry;</span><br><span class="line">	char *driver_override; /* Driver name to force a match */</span><br><span class="line"></span><br><span class="line">	/* MFD cell pointer */</span><br><span class="line">	struct mfd_cell *mfd_cell;</span><br><span class="line"></span><br><span class="line">	/* arch specific additions */</span><br><span class="line">	struct pdev_archdata	archdata;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p><strong>平台驱动注册函数platform_driver_register(<em>drv</em>)</strong> </p>
-<ul>
-<li><p>在linux内核代码中定义了一个宏定义关于平台驱动注册函数。</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define platform_driver_register(drv) \</span><br><span class="line">	__platform_driver_register(drv, THIS_MODULE)</span><br><span class="line">extern int __platform_driver_register(struct platform_driver *,</span><br><span class="line">					struct module *);</span><br></pre></td></tr></table></figure>
-
-<p>  在其中我们可以看到platform_driver_register是通过宏定义代表__platform_driver_register这个函数的。在函数中有两个参数分别是platform_driver *、struct module *。其中我们重要关心的是platform_driver 结构体，这里的和上面已经讲过的platform_device一样，是在linux内核定义好的设备框架基础上田间自定义的构建成的。</p>
-</li>
-<li><p>在__platform_driver_register结构体中的源码如下：</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int __platform_driver_register(struct platform_driver *drv,</span><br><span class="line">				struct module *owner)</span><br><span class="line">&#123;</span><br><span class="line">	drv-&gt;driver.owner = owner;</span><br><span class="line">	drv-&gt;driver.bus = &amp;platform_bus_type;</span><br><span class="line">	drv-&gt;driver.probe = platform_drv_probe;</span><br><span class="line">	drv-&gt;driver.remove = platform_drv_remove;</span><br><span class="line">	drv-&gt;driver.shutdown = platform_drv_shutdown;</span><br><span class="line"></span><br><span class="line">	return driver_register(&amp;drv-&gt;driver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>  首先对driver进行一些初始化。在其中我们关心的是<code>drv-&gt;driver.bus = &amp;platform_bus_type;</code> 、<code>drv-&gt;driver.probe = platform_drv_probe;</code>、 <code>drv-&gt;driver.remove = platform_drv_remove;</code> 这三个行代码，其中driver.bus指定了总线类型，也是与设备匹配的关键。下面两个probe、remove两个是一个中间层函数，他们会获取platform_device的信息，然后调用我们在platform_device中自定义的probe函数。</p>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="2、匹配中的各种问题"><a href="#2、匹配中的各种问题" class="headerlink" title="2、匹配中的各种问题"></a>2、匹配中的各种问题</h4><h5 id="1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？"><a href="#1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？" class="headerlink" title="1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？"></a>1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？</h5><p>​	1、struct device是linux设备模型的基础，所有的设备都必须通过struct device纳入到设备模型中才能够被内核有效的管理。</p>
-<p>​	2、linux设备模型是内核中用于管理所有设备的框架，它提供了一套统一的接口和机制。在linux中所有的设备，例如平台设备、PCI设备、USB设备，这些统一是在框架的基础上写入一些自定义的构成的。</p>
-<h5 id="2、平台总线类型和平台匹配的关系。"><a href="#2、平台总线类型和平台匹配的关系。" class="headerlink" title="2、平台总线类型和平台匹配的关系。"></a>2、平台总线类型和平台匹配的关系。</h5><p>​	1、平台总线类型的源码如下，其中 <code>struct bus_type platform_bus_type</code> 定义了平台总线的类型。在liunx设备模型中，总线类型是链接设备和驱动程序的桥梁。平台总线是一中虚拟的总线，用于管理那些无法通过标准总线（如PCI、USB）枚举的设备。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct bus_type platform_bus_type = &#123;</span><br><span class="line">	.name		= &quot;platform&quot;,</span><br><span class="line">	.dev_groups	= platform_dev_groups,</span><br><span class="line">	.match		= platform_match,</span><br><span class="line">	.uevent		= platform_uevent,</span><br><span class="line">	.dma_configure	= platform_dma_configure,</span><br><span class="line">	.pm		= &amp;platform_dev_pm_ops,</span><br><span class="line">&#125;;</span><br><span class="line">struct bus_type &#123;</span><br><span class="line">	const char		*name;</span><br><span class="line">	const char		*dev_name;</span><br><span class="line">	struct device		*dev_root;</span><br><span class="line">	const struct attribute_group **bus_groups;</span><br><span class="line">	const struct attribute_group **dev_groups;</span><br><span class="line">	const struct attribute_group **drv_groups;</span><br><span class="line"></span><br><span class="line">	int (*match)(struct device *dev, struct device_driver *drv);</span><br><span class="line">	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);</span><br><span class="line">	int (*probe)(struct device *dev);</span><br><span class="line">	int (*remove)(struct device *dev);</span><br><span class="line">	void (*shutdown)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*online)(struct device *dev);</span><br><span class="line">	int (*offline)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*suspend)(struct device *dev, pm_message_t state);</span><br><span class="line">	int (*resume)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*num_vf)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*dma_configure)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	const struct dev_pm_ops *pm;</span><br><span class="line"></span><br><span class="line">	const struct iommu_ops *iommu_ops;</span><br><span class="line"></span><br><span class="line">	struct subsys_private *p;</span><br><span class="line">	struct lock_class_key lock_key;</span><br><span class="line"></span><br><span class="line">	bool need_parent_lock;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>2、在上面说的两个结构体中，有两个函数关乎与匹配相关。<code>.match		= platform_match,</code> 、<code>int (*match)(struct device *dev, struct device_driver *drv);</code> 。下面是 <code>platform_match</code> 的代码。</p>
-<ul>
-<li>在开始时传入设备和驱动的结构体。</li>
-<li>检查 <code>driver_override</code> 参数是 否被设置。<code>driver_override</code> 允许用户强制指定设备要使用的驱动程序。</li>
-<li>首先尝试使用设备树，在<code>of_driver_match_device</code> 函数中会根据设备树中的 <code>compatible</code> 属性里匹配设备和驱动程序。成功则直接返回。</li>
-<li>然后在尝试ACPI（Advanced Configuration and Power Interface）进行匹配。在 <code>acpi_driver_match_device</code> 函数中会根据ACPI描述符进行匹配。成功则直接返回。</li>
-<li>如果定义了<code>id_table</code> 尝试使用ID表进行匹配。</li>
-<li>如果上面的匹配都失败了，则尝试使用设备的名称和驱动的名称进行匹配。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static int platform_match(struct device *dev, struct device_driver *drv)</span><br><span class="line">&#123;</span><br><span class="line">	struct platform_device *pdev = to_platform_device(dev);</span><br><span class="line">	struct platform_driver *pdrv = to_platform_driver(drv);</span><br><span class="line"></span><br><span class="line">	/* When driver_override is set, only bind to the matching driver */</span><br><span class="line">	if (pdev-&gt;driver_override)</span><br><span class="line">		return !strcmp(pdev-&gt;driver_override, drv-&gt;name);</span><br><span class="line"></span><br><span class="line">	/* Attempt an OF style match first */</span><br><span class="line">	if (of_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try ACPI style match */</span><br><span class="line">	if (acpi_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try to match against the id table */</span><br><span class="line">	if (pdrv-&gt;id_table)</span><br><span class="line">		return platform_match_id(pdrv-&gt;id_table, pdev) != NULL;</span><br><span class="line"></span><br><span class="line">	/* fall-back to driver name match */</span><br><span class="line">	return (strcmp(pdev-&gt;name, drv-&gt;name) == 0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Linux驱动</category>
-      </categories>
-      <tags>
-        <tag>Linux学习</tag>
-        <tag>平台驱动</tag>
-        <tag>平台设备</tag>
-        <tag>平台匹配</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>音频播放</title>
     <url>/2025/03/14/%E9%9F%B3%E9%A2%91%E6%92%AD%E6%94%BE/</url>
     <content><![CDATA[<h1 id="音频播放"><a href="#音频播放" class="headerlink" title="音频播放"></a>音频播放</h1><h3 id="前其准备"><a href="#前其准备" class="headerlink" title="前其准备"></a>前其准备</h3><p>我以思维导图的方式写了相关的原理和所需要的知识点。</p>
@@ -3831,6 +3837,109 @@
       <tags>
         <tag>stm32F407</tag>
         <tag>多媒体项目</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>驱动和设备匹配过程</title>
+    <url>/2025/01/14/%E9%A9%B1%E5%8A%A8%E5%92%8C%E8%AE%BE%E5%A4%87%E5%8C%B9%E9%85%8D%E8%BF%87%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="匹配过程及其问题"><a href="#匹配过程及其问题" class="headerlink" title="匹配过程及其问题"></a>匹配过程及其问题</h1><h4 id="1、匹配过程"><a href="#1、匹配过程" class="headerlink" title="1、匹配过程"></a>1、匹配过程</h4><p>​	在linux驱动中，目前学到了三种编写代码的方式。</p>
+<ul>
+<li><p>第一种：传统编写。驱动和硬件写在一起，让linux内核和硬件交织在一起，这是早期linux开发的编写方式，不推荐使用，可以在初学时看看，也可以不看，不影响。</p>
+</li>
+<li><p>第二种：使驱动和设备硬件分开编写。pdrv主要编写linux的内核代码，pdev主要关于硬件的资源。分开有利管理，但是当设备多了之后，又出现了问题，代码太多，太繁。</p>
+</li>
+<li><p>第三种：使用设备树。驱动的代码基本不变，修改设备硬件的代码，把使用的设备硬件汇总为一个设备树的结构，每个节点都是一个设备硬件，代码简单、方便、便于移植。</p>
+<span id="more"></span></li>
+</ul>
+<p>第一种不说了。主要讲第二、三种的匹配过程，阅读一下内核源码，看一下整个流程。（目前刚刚开始学习不久，仅仅学到设备树，所以就目前掌握的开始写和搜的，如果以后学习到更深，在回来补充）</p>
+<ul>
+<li><p>平台总线的平台驱动和平台设备匹配过程</p>
+<ul>
+<li><p>1、首先先讲解两个函数。平台设备注册int platform_device_register(struct <em>platform_device</em> *)；平台驱动注册platform_driver_register(<em>drv</em>)。这是两个注册函数，将我们自定义的平台设备和平台驱动注册到平台总线中去。他们会在平台总线中相遇，至于怎么找到双方，那就要有一个信物，两者个持一个，匹配上了就会成功。这个信物就是name（名称），下面会讲解。</p>
+<ul>
+<li><p><em><em>平台设备注册：int platform_device_register(struct platform_device pdev</em>)</em>* </p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_register(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	device_initialize(&amp;pdev-&gt;dev);</span><br><span class="line">	setup_pdev_dma_masks(pdev);</span><br><span class="line">	return platform_device_add(pdev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>在平台设备注册函数中主要完成下面任务：</p>
+<p>  1、初始化struct platform_device结构体中的struct device结构体。[它将平台设备纳入到 Linux 设备模型中，使其能够被设备模型管理和访问。](#####1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？)</p>
+<p>  2、关于DMA的，这个函数用于设置设备的 DMA (Direct Memory Access) 掩码。DMA 允许设备直接访问内存，而无需 CPU 的干预，从而提高数据传输效率。DMA 掩码用于限制设备可以访问的内存地址范围。</p>
+<p>  3、这个函数是平台设备的注册的真正执行着，将平台设备添加到平台总线的设备列表中。触发驱动程序等到匹配。</p>
+</li>
+<li><p><strong>在platform_device_add(pdev);函数中，找到源码解读。</strong><br>  1、参数检查和初始化</p>
+<ul>
+<li>首先检查pdev指针是否为空。</li>
+<li>如果pdev的父设备为空，则将其设置成平台总线。（可见平台总线相当于根节点，下面挂着一串平台设备列表）</li>
+<li>设备pdev的总线类型为平台总线类型（platform_bus_type）（<a href="#####2%E3%80%81%E5%B9%B3%E5%8F%B0%E6%80%BB%E7%BA%BF%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%B9%B3%E5%8F%B0%E5%8C%B9%E9%85%8D%E7%9A%84%E5%85%B3%E7%B3%BB">这个平台总线类型是平台匹配的重要部分</a>）。</li>
+</ul>
+<p>  2、设置设备名称</p>
+<ul>
+<li>根据 <code>pdev-&gt;id</code>的值，使用<code>dev_set_name</code>函数设备<code>pdev</code>的设备名称。</li>
+<li>如果<code>pdev-&gt;id</code>为默认值，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id</code>。</li>
+<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_NONE</code>，则将名称设置为<code>pdev-&gt;name</code>。</li>
+<li>如果<code>pdev-&gt;id</code>为<code>PLATFORM_DEVID_AUTO</code>，则将名称设置为<code>pdev-&gt;name.pdev-&gt;id.auto</code>。</li>
+</ul>
+<p>  3、注册设备资源</p>
+<ul>
+<li>遍历<code>pdev-&gt;resource</code> 数组，该数组中存放着设备使用的资源信息（例如内存地址、中断号等）</li>
+<li>为每个资源设置名称</li>
+<li>为每个资源设置父资源</li>
+</ul>
+<p>  4、添加设备</p>
+<ul>
+<li>打印注册信息</li>
+<li>调用 <code>device_add</code> 函数将设备添加到linux设备模型中。</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int platform_device_add(struct platform_device *pdev)</span><br><span class="line">&#123;</span><br><span class="line">	u32 i;</span><br><span class="line">	int ret;</span><br><span class="line"></span><br><span class="line">	if (!pdev)</span><br><span class="line">		return -EINVAL;</span><br><span class="line"></span><br><span class="line">	if (!pdev-&gt;dev.parent)</span><br><span class="line">		pdev-&gt;dev.parent = &amp;platform_bus;</span><br><span class="line"></span><br><span class="line">	pdev-&gt;dev.bus = &amp;platform_bus_type;</span><br><span class="line"></span><br><span class="line">	switch (pdev-&gt;id) &#123;</span><br><span class="line">	default:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d&quot;, pdev-&gt;name,  pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_NONE:</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s&quot;, pdev-&gt;name);</span><br><span class="line">		break;</span><br><span class="line">	case PLATFORM_DEVID_AUTO:</span><br><span class="line">		/*</span><br><span class="line">		 * Automatically allocated device ID. We mark it as such so</span><br><span class="line">		 * that we remember it must be freed, and we append a suffix</span><br><span class="line">		 * to avoid namespace collision with explicit IDs.</span><br><span class="line">		 */</span><br><span class="line">		ret = ida_simple_get(&amp;platform_devid_ida, 0, 0, GFP_KERNEL);</span><br><span class="line">		if (ret &lt; 0)</span><br><span class="line">			goto err_out;</span><br><span class="line">		pdev-&gt;id = ret;</span><br><span class="line">		pdev-&gt;id_auto = true;</span><br><span class="line">		dev_set_name(&amp;pdev-&gt;dev, &quot;%s.%d.auto&quot;, pdev-&gt;name, pdev-&gt;id);</span><br><span class="line">		break;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	for (i = 0; i &lt; pdev-&gt;num_resources; i++) &#123;</span><br><span class="line">		struct resource *p, *r = &amp;pdev-&gt;resource[i];</span><br><span class="line"></span><br><span class="line">		if (r-&gt;name == NULL)</span><br><span class="line">			r-&gt;name = dev_name(&amp;pdev-&gt;dev);</span><br><span class="line"></span><br><span class="line">		p = r-&gt;parent;</span><br><span class="line">		if (!p) &#123;</span><br><span class="line">			if (resource_type(r) == IORESOURCE_MEM)</span><br><span class="line">				p = &amp;iomem_resource;</span><br><span class="line">			else if (resource_type(r) == IORESOURCE_IO)</span><br><span class="line">				p = &amp;ioport_resource;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if (p) &#123;</span><br><span class="line">			ret = insert_resource(p, r);</span><br><span class="line">			if (ret) &#123;</span><br><span class="line">				dev_err(&amp;pdev-&gt;dev, &quot;failed to claim resource %d: %pR\n&quot;, i, r);</span><br><span class="line">				goto failed;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Registering platform device &#x27;%s&#x27;. Parent at %s\n&quot;,</span><br><span class="line">		 dev_name(&amp;pdev-&gt;dev), dev_name(pdev-&gt;dev.parent));</span><br><span class="line"></span><br><span class="line">	ret = device_add(&amp;pdev-&gt;dev);</span><br><span class="line">	if (ret == 0)</span><br><span class="line">		return ret;</span><br><span class="line"></span><br><span class="line"> failed:</span><br><span class="line">	if (pdev-&gt;id_auto) &#123;</span><br><span class="line">		ida_simple_remove(&amp;platform_devid_ida, pdev-&gt;id);</span><br><span class="line">		pdev-&gt;id = PLATFORM_DEVID_AUTO;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	while (i--) &#123;</span><br><span class="line">		struct resource *r = &amp;pdev-&gt;resource[i];</span><br><span class="line">		if (r-&gt;parent)</span><br><span class="line">			release_resource(r);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"> err_out:</span><br><span class="line">	return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注册平台设备需要一个struct platform_device *<em>pdev</em>结构体，具体内容如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct platform_device &#123;</span><br><span class="line">	const char	*name;</span><br><span class="line">	int		id;</span><br><span class="line">	bool		id_auto;</span><br><span class="line">	struct device	dev;</span><br><span class="line">	u64		platform_dma_mask;</span><br><span class="line">	u32		num_resources;</span><br><span class="line">	struct resource	*resource;</span><br><span class="line"></span><br><span class="line">	const struct platform_device_id	*id_entry;</span><br><span class="line">	char *driver_override; /* Driver name to force a match */</span><br><span class="line"></span><br><span class="line">	/* MFD cell pointer */</span><br><span class="line">	struct mfd_cell *mfd_cell;</span><br><span class="line"></span><br><span class="line">	/* arch specific additions */</span><br><span class="line">	struct pdev_archdata	archdata;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p><strong>平台驱动注册函数platform_driver_register(<em>drv</em>)</strong> </p>
+<ul>
+<li><p>在linux内核代码中定义了一个宏定义关于平台驱动注册函数。</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#define platform_driver_register(drv) \</span><br><span class="line">	__platform_driver_register(drv, THIS_MODULE)</span><br><span class="line">extern int __platform_driver_register(struct platform_driver *,</span><br><span class="line">					struct module *);</span><br></pre></td></tr></table></figure>
+
+<p>  在其中我们可以看到platform_driver_register是通过宏定义代表__platform_driver_register这个函数的。在函数中有两个参数分别是platform_driver *、struct module *。其中我们重要关心的是platform_driver 结构体，这里的和上面已经讲过的platform_device一样，是在linux内核定义好的设备框架基础上田间自定义的构建成的。</p>
+</li>
+<li><p>在__platform_driver_register结构体中的源码如下：</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">int __platform_driver_register(struct platform_driver *drv,</span><br><span class="line">				struct module *owner)</span><br><span class="line">&#123;</span><br><span class="line">	drv-&gt;driver.owner = owner;</span><br><span class="line">	drv-&gt;driver.bus = &amp;platform_bus_type;</span><br><span class="line">	drv-&gt;driver.probe = platform_drv_probe;</span><br><span class="line">	drv-&gt;driver.remove = platform_drv_remove;</span><br><span class="line">	drv-&gt;driver.shutdown = platform_drv_shutdown;</span><br><span class="line"></span><br><span class="line">	return driver_register(&amp;drv-&gt;driver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  首先对driver进行一些初始化。在其中我们关心的是<code>drv-&gt;driver.bus = &amp;platform_bus_type;</code> 、<code>drv-&gt;driver.probe = platform_drv_probe;</code>、 <code>drv-&gt;driver.remove = platform_drv_remove;</code> 这三个行代码，其中driver.bus指定了总线类型，也是与设备匹配的关键。下面两个probe、remove两个是一个中间层函数，他们会获取platform_device的信息，然后调用我们在platform_device中自定义的probe函数。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="2、匹配中的各种问题"><a href="#2、匹配中的各种问题" class="headerlink" title="2、匹配中的各种问题"></a>2、匹配中的各种问题</h4><h5 id="1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？"><a href="#1、在平台设备注册函数中，为什么要初始化struct-device结构体？为什么说将平台设备纳入到-Linux-设备模型中？" class="headerlink" title="1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？"></a>1、在平台设备注册函数中，为什么要初始化struct device结构体？为什么说将平台设备纳入到 Linux 设备模型中？</h5><p>​	1、struct device是linux设备模型的基础，所有的设备都必须通过struct device纳入到设备模型中才能够被内核有效的管理。</p>
+<p>​	2、linux设备模型是内核中用于管理所有设备的框架，它提供了一套统一的接口和机制。在linux中所有的设备，例如平台设备、PCI设备、USB设备，这些统一是在框架的基础上写入一些自定义的构成的。</p>
+<h5 id="2、平台总线类型和平台匹配的关系。"><a href="#2、平台总线类型和平台匹配的关系。" class="headerlink" title="2、平台总线类型和平台匹配的关系。"></a>2、平台总线类型和平台匹配的关系。</h5><p>​	1、平台总线类型的源码如下，其中 <code>struct bus_type platform_bus_type</code> 定义了平台总线的类型。在liunx设备模型中，总线类型是链接设备和驱动程序的桥梁。平台总线是一中虚拟的总线，用于管理那些无法通过标准总线（如PCI、USB）枚举的设备。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">struct bus_type platform_bus_type = &#123;</span><br><span class="line">	.name		= &quot;platform&quot;,</span><br><span class="line">	.dev_groups	= platform_dev_groups,</span><br><span class="line">	.match		= platform_match,</span><br><span class="line">	.uevent		= platform_uevent,</span><br><span class="line">	.dma_configure	= platform_dma_configure,</span><br><span class="line">	.pm		= &amp;platform_dev_pm_ops,</span><br><span class="line">&#125;;</span><br><span class="line">struct bus_type &#123;</span><br><span class="line">	const char		*name;</span><br><span class="line">	const char		*dev_name;</span><br><span class="line">	struct device		*dev_root;</span><br><span class="line">	const struct attribute_group **bus_groups;</span><br><span class="line">	const struct attribute_group **dev_groups;</span><br><span class="line">	const struct attribute_group **drv_groups;</span><br><span class="line"></span><br><span class="line">	int (*match)(struct device *dev, struct device_driver *drv);</span><br><span class="line">	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);</span><br><span class="line">	int (*probe)(struct device *dev);</span><br><span class="line">	int (*remove)(struct device *dev);</span><br><span class="line">	void (*shutdown)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*online)(struct device *dev);</span><br><span class="line">	int (*offline)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*suspend)(struct device *dev, pm_message_t state);</span><br><span class="line">	int (*resume)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*num_vf)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	int (*dma_configure)(struct device *dev);</span><br><span class="line"></span><br><span class="line">	const struct dev_pm_ops *pm;</span><br><span class="line"></span><br><span class="line">	const struct iommu_ops *iommu_ops;</span><br><span class="line"></span><br><span class="line">	struct subsys_private *p;</span><br><span class="line">	struct lock_class_key lock_key;</span><br><span class="line"></span><br><span class="line">	bool need_parent_lock;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>2、在上面说的两个结构体中，有两个函数关乎与匹配相关。<code>.match		= platform_match,</code> 、<code>int (*match)(struct device *dev, struct device_driver *drv);</code> 。下面是 <code>platform_match</code> 的代码。</p>
+<ul>
+<li>在开始时传入设备和驱动的结构体。</li>
+<li>检查 <code>driver_override</code> 参数是 否被设置。<code>driver_override</code> 允许用户强制指定设备要使用的驱动程序。</li>
+<li>首先尝试使用设备树，在<code>of_driver_match_device</code> 函数中会根据设备树中的 <code>compatible</code> 属性里匹配设备和驱动程序。成功则直接返回。</li>
+<li>然后在尝试ACPI（Advanced Configuration and Power Interface）进行匹配。在 <code>acpi_driver_match_device</code> 函数中会根据ACPI描述符进行匹配。成功则直接返回。</li>
+<li>如果定义了<code>id_table</code> 尝试使用ID表进行匹配。</li>
+<li>如果上面的匹配都失败了，则尝试使用设备的名称和驱动的名称进行匹配。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">static int platform_match(struct device *dev, struct device_driver *drv)</span><br><span class="line">&#123;</span><br><span class="line">	struct platform_device *pdev = to_platform_device(dev);</span><br><span class="line">	struct platform_driver *pdrv = to_platform_driver(drv);</span><br><span class="line"></span><br><span class="line">	/* When driver_override is set, only bind to the matching driver */</span><br><span class="line">	if (pdev-&gt;driver_override)</span><br><span class="line">		return !strcmp(pdev-&gt;driver_override, drv-&gt;name);</span><br><span class="line"></span><br><span class="line">	/* Attempt an OF style match first */</span><br><span class="line">	if (of_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try ACPI style match */</span><br><span class="line">	if (acpi_driver_match_device(dev, drv))</span><br><span class="line">		return 1;</span><br><span class="line"></span><br><span class="line">	/* Then try to match against the id table */</span><br><span class="line">	if (pdrv-&gt;id_table)</span><br><span class="line">		return platform_match_id(pdrv-&gt;id_table, pdev) != NULL;</span><br><span class="line"></span><br><span class="line">	/* fall-back to driver name match */</span><br><span class="line">	return (strcmp(pdev-&gt;name, drv-&gt;name) == 0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Linux驱动</category>
+      </categories>
+      <tags>
+        <tag>Linux学习</tag>
+        <tag>平台驱动</tag>
+        <tag>平台设备</tag>
+        <tag>平台匹配</tag>
       </tags>
   </entry>
 </search>
