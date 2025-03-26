@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"basswo.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","Muse | Mist":320,"Pisces | Gemini":240,"display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="通讯协议">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通讯协议">
+<meta property="og:url" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/index.html">
+<meta property="og:site_name" content="有玉微凉、是为樱琅">
+<meta property="og:description" content="通讯协议">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/111446.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/111554.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/112922.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/113627.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/142140.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/145153.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152150.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152538.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152556.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152615.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/173418.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/174316.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/174340.png">
+<meta property="og:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/181645.png">
+<meta property="article:published_time" content="2025-03-26T01:36:12.000Z">
+<meta property="article:modified_time" content="2025-03-26T10:29:36.707Z">
+<meta property="article:author" content="Dylan">
+<meta property="article:tag" content="usart">
+<meta property="article:tag" content="IIC">
+<meta property="article:tag" content="SPI">
+<meta property="article:tag" content="CAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/111446.png">
+
+<link rel="canonical" href="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>通讯协议 | 有玉微凉、是为樱琅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">有玉微凉、是为樱琅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">哈哈哈哈哈</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://basswo.github.io/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/pages.jpg">
+      <meta itemprop="name" content="Dylan">
+      <meta itemprop="description" content="樱琅的个人博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="有玉微凉、是为樱琅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          通讯协议
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2025-03-26 09:36:12 / 修改时间：18:29:36" itemprop="dateCreated datePublished" datetime="2025-03-26T09:36:12+08:00">2025-03-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/stm32/" itemprop="url" rel="index"><span itemprop="name">stm32</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="通讯协议"><a href="#通讯协议" class="headerlink" title="通讯协议"></a>通讯协议</h1><span id="more"></span>
+
+<h2 id="CAN总线协议"><a href="#CAN总线协议" class="headerlink" title="CAN总线协议"></a>CAN总线协议</h2><h3 id="1、CAN总线概述"><a href="#1、CAN总线概述" class="headerlink" title="1、CAN总线概述"></a>1、CAN总线概述</h3><p>CAN 总线（控制器局域网总线）是一种通信协议，最初由 Robert Bosch GmbH 在 1980 年代开发，主要用于减少汽车中电气布线的复杂性和成本。它允许多个电子控制单元（ECU）通过两根扭绞线（CAN 高和 CAN 低）进行高效通信，类似于人体神经系统连接不同部位。</p>
+<p>CAN总线特征：</p>
+<ul>
+<li><p>两根通信线：CAN_H、CAN_L，线路少，无需接地。</p>
+</li>
+<li><p>差分信号通信、抗干扰能力强</p>
+</li>
+<li><p>高速CAN（ISO11898）：125K-1Mbps，《40米</p>
+</li>
+<li><p>低速CAN（ISO11519）：10K-125kbps，《1KM</p>
+</li>
+<li><p>11位&#x2F;29位报文ID（标识符），用于区分消息功能，同时决定优先级，进行仲裁</p>
+</li>
+<li><p>配置1-8字节的有效载荷，可以灵活的选择发送数据的字节数</p>
+</li>
+<li><p>可以实现广播式和请求式两种传输方式</p>
+</li>
+<li><p>应答、CRC校验、位填充、位同步、错误处理等特性</p>
+</li>
+<li><p>协议为：串行、半双工、异步。</p>
+</li>
+</ul>
+<h3 id="2、工作原理"><a href="#2、工作原理" class="headerlink" title="2、工作原理"></a>2、工作原理</h3><p>CAN总线使用差分信号传输数据，就是通过测量两根线两端的电压差来传输信息。这种方式可以抵抗电磁干扰。</p>
+<ul>
+<li>物理层：由CAN高（通常为黄色），和CAN低（通常为绿色）组成，支持速率40kbit&#x2F;s至1Mbit&#x2F;s。</li>
+<li>数据链路层：消息以数据帧的形式进行传输，每个帧包括起始位、标识符（11或29位）、数据字段（最多8字节，CAN FD可达64字节）、循环冗余校验（CRC）和结束位。  </li>
+<li>仲裁机制：如果多个节点发送消息，则根据标识符的优先级进行判断，优先级高的继续发送，优先级低的转为接收。</li>
+</ul>
+<h3 id="3、CAN总线的硬件电路"><a href="#3、CAN总线的硬件电路" class="headerlink" title="3、CAN总线的硬件电路"></a>3、CAN总线的硬件电路</h3><ul>
+<li>每个设备通过CAN接收器挂载在CAN总线网络上。</li>
+<li>CAN控制器引出的TX和RX与CAN总线的收发器相连，CAN收发器引出的CAN_H和CAN_L和TX、RX。</li>
+<li>高速CAN使用闭环网络，CAN_H和CAN_L两端添加120欧的终端电阻<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/111446.png"><ul>
+<li>终端电阻的作用：<ul>
+<li>防止信号反射<ul>
+<li>不加，在电平变换时，会产生振荡信号，使产生干扰。</li>
+<li>加上后，电平变换平稳。</li>
+</ul>
+</li>
+<li>这个电阻和IIC的上拉电阻类似。当成一个弹簧，当输出0时，拉开弹簧；输出1时，松开。在电路中就是当输出1，就不去触碰CAN总线。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>低速CAN使用开环网络，CAN_H和CAN_L其中一端调价2.2k欧的终端电阻，另一端悬空。<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/111554.png"></li>
+</ul>
+<h3 id="4、CAN电平标准"><a href="#4、CAN电平标准" class="headerlink" title="4、CAN电平标准"></a>4、CAN电平标准</h3><ul>
+<li>CAN总线采用差分信号，即两线电压差代表传输的数据位。</li>
+<li>高速CAN规定：<ul>
+<li>电压差为0V时，代表逻辑1（隐性电平）</li>
+<li>电压差为2V时，代表逻辑0（显性电平）</li>
+<li>总线回归隐形电平快，传输速度就快。</li>
+</ul>
+</li>
+<li>低速CAN规定：<ul>
+<li>电压差为-1.5V时，代表逻辑1（隐形电平）</li>
+<li>电压差为3V时，代表逻辑0（显性电平）</li>
+<li>逻辑0和1的差别大的原因是：<ul>
+<li>传输距离远，干扰就越多。</li>
+<li>当逻辑0和1差别大时，就可以更好的判断逻辑0还是逻辑1.</li>
+</ul>
+</li>
+<li>总线回归隐形电平慢，传输速度就慢。</li>
+</ul>
+</li>
+<li><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/112922.png"></li>
+</ul>
+<h3 id="5、CAN收发器-TJA1050（高速CAN）"><a href="#5、CAN收发器-TJA1050（高速CAN）" class="headerlink" title="5、CAN收发器-TJA1050（高速CAN）"></a>5、CAN收发器-TJA1050（高速CAN）</h3><p><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/113627.png"></p>
+<ul>
+<li>右上角是收发器的引脚图<ul>
+<li>总共8根线<ul>
+<li>TXD连接主控芯片的CAN控制器RXD。</li>
+<li>RXD连接主控芯片的CAN控制器TXD</li>
+<li>VCC和GND提供5V的供电</li>
+<li>CAN_H和CAN_L和CAN总线连接。</li>
+<li>Vref：参考电压输出（可以不用）</li>
+<li>s:高速模式或者静默模式。（可以不用）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>左边是芯片内部的结构：<ul>
+<li>左边CAN_H和CAN_L和CAN总线相连。</li>
+<li>中间三角型：时刻检测CAN总线的电压差。</li>
+<li>RXD接收数据：<ul>
+<li>当CAN_H和CAN_L没有电压差时，输出到三角型为0.</li>
+<li>再经过左边两个场效应管的输出驱动器，当0过来时，上面导通，下面闭合，输出1.</li>
+<li>当CAN_H和CAN_L有电压差时，输出到三角型为1.</li>
+<li>再经过左边两个场效应管的输出驱动器，当1过来时，上面闭合，下面导通，输出0.</li>
+<li>有一个电平反转的作用。</li>
+</ul>
+</li>
+<li>TXD发送数据：<ul>
+<li>当TXD想发送1时，后面的驱动器（DRIVER）会让后面两个场效应管断开，不去连接CAN总线。总线在外部终端电阻的作用下收紧，呈现默认的隐形电平。</li>
+<li>当TXD发送0时，后面的驱动器（DRIVER）会让后面两个场效应管打开，让其一端接VCC，一端接GND，呈现显性电平0的状态。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>物理层特性<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/142140.png"></li>
+</ul>
+<h3 id="6、CAN总线帧格式"><a href="#6、CAN总线帧格式" class="headerlink" title="6、CAN总线帧格式"></a>6、CAN总线帧格式</h3><h4 id="CAN协议规定的5种类型的帧："><a href="#CAN协议规定的5种类型的帧：" class="headerlink" title="CAN协议规定的5种类型的帧："></a>CAN协议规定的5种类型的帧：</h4><ul>
+<li>数据帧<ul>
+<li>发送设备主动发送数据（广播式）<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/145153.png"></li>
+<li>帧起始（SOF）<ul>
+<li>要以显性0为开头。打破一帧空闲，开始传输数据。</li>
+</ul>
+</li>
+<li>仲裁段（）<ul>
+<li>报文ID<ul>
+<li>紫色代表即可是显性0，也可是隐形1.</li>
+<li>报文ID可以用于后面数据的信息，告诉接收方是干什么用的。</li>
+<li>还可以用于仲裁。</li>
+<li>ID小的继续发送，大的停止发送。</li>
+</ul>
+</li>
+<li>RTR：<ul>
+<li>占据一位。</li>
+<li>作用：远程请求位。用于区分数据帧还是遥控帧。</li>
+<li>在数据帧中，必须为显性0.</li>
+</ul>
+</li>
+<li>RTR在仲裁段的作用不止区分数据帧和遥控帧。还可以当数据帧和遥控帧的ID相同时数据帧的优先级大于遥控帧。</li>
+</ul>
+</li>
+<li>控制段<ul>
+<li>IDE：<ul>
+<li>ID扩展标志位。</li>
+<li>用于区分标准格式，还是扩展模式。<ul>
+<li>标准格式：固定显性0</li>
+<li>扩展模式：固定隐性1</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>r0：<ul>
+<li>保留位</li>
+<li>必须为显性0.</li>
+<li>暂时不用</li>
+</ul>
+</li>
+<li>DLC：<ul>
+<li>表示数据段的长度。</li>
+</ul>
+</li>
+<li>Data：<ul>
+<li>数据段就是有效的载荷的数据。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>CRC段<ul>
+<li>校验算法。</li>
+<li>CRC界定符：<ul>
+<li>必须为隐性电平1.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ACK段<ul>
+<li>ACK槽：<ul>
+<li>应答作用</li>
+</ul>
+</li>
+<li>ACK界定符：<ul>
+<li>必须为隐性电平1.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>帧结束</li>
+</ul>
+</li>
+<li>遥控帧<ul>
+<li>接收设备主动请求数据（请求式）<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152150.png"></li>
+<li>遥控帧无数据段，RTR为隐性电平1，其他部分和数据帧相同。</li>
+</ul>
+</li>
+<li>错误帧<ul>
+<li>某给设备检测出错误时向其他设备通知错误<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152538.png"></li>
+<li>总线上所有设备都会监督总线上的数据，一旦发现位错误或者填充错误后者CRC校验错误或者格式错误或者应答错误，这些设备就会发送错误帧，破坏数据，同时终止当前发送设备。</li>
+</ul>
+</li>
+<li>过载帧<ul>
+<li>接收设备通知其未做接收准备<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152556.png"></li>
+<li>当接收方收到大量数据而无法处理时，其可以发送过载帧，延缓发送放的数据发送，用于平衡总线的负载，避免数据丢失。</li>
+</ul>
+</li>
+<li>帧间隔<ul>
+<li>用于将数据帧及遥控帧与前面的帧进行分离<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/152615.png"></li>
+</ul>
+</li>
+</ul>
+<h4 id="位填充："><a href="#位填充：" class="headerlink" title="位填充："></a>位填充：</h4><ul>
+<li>在发送数据帧之前，要进行位填充。</li>
+<li>填充规则：<ul>
+<li>发送方每发送5个相同电平后，自动追加一个相反的电平的填充位，接收方检测到填充位时，会自动移除填充位，恢复原数据。</li>
+</ul>
+</li>
+<li>填充的作用：<ul>
+<li>增加波形的定时信息，利于接收方执行”再同步”，防止波形长时间无变化，导致接收方不能精确的掌握数据采样的时机。</li>
+<li>将正常的数据与“错误帧“和过载帧区分开，标志着错误帧和过载帧的特性。</li>
+<li>保持CAN总线再发送正常数据流时的活跃状态，防止被误认为总线空闲。</li>
+</ul>
+</li>
+</ul>
+<h4 id="波形示例"><a href="#波形示例" class="headerlink" title="波形示例"></a>波形示例</h4><ul>
+<li>标准数据帧：<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/173418.png"></li>
+<li>扩展数据帧：<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/174316.png"></li>
+<li>标准遥控帧：<br>  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/174340.png"></li>
+</ul>
+<h4 id="接收方数据采样"><a href="#接收方数据采样" class="headerlink" title="接收方数据采样"></a>接收方数据采样</h4><ul>
+<li>CAN总线上没有时钟线，总线上所有设备通过约定波特率的方式确定每一个数据位的时长。</li>
+<li>发送方以约定的位时长每隔固定时间输出一个数据位</li>
+<li>接受方以约定的位时长每隔固定的时间采样总线上的电平，输入一个数据位</li>
+<li>理想状态下，接收方能依次采样到发送方发出每个数据位，且采样点位于数据位的中心附近。</li>
+</ul>
+<h4 id="位时序"><a href="#位时序" class="headerlink" title="位时序"></a>位时序</h4><ul>
+<li>为了灵活的调整每个采样点的位置，使采样点对齐数据位中心附近、CAN总线对每一个数据位的时长进行了更细的划分，分为同步段（ss）、传播时间段（PTS）、香味缓冲段（PBS1）、相位缓冲段2（PBS2），每个段都有若干个最小时间单位（TQ）构成。</li>
+<li>ss&#x3D;1Tq<ul>
+<li>同步段是电平发生变换的期间，在ss范围内，则代表数据位同步是正确的。</li>
+</ul>
+</li>
+<li>PTS&#x3D;1-8Tq<ul>
+<li>传播时间段是给数据传输一点时间，在电平变化后，传输过程需要时间才能传输到位。</li>
+</ul>
+</li>
+<li>PBS1&#x3D;1-8Tq<ul>
+<li>PBS1和PBS2的中间位置是采样位置。调整两个的时间，可以稍微的改变采样点的位置在前，还是在后。</li>
+</ul>
+</li>
+<li>PBS2&#x3D;2-8Tq</li>
+</ul>
+<h4 id="硬同步"><a href="#硬同步" class="headerlink" title="硬同步"></a>硬同步</h4><ul>
+<li>每个设备都有一个位时序计时周期，当某个设备（发送方）率先发送报文（ID），其他设备（接收方）收到SOF（帧起始）的下降沿时，接收方会将自己的位时序计时周期拨到SS段的位置，与发送方的位时序计时周期保持同步。</li>
+<li>硬同步只在帧的第一个下降沿（SOF下降沿）有效。</li>
+<li>经过硬同步后，若发送方和接收方的时钟没有误差，则后续的所有数据位的采样点都是在数据中心附近。</li>
+<li><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSI0IiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgaWQ9InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAiIGF0dHJpYnV0ZU5hbWU9InIiIGJlZ2luPSIwO3N2Z1NwaW5uZXJzM0RvdHNTY2FsZTEuZW5kLTAuMjVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiIGZpbGw9ImN1cnJlbnRDb2xvciI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNnMiIGR1cj0iMC43NXMiIHZhbHVlcz0iMzsuMjszIi8+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMjAiIGN5PSIxMiIgcj0iMyIgZmlsbD0iY3VycmVudENvbG9yIj48YW5pbWF0ZSBpZD0ic3ZnU3Bpbm5lcnMzRG90c1NjYWxlMSIgYXR0cmlidXRlTmFtZT0iciIgYmVnaW49InN2Z1NwaW5uZXJzM0RvdHNTY2FsZTAuZW5kLTAuNDVzIiBkdXI9IjAuNzVzIiB2YWx1ZXM9IjM7LjI7MyIvPjwvY2lyY2xlPjwvc3ZnPg==" data-original="/2025/03/26/%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE/181645.png"></li>
+</ul>
+<h4 id="再同步"><a href="#再同步" class="headerlink" title="再同步"></a>再同步</h4><ul>
+<li>若发送方或者接收方的时钟存在误差，随着数据的发送，误差会越来越大，数据位的边沿逐渐偏移SS段，则此时接收方根据再同步补偿宽度值（SJW）通过加长PBS1段，或者缩短PBS2段，以调整同步。</li>
+<li>再同步可以发生咋i第一个下降沿之后的每一个数据位跳变边沿。</li>
+</ul>
+<h2 id="UART"><a href="#UART" class="headerlink" title="UART"></a>UART</h2><h2 id="I2C"><a href="#I2C" class="headerlink" title="I2C"></a>I2C</h2><h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/usart/" rel="tag"># usart</a>
+              <a href="/tags/IIC/" rel="tag"># IIC</a>
+              <a href="/tags/SPI/" rel="tag"># SPI</a>
+              <a href="/tags/CAN/" rel="tag"># CAN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/03/25/%E4%B8%B2%E5%8F%A3/" rel="prev" title="串口">
+      <i class="fa fa-chevron-left"></i> 串口
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">通讯协议</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CAN%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.1.</span> <span class="nav-text">CAN总线协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81CAN%E6%80%BB%E7%BA%BF%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.1.</span> <span class="nav-text">1、CAN总线概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.2.</span> <span class="nav-text">2、工作原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81CAN%E6%80%BB%E7%BA%BF%E7%9A%84%E7%A1%AC%E4%BB%B6%E7%94%B5%E8%B7%AF"><span class="nav-number">1.1.3.</span> <span class="nav-text">3、CAN总线的硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81CAN%E7%94%B5%E5%B9%B3%E6%A0%87%E5%87%86"><span class="nav-number">1.1.4.</span> <span class="nav-text">4、CAN电平标准</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5%E3%80%81CAN%E6%94%B6%E5%8F%91%E5%99%A8-TJA1050%EF%BC%88%E9%AB%98%E9%80%9FCAN%EF%BC%89"><span class="nav-number">1.1.5.</span> <span class="nav-text">5、CAN收发器-TJA1050（高速CAN）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6%E3%80%81CAN%E6%80%BB%E7%BA%BF%E5%B8%A7%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.1.6.</span> <span class="nav-text">6、CAN总线帧格式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CAN%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%AE%9A%E7%9A%845%E7%A7%8D%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%B8%A7%EF%BC%9A"><span class="nav-number">1.1.6.1.</span> <span class="nav-text">CAN协议规定的5种类型的帧：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%8D%E5%A1%AB%E5%85%85%EF%BC%9A"><span class="nav-number">1.1.6.2.</span> <span class="nav-text">位填充：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%A2%E5%BD%A2%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.1.6.3.</span> <span class="nav-text">波形示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E6%96%B9%E6%95%B0%E6%8D%AE%E9%87%87%E6%A0%B7"><span class="nav-number">1.1.6.4.</span> <span class="nav-text">接收方数据采样</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%8D%E6%97%B6%E5%BA%8F"><span class="nav-number">1.1.6.5.</span> <span class="nav-text">位时序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AC%E5%90%8C%E6%AD%A5"><span class="nav-number">1.1.6.6.</span> <span class="nav-text">硬同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%8D%E5%90%8C%E6%AD%A5"><span class="nav-number">1.1.6.7.</span> <span class="nav-text">再同步</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UART"><span class="nav-number">1.2.</span> <span class="nav-text">UART</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#I2C"><span class="nav-number">1.3.</span> <span class="nav-text">I2C</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SPI"><span class="nav-number">1.4.</span> <span class="nav-text">SPI</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Dylan"
+      src="/images/pages.jpg">
+  <p class="site-author-name" itemprop="name">Dylan</p>
+  <div class="site-description" itemprop="description">樱琅的个人博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/basswo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;basswo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Dylan</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+        <style>
+            [bg-lazy] {
+                background-image: none !important;
+                background-color: #eee !important;
+            }
+        </style>
+        <script>
+            window.imageLazyLoadSetting = {
+                isSPA: false,
+                preloadRatio: 1,
+                processImages: null,
+            };
+        </script><script>window.addEventListener("load",function(){var t=/\.(gif|jpg|jpeg|tiff|png)$/i,r=/^data:image\/[a-z\d\-\.\+]+;base64,/;Array.prototype.slice.call(document.querySelectorAll("img[data-original]")).forEach(function(a){var e=a.parentNode;"A"===e.tagName&&(t.test(e.href)||r.test(e.href))&&(e.href=a.dataset.original)})});</script><script>(r=>{r.imageLazyLoadSetting.processImages=t;var a=r.imageLazyLoadSetting.isSPA,o=r.imageLazyLoadSetting.preloadRatio||1,d=i();function i(){var t=Array.prototype.slice.call(document.querySelectorAll("img[data-original]")),e=Array.prototype.slice.call(document.querySelectorAll("[bg-lazy]"));return t.concat(e)}function t(t){(a||t)&&(d=i());for(var e,n=0;n<d.length;n++)0<=(e=(e=d[n]).getBoundingClientRect()).bottom&&0<=e.left&&e.top<=(r.innerHeight*o||document.documentElement.clientHeight*o)&&(()=>{var t,e,a,o,i=d[n];e=function(){d=d.filter(function(t){return i!==t}),r.imageLazyLoadSetting.onImageLoaded&&r.imageLazyLoadSetting.onImageLoaded(i)},(t=i).dataset.loaded||(t.hasAttribute("bg-lazy")?(t.removeAttribute("bg-lazy"),e&&e()):(a=new Image,o=t.getAttribute("data-original"),a.onload=function(){t.src=o,t.removeAttribute("data-original"),t.setAttribute("data-loaded",!0),e&&e()},a.onerror=function(){t.removeAttribute("data-original"),t.setAttribute("data-loaded",!1),t.src=o},t.src!==o&&(a.src=o)))})()}function e(){clearTimeout(t.tId),t.tId=setTimeout(t,500)}t(),document.addEventListener("scroll",e),r.addEventListener("resize",e),r.addEventListener("orientationchange",e)})(this);</script></body>
+</html>
